@@ -1,0 +1,5 @@
+1.  Upload all the files to your webhost.
+2.  Open up a web browser and go to the location where you put the files.
+    Ex.  http://www.yoursite.com/path_to_helpdesk
+3.  Follow the prompts to install.
+4.  The manual is under the "Site Management" tab once you login.
