@@ -43,10 +43,14 @@ $success = 0;
 if( isset( $_POST['name'] ) )
 {
   $error = 0;
+  $captcha_valid = isset($_SESSION['vihash'], $_POST['key'])
+    && hash_equals($_SESSION['vihash'], md5((string) $_POST['key'] . 'mySecRetkEy'));
+  unset($_SESSION['vihash']);
 
   if( trim( $_POST['name'] ) == "" ||
       trim( $_POST['subject'] ) == "" ||
       trim( $_POST['message'] ) == "" ||
+      !$captcha_valid ||
       !eregi( "^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2,}([zmuvtg]|fo|me)?$", $_POST['email'] ) )
     $error = 1;
 
@@ -293,7 +297,7 @@ else
           <img class="captcha-image rounded border" id="captcha-image" src="./include/view.php" alt="Security verification code">
           <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('captcha-image').src='./include/view.php?refresh='+Date.now()" aria-label="Show a new security code">Refresh</button>
         </div>
-        <input class="form-control" id="captcha-key" type="text" name="key" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" autocomplete="off" placeholder="Enter the 5 digits shown">
+        <input class="form-control" id="captcha-key" type="text" name="key" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" autocomplete="off" placeholder="Enter the 5 digits shown" required>
       </div>
       <div class="form-text mt-2">Can’t read it? Select Refresh to generate a clearer code.</div>
     </div>

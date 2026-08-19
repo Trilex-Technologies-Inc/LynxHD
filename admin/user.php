@@ -39,7 +39,7 @@ if( $_POST['cmd'] == "add" )
         for( $i = 0; $i < 8; $i++ )
           $pass .= chr( ord( 'a' ) + rand( 0, 25 ) );
 
-        mysql_query( "INSERT INTO {$pre}user ( name, email, password, date ) VALUES ( '{$_POST['name']}', '{$_POST['email']}', '" . crypt( $pass, $ENCRYPT_KEY ) . "', '" . time( ) . "' )" );
+        mysql_query( "INSERT INTO {$pre}user ( name, email, sms, signature, password, date, pwkey ) VALUES ( '{$_POST['name']}', '{$_POST['email']}', '', '', '" . crypt( $pass, $ENCRYPT_KEY ) . "', '" . time( ) . "', '' )" );
 
         $data = get_options( array( "email", "title", "url", "emailheader", "emailfooter" ) );
 

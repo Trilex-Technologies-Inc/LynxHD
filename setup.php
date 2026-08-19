@@ -245,14 +245,31 @@ if( ($_POST['cmd'] ?? '') == "admin" )
   {
     if( !$admin_exists )
     {
-      mysql_query( "INSERT INTO {$pre}user ( name, email, password, admin, date ) VALUES ( '{$_POST['name']}', '{$_POST['email']}', '" . crypt( $_POST['password1'], $ENCRYPT_KEY ) . "', '1', '" . time( ) . "' )" );
+      $password_hash = crypt( $_POST['password1'], $ENCRYPT_KEY );
+      $user_created = mysql_query( "INSERT INTO {$pre}user ( name, email, sms, signature, password, admin, date, pwkey ) VALUES ( '{$_POST['name']}', '{$_POST['email']}', '', '', '$password_hash', '1', '" . time( ) . "', '' )" );
 
-      $id = mysql_insert_id( );
-      mysql_query( "INSERT INTO {$pre}privilege ( user_id, dept_id, admin ) VALUES ( '$id', '0', '1' )" );
+      if( !$user_created )
+      {
+        error_log( "LynxHD setup could not create administrator: " . mysql_error( ) );
+        echo "<div class=\"alert alert-danger\" role=\"alert\"><h2 class=\"h4 alert-heading\">Administrator was not created</h2><p class=\"mb-0\">The database rejected the administrator record. Check the server error log for details and try again.</p></div>";
+      }
+      else
+      {
+        $id = mysql_insert_id( );
+        $privilege_created = mysql_query( "INSERT INTO {$pre}privilege ( user_id, dept_id, admin ) VALUES ( '$id', '0', '1' )" );
 
-      echo "<div class=\"alert alert-success\" role=\"alert\"><h2 class=\"h4 alert-heading\">Administrator created</h2><p class=\"mb-0\">You may now <a class=\"alert-link\" href=\"$HD_URL_LOGIN\">log in</a> and begin using the help desk.</p></div>";
-
-      $admin_exists = -1;
+        if( !$privilege_created )
+        {
+          error_log( "LynxHD setup could not create administrator privilege: " . mysql_error( ) );
+          mysql_query( "DELETE FROM {$pre}user WHERE ( id = '$id' )" );
+          echo "<div class=\"alert alert-danger\" role=\"alert\"><h2 class=\"h4 alert-heading\">Administrator was not created</h2><p class=\"mb-0\">The database rejected the administrator permissions. Check the server error log for details and try again.</p></div>";
+        }
+        else
+        {
+          echo "<div class=\"alert alert-success\" role=\"alert\"><h2 class=\"h4 alert-heading\">Administrator created</h2><p class=\"mb-0\">You may now <a class=\"alert-link\" href=\"$HD_URL_LOGIN\">log in</a> and begin using the help desk.</p></div>";
+          $admin_exists = -1;
+        }
+      }
     }
   }
 }
