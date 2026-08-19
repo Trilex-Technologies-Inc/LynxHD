@@ -18,12 +18,12 @@ include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_MESSAGES;
 
-if( $_SESSION[login_type] == $LOGIN_INVALID )
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
-if( $_POST[cmd] == "action" )
+if( $_POST['cmd'] == "action" )
 {
-  if( $_POST[action] == "delete" )
+  if( $_POST['action'] == "delete" )
   {
     $query = "";
       
@@ -33,7 +33,7 @@ if( $_POST[cmd] == "action" )
     {
       if( is_int( $key ) && $val == "on" )
       {
-        mysql_query( "DELETE FROM {$pre}message WHERE ( ticket_id = '$key' && user_id = '{$_SESSION[user][id]}' )" );
+        mysql_query( "DELETE FROM {$pre}message WHERE ( ticket_id = '$key' && user_id = '{$_SESSION['user']['id']}' )" );
         if( !get_row_count( "SELECT COUNT(*) FROM {$pre}message WHERE ( ticket_id = '$key' )" ) )
         {
           mysql_query( "DELETE FROM {$pre}ticket WHERE ( id = '$key' )" );
@@ -46,53 +46,53 @@ if( $_POST[cmd] == "action" )
       }
     }
   }
-  else if( ($_POST[action] == "read") || ($_POST[action] == "unread") )
+  else if( ($_POST['action'] == "read") || ($_POST['action'] == "unread") )
   {
-    $viewed = ($_POST[action] == "read");
+    $viewed = ($_POST['action'] == "read");
 
     while( list( $key, $val ) = each( $_POST ) )
     {
       if( is_int( $key ) && $val == "on" )
-        mysql_query( "UPDATE {$pre}message SET viewed = '$viewed' WHERE ( ticket_id = '$key' && user_id = '{$_SESSION[user][id]}' )" );
+        mysql_query( "UPDATE {$pre}message SET viewed = '$viewed' WHERE ( ticket_id = '$key' && user_id = '{$_SESSION['user']['id']}' )" );
     }
   }
 }
 
-if( $_POST[cmd] == "new" )
+if( $_POST['cmd'] == "new" )
 {
-  if( ((count( $_POST[users] ) + count( $_POST[dept] )) > 0) && (trim( $_POST[subject] ) != "") && (trim( $_POST[message] ) != "") )
+  if( ((count( $_POST['users'] ) + count( $_POST['dept'] )) > 0) && (trim( $_POST['subject'] ) != "") && (trim( $_POST['message'] ) != "") )
   {
-    for( $i = 0; $i < count( $_POST[dept] ); $i++ )
+    for( $i = 0; $i < count( $_POST['dept'] ); $i++ )
     {
-      $res = mysql_query( "SELECT user_id FROM {$pre}privilege WHERE ( dept_id = '{$_POST[dept][$i]}' || dept_id = '0' )" );
+      $res = mysql_query( "SELECT user_id FROM {$pre}privilege WHERE ( dept_id = '{$_POST['dept'][$i]}' || dept_id = '0' )" );
       while( $row = mysql_fetch_array( $res ) )
       {
-        if( $row[user_id] != $_SESSION[user][id] )
+        if( $row['user_id'] != $_SESSION['user']['id'] )
         {
           $found = 0;
 
-          for( $j = 0; $j < count( $_POST[users] ); $j++ )
-            if( $_POST[users][$j] == $row[user_id] )
+          for( $j = 0; $j < count( $_POST['users'] ); $j++ )
+            if( $_POST['users'][$j] == $row['user_id'] )
               $found = 1;
 
           if( !$found )
-            $_POST[users][] = $row[user_id];
+            $_POST['users'][] = $row['user_id'];
         }
       }
     }
 
     $ticket = "M" . strtoupper( base_convert( time( ), 10, 16 ) );
     
-    mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, subject, date, status, notify, priority, lastactivity ) VALUES ( '$ticket', '{$_SESSION[user][id]}', '{$_POST[subject]}', '" . time( ) . "', '$HD_STATUS_OPEN', '" . ($_POST[notify] == "on" ? "1" : "0") . "', '{$_POST[priority]}', '" . time( ) . "' )" );
+    mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, subject, date, status, notify, priority, lastactivity ) VALUES ( '$ticket', '{$_SESSION['user']['id']}', '{$_POST['subject']}', '" . time( ) . "', '$HD_STATUS_OPEN', '" . ($_POST['notify'] == "on" ? "1" : "0") . "', '{$_POST['priority']}', '" . time( ) . "' )" );
 
     $id = mysql_insert_id( );
 
-    mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '$id', '{$_SESSION[user][id]}', '" . time( ) . "', '{$_POST[subject]}', '{$_POST[message]}' )" );
+    mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '$id', '{$_SESSION['user']['id']}', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}' )" );
 
-    for( $i = 0; $i < count( $_POST[users] ); $i++ )
-      mysql_query( "INSERT INTO {$pre}message ( ticket_id, user_id, viewed ) VALUES ( '$id', '{$_POST[users][$i]}', '0' )" );
+    for( $i = 0; $i < count( $_POST['users'] ); $i++ )
+      mysql_query( "INSERT INTO {$pre}message ( ticket_id, user_id, viewed ) VALUES ( '$id', '{$_POST['users'][$i]}', '0' )" );
 
-    mysql_query( "INSERT INTO {$pre}message( ticket_id, user_id, viewed ) VALUES ( '$id', '{$_SESSION[user][id]}', '1' )" );
+    mysql_query( "INSERT INTO {$pre}message( ticket_id, user_id, viewed ) VALUES ( '$id', '{$_SESSION['user']['id']}', '1' )" );
 
     Header( "Location: $HD_CURPAGE" );
     exit;
@@ -101,18 +101,18 @@ if( $_POST[cmd] == "new" )
     $msg = "<div class=\"errorbox\">All fields are required to send a message.</div><br />";
 }
 
-$_GET[results] = 10;
+$_GET['results'] = 10;
 
-$rows_query = "SELECT COUNT(*) FROM {$pre}message WHERE ( user_id = '{$_SESSION[user][id]}' )";
+$rows_query = "SELECT COUNT(*) FROM {$pre}message WHERE ( user_id = '{$_SESSION['user']['id']}' )";
 
-$query = "SELECT ticket.*, message.viewed FROM {$pre}message AS message, {$pre}ticket AS ticket WHERE ( message.user_id = '{$_SESSION[user][id]}' && ticket.id = message.ticket_id ) ORDER BY lastactivity DESC";
+$query = "SELECT ticket.*, message.viewed FROM {$pre}message AS message, {$pre}ticket AS ticket WHERE ( message.user_id = '{$_SESSION['user']['id']}' && ticket.id = message.ticket_id ) ORDER BY lastactivity DESC";
 
 $results = get_row_count( $rows_query );
 
-if( !isset( $_GET[offset] ) || $_GET[offset] < 0 || $_GET[offset] >= $results )
-  $_GET[offset] = 0;
+if( !isset( $_GET['offset'] ) || $_GET['offset'] < 0 || $_GET['offset'] >= $results )
+  $_GET['offset'] = 0;
 
-$query .= " LIMIT {$_GET[offset]},{$_GET[results]}";
+$query .= " LIMIT {$_GET['offset']},{$_GET['results']}";
 
 include "./include/header.php";
 /********************************************************** PHP */?>
@@ -135,19 +135,19 @@ include "./include/header.php";
 <input type="hidden" name="cmd" value="action" />
 <table width="100%" border="0" cellspacing="1" cellpadding="5" bgcolor="#3c91c7"><tr><td><div class="tableheader">
 <?php /************************************************************/
-if( $_GET[offset] < 0 || $_GET[offset] >= $results )
-  $_GET[offset] = 0;
+if( $_GET['offset'] < 0 || $_GET['offset'] >= $results )
+  $_GET['offset'] = 0;
 
-if( $_GET[offset] > 0 )
+if( $_GET['offset'] > 0 )
 {
-  $prevoffset = $_GET[offset] - $_GET[results];
+  $prevoffset = $_GET['offset'] - $_GET['results'];
   if( $prevoffset < 0 )
     $prevoffset = 0;
 }
-if( $_GET[offset] < ($results - $_GET[results]) )
-  $nextoffset = $_GET[offset] + $_GET[results];
+if( $_GET['offset'] < ($results - $_GET['results']) )
+  $nextoffset = $_GET['offset'] + $_GET['results'];
 
-$request = $_SERVER[QUERY_STRING];
+$request = $_SERVER['QUERY_STRING'];
 
 if( isset( $prevoffset ) )
 {
@@ -191,32 +191,32 @@ if( isset( $nextoffset ) )
 $res = mysql_query( $query );
 while( $row = mysql_fetch_array( $res ) )
 {
-  $res_post_user = mysql_query( "SELECT user_id, private FROM {$pre}post WHERE ( ticket_id = '{$row[id]}' ) ORDER BY date DESC LIMIT 1" );
+  $res_post_user = mysql_query( "SELECT user_id, private FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date DESC LIMIT 1" );
   $row_post_user = mysql_fetch_array( $res_post_user );
 
-  $res_staff_user = mysql_query( "SELECT name FROM {$pre}user WHERE ( id = '{$row_post_user[user_id]}' )" );
+  $res_staff_user = mysql_query( "SELECT name FROM {$pre}user WHERE ( id = '{$row_post_user['user_id']}' )" );
   $row_staff_user = mysql_fetch_array( $res_staff_user );
 
-  if( $row_post_user[user_id] == $_SESSION[user][id] )
-    $user_info = "<b>" . $row_staff_user[name] . "</b>";
+  if( $row_post_user['user_id'] == $_SESSION['user']['id'] )
+    $user_info = "<b>" . $row_staff_user['name'] . "</b>";
   else
-    $user_info = $row_staff_user[name];
+    $user_info = $row_staff_user['name'];
   
-  $res_post = mysql_query( "SELECT COUNT(*) FROM {$pre}post WHERE ( ticket_id = '{$row[id]}' )" );
+  $res_post = mysql_query( "SELECT COUNT(*) FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' )" );
   $row_post = mysql_fetch_array( $res_post );
 
   $bgcolor = ($bgcolor == "#E8EDFF") ? "#E8EDFF" : "#E8EDFF";
   echo "<tr bgcolor=\"$bgcolor\">";
   
-  if( $row[viewed] )
+  if( $row['viewed'] )
     $image = "./images/mail.png";
   else
     $image = "./images/mail-response.png";
 
 
-  echo "<td><input type=\"checkbox\" name=\"{$row[id]}\" /></td>";
-  echo "<td><div class=\"normal\"><a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row[ticket_id]}\">{$row[ticket_id]}</a></div></td>";
-  echo "<td><div class=\"normal\"><img src=\"{$image}\" /> <a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row[ticket_id]}\">" . field( $row[subject] ) . "</a></div></td>";
+  echo "<td><input type=\"checkbox\" name=\"{$row['id']}\" /></td>";
+  echo "<td><div class=\"normal\"><a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">{$row['ticket_id']}</a></div></td>";
+  echo "<td><div class=\"normal\"><img src=\"{$image}\" /> <a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field( $row['subject'] ) . "</a></div></td>";
 
   if( $row_post[0] <= 0 )
     $replies = "<font color=\"#FF0000\"><b>0</b></font>";
@@ -225,7 +225,7 @@ while( $row = mysql_fetch_array( $res ) )
 
   echo "<td><div class=\"normal\">$replies</div></td>";
 
-  $lastactivity = time( ) - $row[lastactivity];
+  $lastactivity = time( ) - $row['lastactivity'];
   if( $lastactivity > 86400 )
   {
     if( (int)($lastactivity / 86400 ) <= 1 )
@@ -279,8 +279,8 @@ the selected messages&nbsp;&nbsp;<input type="button" onclick="if( document.tick
 $res = mysql_query( "SELECT id, name FROM {$pre}user ORDER BY name" );
 while( $row = mysql_fetch_array( $res ) )
 {
-  if( $row[id] != $_SESSION[user][id] )
-    echo "<option value=\"{$row[id]}\">" . field( $row[name] ) . "</option>\n";
+  if( $row['id'] != $_SESSION['user']['id'] )
+    echo "<option value=\"{$row['id']}\">" . field( $row['name'] ) . "</option>\n";
 }
 /********************************************************** PHP */?>
 </select>&nbsp;&nbsp;
@@ -290,7 +290,7 @@ while( $row = mysql_fetch_array( $res ) )
 <?php /************************************************************/
 $res = mysql_query( "SELECT id, name FROM {$pre}dept WHERE ( id != '0' ) ORDER BY name" );
 while( $row = mysql_fetch_array( $res ) )
-  echo "<option value=\"{$row[id]}\">" . field( $row[name] ) . "</option>\n";
+  echo "<option value=\"{$row['id']}\">" . field( $row['name'] ) . "</option>\n";
 /********************************************************** PHP */?>
 </select>
 </td>
@@ -299,8 +299,8 @@ while( $row = mysql_fetch_array( $res ) )
 </td>
 </tr>
 <tr><td colspan="2"><br /></td></tr>
-<tr><td width="200" align="right"><div class="normal">Subject:<font color="#FF0000">*</font></div></td><td><input type="text" name="subject" value="<?php echo field( $_POST[subject] ) ?>" size="30" /></td></tr>
-<tr><td width="200" align="right"><div class="normal">Message:<font color="#FF0000">*</font></div></td><td><?php if( $data[tags] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?><textarea name="message" rows="8" cols="45"><?php echo field( $_POST[message] ) ?></textarea></td></tr>
+<tr><td width="200" align="right"><div class="normal">Subject:<font color="#FF0000">*</font></div></td><td><input type="text" name="subject" value="<?php echo field( $_POST['subject'] ) ?>" size="30" /></td></tr>
+<tr><td width="200" align="right"><div class="normal">Message:<font color="#FF0000">*</font></div></td><td><?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?><textarea name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ) ?></textarea></td></tr>
 <td>
 <tr><td></td><td><div class="buttons">
     <button type="submit" class="positive">Send Message</button>

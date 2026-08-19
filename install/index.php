@@ -110,7 +110,7 @@ if (file_exists('../include/settings.php'))
 	$handle = fopen('../include/settings.php', 'w');
 	
 $source = array (
-"<? \n",
+"<?php \n",
 "$","db_name = 'databasename';	// The name of the database \n",
 "$","db_user = 'username'; 	// MySQL username \n",		
 "$","db_password = 'passwords';	// MySQL Password \n",	

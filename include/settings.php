@@ -1,4 +1,4 @@
-<? 
+<?php 
 $db_name = 'lynxhd_demo';	// The name of the database 
 $db_user = 'lynxhd_admin'; 	// MySQL lynxadmin 
 $db_password = 'admin';	// MySQL Password 

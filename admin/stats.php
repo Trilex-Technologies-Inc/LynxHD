@@ -18,7 +18,7 @@ include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_STATS;
 
-if( $_SESSION[login_type] == $LOGIN_INVALID )
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
 include "./include/header.php";

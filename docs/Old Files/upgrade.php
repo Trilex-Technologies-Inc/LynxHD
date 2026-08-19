@@ -12,7 +12,7 @@ $res = mysql_query( "SHOW FIELDS FROM {$pre}post" );
 while( $row = mysql_fetch_array( $res ) )
 {
   // Modify ticket_id column - change to INT (was VARCHAR)
-  if( $row[Field] == "ticket_id" && strstr( $row[Type], "varchar" ) )
+  if( $row['Field'] == "ticket_id" && strstr( $row['Type'], "varchar" ) )
   {
     mysql_query( "ALTER TABLE {$pre}post CHANGE ticket_id ticket_id INT NOT NULL default '0'" );
     echo "Changing ticket_id field from post table... done (1.3-1.31)<br>";
@@ -70,17 +70,17 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}survey" ) )
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_ticket_created' )" ) ) )
 {
   // Add email message for new ticket creation
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your support ticket has been created and successfully dispatched to the \$department\n" .
           "department.  Here is the information you will need to access your ticket:\n\n" .
           "Ticket ID: \$ticket\n" .
           "Email: \$email\n" .
-          "Link to view ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_VIEW]}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
+          "Link to view ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_VIEW']}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
           "\$autoreply" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_created', '', '$data' )" );
   $data = "\$ticket - New Ticket Created";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_created_subject', '', '$data' )" );
@@ -89,19 +89,19 @@ if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'e
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_ticket_notify' )" ) ) )
 {
   // Add email message for reply to ticket
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your ticket concerning \'\$subject\' has been responded to.  You can view\n" .
           "this response (and reply to it if necessary) using the information or link below.\n\n" .
           "Ticket ID: \$ticket\n" .
           "Email: \$email\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_VIEW]}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_VIEW']}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
           "Here is the response made to your ticket.  Please do not reply to this email directly, use the link above\n" .
           "to reply.\n\n" .
           "\$message\n\n" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_notify', '', '$data' )" );
   $data = "\$ticket - Reply To Your Ticket";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_notify_subject', '', '$data' )" );
@@ -110,15 +110,15 @@ if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'e
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_ticket_survey' )" ) ) )
 {
   // Add email message for reply to ticket
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your ticket concerning \'\$subject\' has been closed.  Please take a moment to complete\n" .
           "a short survey that will help us to serve you better in the future.\n\n" .
-          "Link to survey: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_SURVEY]}?id={\$ticket}&email={\$email}\n\n" .
+          "Link to survey: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_SURVEY']}?id={\$ticket}&email={\$email}\n\n" .
           "We appreciate your time!\n\n" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_survey', '', '$data' )" );
   $data = "\$ticket - Please Survey Our Support";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_survey_subject', '', '$data' )" );
@@ -151,12 +151,12 @@ if( !mysql_query( "SELECT COUNT(sms) FROM {$pre}user" ) )
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_notify_reply' )" ) ) )
 {
   // Add email message for notification when a ticket is replied to
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "One of the tickets in which you have posted has been replied to by the customer.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" . 
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" . 
           "Reply contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_reply', '', '$data' )" );
@@ -167,12 +167,12 @@ if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'e
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_notify_create' )" ) ) )
 {
   // Add email message for notification when a ticket is created
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A new ticket has been created in one of the departments you have been assigned to.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" .
           "Ticket contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_create', '', '$data' )" );
@@ -183,12 +183,12 @@ if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'e
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_notifysms_reply' )" ) ) )
 {
   // Add email message for notification when a ticket is replied to (SMS)
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "One of the tickets in which you have posted has been replied to by the customer.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" . 
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" . 
           "Reply contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_reply', '', '$data' )" );
@@ -199,12 +199,12 @@ if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'e
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_notifysms_create' )" ) ) )
 {
   // Add email message for notification when a ticket is created (SMS)
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A new ticket has been created in one of the departments you have been assigned to.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" .
           "Ticket contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_create', '', '$data' )" );
@@ -223,10 +223,10 @@ if( !mysql_query( "SELECT COUNT(lastpost) FROM {$pre}ticket" ) )
   $res = mysql_query( "SELECT id FROM {$pre}ticket" );
   while( $row = mysql_fetch_array( $res ) )
   {
-    $res_post = mysql_query( "SELECT user_id FROM {$pre}post WHERE ( ticket_id = '{$row[id]}' ) ORDER BY date DESC LIMIT 1" );
+    $res_post = mysql_query( "SELECT user_id FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date DESC LIMIT 1" );
     $row_post = mysql_fetch_array( $res_post );
 
-    mysql_query( "UPDATE {$pre}ticket SET lastpost = '{$row_post[user_id]}' WHERE ( id = '{$row[id]}' )" );
+    mysql_query( "UPDATE {$pre}ticket SET lastpost = '{$row_post['user_id']}' WHERE ( id = '{$row['id']}' )" );
   }
 
   echo "Adding lastpost field to ticket table... done (2.1-2.11)<br>";
@@ -257,7 +257,7 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}message" ) )
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_ticket_lookup' )" ) ) )
 {
   // Add email message for ticket lookup
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "Here are your all of your tickets for the help desk.  The most recent tickets are shown first:\n\n" .
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_lookup', '', '$data' )" );
@@ -273,7 +273,7 @@ if( !mysql_query( "SELECT COUNT(sortnum) FROM {$pre}dept" ) )
   $i = 0;
   while( $row = mysql_fetch_array( $res ) )
   {
-    mysql_query( "UPDATE {$pre}dept SET sortnum = '$i' WHERE ( id = '{$row[id]}' )" );
+    mysql_query( "UPDATE {$pre}dept SET sortnum = '$i' WHERE ( id = '{$row['id']}' )" );
     $i++;
   }
 
@@ -296,11 +296,11 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}field" ) )
 if( !mysql_num_rows( mysql_query( "SELECT * FROM {$pre}options WHERE ( name = 'email_ticket_flagged' )" ) ) )
 {
   // Add email message for ticket lookup
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A ticket has been flagged to you (and possibly other staff):\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n";
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_flagged', '', '$data' )" );
   $data = "Help Desk Notification - Flagged Ticket";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_flagged_subject', '', '$data' )" );
@@ -314,7 +314,7 @@ if( !mysql_query( "SELECT COUNT(pwkey) FROM {$pre}user" ) )
 {
   $res = mysql_query( "SELECT * FROM {$pre}user" );
   while( $row = mysql_fetch_array( $res ) )
-    mysql_query( "UPDATE {$pre}user SET password = '" . crypt( $row[password], $ENCRYPT_KEY ) . "' WHERE ( id = '{$row[id]}' )" );
+    mysql_query( "UPDATE {$pre}user SET password = '" . crypt( $row['password'], $ENCRYPT_KEY ) . "' WHERE ( id = '{$row['id']}' )" );
 
   mysql_query( "ALTER TABLE {$pre}user ADD pwkey varchar(255) NOT NULL default ''" );
   echo "Adding password key field to user table... done (2.31-2.4)<br>";

@@ -18,7 +18,7 @@ include "./include/include.php";
 
 $HD_CURPAGE = $HD_URL_MESSAGES;
 
-$_GET[results] = 10;
+$_GET['results'] = 10;
 
 $rows_query = "SELECT COUNT(*) FROM {$pre}message WHERE ( user_id = '2' )";
 
@@ -26,10 +26,10 @@ $query = "SELECT ticket.*, message.viewed FROM {$pre}message AS message, {$pre}t
 
 $results = get_row_count( $rows_query );
 
-if( !isset( $_GET[offset] ) || $_GET[offset] < 0 || $_GET[offset] >= $results )
-  $_GET[offset] = 0;
+if( !isset( $_GET['offset'] ) || $_GET['offset'] < 0 || $_GET['offset'] >= $results )
+  $_GET['offset'] = 0;
 
-$query .= " LIMIT {$_GET[offset]},{$_GET[results]}";
+$query .= " LIMIT {$_GET['offset']},{$_GET['results']}";
 
 include "./include/header.php";
 /********************************************************** PHP */?>
@@ -41,36 +41,36 @@ include "./include/header.php";
 $res = mysql_query( $query );
 while( $row = mysql_fetch_array( $res ) )
 {
-  $res_post_user = mysql_query( "SELECT user_id, private, message FROM {$pre}post WHERE ( ticket_id = '{$row[id]}' ) ORDER BY date DESC LIMIT 1" );
+  $res_post_user = mysql_query( "SELECT user_id, private, message FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date DESC LIMIT 1" );
   $row_post_user = mysql_fetch_array( $res_post_user );
 
-  $res_staff_user = mysql_query( "SELECT name FROM {$pre}user WHERE ( id = '{$row_post_user[user_id]}' )" );
+  $res_staff_user = mysql_query( "SELECT name FROM {$pre}user WHERE ( id = '{$row_post_user['user_id']}' )" );
   $row_staff_user = mysql_fetch_array( $res_staff_user );
   
-  if( $row_post_user[user_id] == $_SESSION[user][id] )
-    $user_info = "<b>" . $row_staff_user[name] . "</b>";
+  if( $row_post_user['user_id'] == $_SESSION['user']['id'] )
+    $user_info = "<b>" . $row_staff_user['name'] . "</b>";
   else
-    $user_info = $row_staff_user[name]; 
+    $user_info = $row_staff_user['name']; 
   
-  $res_post = mysql_query( "SELECT COUNT(*) FROM {$pre}post WHERE ( ticket_id = '{$row[id]}' )" );
+  $res_post = mysql_query( "SELECT COUNT(*) FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' )" );
   $row_post = mysql_fetch_array( $res_post );
 
   $bgcolor = ($bgcolor == "#DDDDDD") ? "#EEEEEE" : "#DDDDDD";
   echo "<tr bgcolor=\"$bgcolor\">";
   
-  if( $row[viewed] )
+  if( $row['viewed'] )
     $image = "./images/mail.png";
   else
     $image = "./images/mail-response.png";
 
 
-  echo "<td><input type=\"checkbox\" name=\"{$row[id]}\" /></td>";
-  echo "<td><div class=\"normal\"><a href=\"{$HD_URL_ANNOUNVIEW}?cmd=view&id={$row[ticket_id]}\">{$row[ticket_id]}</a></div></td>";
-  echo "<td><div class=\"normal\"><img src=\"{$image}\" /> <a href=\"{$HD_URL_ANNOUNVIEW}?cmd=view&id={$row[ticket_id]}\">" . field( $row[subject] ) . "</a></div></td>";
+  echo "<td><input type=\"checkbox\" name=\"{$row['id']}\" /></td>";
+  echo "<td><div class=\"normal\"><a href=\"{$HD_URL_ANNOUNVIEW}?cmd=view&id={$row['ticket_id']}\">{$row['ticket_id']}</a></div></td>";
+  echo "<td><div class=\"normal\"><img src=\"{$image}\" /> <a href=\"{$HD_URL_ANNOUNVIEW}?cmd=view&id={$row['ticket_id']}\">" . field( $row['subject'] ) . "</a></div></td>";
 
   
 
-  $lastactivity = time( ) - $row[lastactivity];
+  $lastactivity = time( ) - $row['lastactivity'];
   if( $lastactivity > 86400 )
   {
     if( (int)($lastactivity / 86400 ) <= 1 )

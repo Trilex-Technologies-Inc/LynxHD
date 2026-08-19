@@ -18,58 +18,58 @@ include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_REPLIESVIEW;
 
-if( $_SESSION[login_type] == $LOGIN_INVALID )
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
-$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION[user][id]}' && dept_id = '0' && admin = '1' )" );
+$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' && admin = '1' )" );
 
-if( isset( $_GET[cmd] ) )
-  $_POST[cmd] = $_GET[cmd];
+if( isset( $_GET['cmd'] ) )
+  $_POST['cmd'] = $_GET['cmd'];
 
-if( $_POST[cmd] == "add" )
+if( $_POST['cmd'] == "add" )
 {
-  $priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION[user][id]}' && dept_id = '{$_GET[dept_id]}' && admin = '1' )" );
+  $priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '{$_GET['dept_id']}' && admin = '1' )" );
   if( $priv || $global_priv )
   {
-    $_POST[phrase] = trim( $_POST[phrase] );
+    $_POST['phrase'] = trim( $_POST['phrase'] );
   
-    if( $_POST[phrase] == "" )
-      $exists = get_row_count( "SELECT COUNT(id) FROM {$pre}reply WHERE ( dept_id = '{$_POST[dept_id]}' )" );
+    if( $_POST['phrase'] == "" )
+      $exists = get_row_count( "SELECT COUNT(id) FROM {$pre}reply WHERE ( dept_id = '{$_POST['dept_id']}' )" );
     else
-      $exists = get_row_count( "SELECT COUNT(id) FROM {$pre}reply WHERE ( dept_id = '{$_POST[dept_id]}' && phrase = '{$_POST[phrase]}' )" );
+      $exists = get_row_count( "SELECT COUNT(id) FROM {$pre}reply WHERE ( dept_id = '{$_POST['dept_id']}' && phrase = '{$_POST['phrase']}' )" );
 
     if( $exists )
       $msg = "<div class=\"errorbox\">An auto-reply assigned to that department with that specific phrase already exists.  If you left the phrase blank (which creates a reply that will be used with all tickets), you must make sure there are no other phrases for this department.</div><br />";
     else
     {
-      mysql_query( "INSERT INTO {$pre}reply ( dept_id, reply, phrase ) VALUES ( '{$_POST[dept_id]}', '{$_POST[reply]}', '{$_POST[phrase]}' )" );
+      mysql_query( "INSERT INTO {$pre}reply ( dept_id, reply, phrase ) VALUES ( '{$_POST['dept_id']}', '{$_POST['reply']}', '{$_POST['phrase']}' )" );
       Header( "Location: $HD_URL_REPLIES" );
     }
   }
 }
-else if( $_POST[cmd] == "edit" )
+else if( $_POST['cmd'] == "edit" )
 {
-  $priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION[user][id]}' && dept_id = '{$_GET[dept_id]}' && admin = '1' )" );
-  if( !isset( $_POST[dept_id] ) )
+  $priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '{$_GET['dept_id']}' && admin = '1' )" );
+  if( !isset( $_POST['dept_id'] ) )
   {
-    $res = mysql_query( "SELECT * FROM {$pre}reply WHERE ( id = '{$_GET[id]}' )" );
+    $res = mysql_query( "SELECT * FROM {$pre}reply WHERE ( id = '{$_GET['id']}' )" );
     $row = mysql_fetch_array( $res );
 
-    if( $row && isset( $_GET[id] ) )
+    if( $row && isset( $_GET['id'] ) )
     {
       while( list( $key, $val ) = each( $row ) )
         $_POST[$key] = $val;
 
-      $_POST[id] = $_GET[id];
+      $_POST['id'] = $_GET['id'];
     }
     else
-      $_POST[cmd] == "add";
+      $_POST['cmd'] == "add";
   }
   else if( $global_priv || $priv )
   {
-    $_POST[phrase] = trim( $_POST[phrase] );
+    $_POST['phrase'] = trim( $_POST['phrase'] );
 
-    mysql_query( "UPDATE {$pre}reply SET dept_id = '{$_POST[dept_id]}', reply = '{$_POST[reply]}', phrase = '{$_POST[phrase]}' WHERE ( id = '{$_POST[id]}' )" );
+    mysql_query( "UPDATE {$pre}reply SET dept_id = '{$_POST['dept_id']}', reply = '{$_POST['reply']}', phrase = '{$_POST['phrase']}' WHERE ( id = '{$_POST['id']}' )" );
     Header( "Location: $HD_URL_REPLIES" );
   }
 }
@@ -82,10 +82,10 @@ include "./include/header.php";
 <table width="100%" bgcolor="#99CCFF" border="0" cellspacing="1" cellpadding="4">
 <form action="<?php echo $HD_CURPAGE ?>" method="post">
 <?php /************************************************************/
-if( $_POST[cmd] == "edit" )
+if( $_POST['cmd'] == "edit" )
 {
   echo "<input type=\"hidden\" name=\"cmd\" value=\"edit\" />";
-  echo "<input type=\"hidden\" name=\"id\" value=\"{$_POST[id]}\">";
+  echo "<input type=\"hidden\" name=\"id\" value=\"{$_POST['id']}\">";
 }
 else
   echo "<input type=\"hidden\" name=\"cmd\" value=\"add\" />";
@@ -109,12 +109,12 @@ if( $global_priv || $priv )
 echo "<select name=\"dept_id\">";
 
 if( !$global_priv )
-  $res = mysql_query( "SELECT dept.name, dept.id FROM {$pre}dept AS dept, {$pre}privilege AS priv WHERE ( priv.user_id = '{$_SESSION[user][id]}' && priv.admin = '1' && priv.dept_id = dept.id )" );
+  $res = mysql_query( "SELECT dept.name, dept.id FROM {$pre}dept AS dept, {$pre}privilege AS priv WHERE ( priv.user_id = '{$_SESSION['user']['id']}' && priv.admin = '1' && priv.dept_id = dept.id )" );
 else
   $res = mysql_query( "SELECT name, id FROM {$pre}dept" );
   
 while( $row = mysql_fetch_array( $res ) )
-  echo "<option value=\"{$row[id]}\"" . (($row[id] == $_POST[dept_id]) ? " selected" : "") . ">" . field( $row[name] ) . "</option>\n";
+  echo "<option value=\"{$row['id']}\"" . (($row['id'] == $_POST['dept_id']) ? " selected" : "") . ">" . field( $row['name'] ) . "</option>\n";
 
 echo "</select>";
 /********************************************************** PHP */?>
@@ -132,7 +132,7 @@ echo "</select>";
     </td></tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Message:&nbsp;</div></td>
-      <td><textarea name="reply" rows="5" cols="40"><?php echo field( $_POST[reply] ) ?></textarea></td>
+      <td><textarea name="reply" rows="5" cols="40"><?php echo field( $_POST['reply'] ) ?></textarea></td>
     </tr>
     <tr><td colspan="2" align="center"><img src="./images/blank.gif" width="1" height="12" /><br />
     <table width="500" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF"><tr><td>
@@ -144,7 +144,7 @@ echo "</select>";
     </td></tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Key Phrase:&nbsp;</div></td>
-      <td><input type="text" name="phrase" size="30" value="<?php echo field( $_POST[phrase] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" /></td>
+      <td><input type="text" name="phrase" size="30" value="<?php echo field( $_POST['phrase'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" /></td>
     </tr>
 <?php /************************************************************/
 if( $global_priv || $priv )

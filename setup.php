@@ -70,60 +70,60 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'survey1', '1', 'Overall Support Rating');" );
 
   // Add email message for new ticket creation
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your support ticket has been created and successfully dispatched to the \$department\n" .
           "department.  Here is the information you will need to access your ticket:\n\n" .
           "Ticket ID: \$ticket\n" .
           "Email: \$email\n" .
-          "Link to view ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_VIEW]}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
+          "Link to view ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_VIEW']}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
           "\$autoreply" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_created', '', '$data' )" );
   $data = "\$ticket - New Ticket Created";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_created_subject', '', '$data' )" );
 
   // Add email message for reply to ticket
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your ticket concerning \'\$subject\' has been responded to.  You can view\n" .
           "this response (and reply to it if necessary) using the information or link below.\n\n" .
           "Ticket ID: \$ticket\n" .
           "Email: \$email\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_VIEW]}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_VIEW']}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
           "Here is the response made to your ticket.  Please do not reply to this email directly, use the link above\n" .
           "to reply.\n\n" .
           "\$message\n\n" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_notify', '', '$data' )" );
   $data = "\$ticket - Reply To Your Ticket";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_notify_subject', '', '$data' )" );
 
   // Add email message for surveys
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your ticket concerning \'\$subject\' has been closed.  Please take a moment to complete\n" .
           "a short survey that will help us to serve you better in the future.\n\n" .
-          "Link to survey: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_SURVEY]}?id={\$ticket}&email={\$email}\n\n" .
+          "Link to survey: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_SURVEY']}?id={\$ticket}&email={\$email}\n\n" .
           "We appreciate your time!\n\n" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_survey', '', '$data' )" );
   $data = "\$ticket - Please Survey Our Support";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_survey_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is replied to
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "One of the tickets in which you have posted has been replied to by the customer.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" . 
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" . 
           "Reply contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_reply', '', '$data' )" );
@@ -131,12 +131,12 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_reply_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is created
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A new ticket has been created in one of the departments you have been assigned to.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" .
           "Ticket contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_create', '', '$data' )" );
@@ -144,12 +144,12 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_create_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is replied to (SMS)
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "One of the tickets in which you have posted has been replied to by the customer.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" . 
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" . 
           "Reply contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_reply', '', '$data' )" );
@@ -157,12 +157,12 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_reply_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is created (SMS)
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A new ticket has been created in one of the departments you have been assigned to.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" .
           "Ticket contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_create', '', '$data' )" );
@@ -170,7 +170,7 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_create_subject', '', '$data' )" );
 
   // Add email message for ticket lookup
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "Here are your all of your tickets for the help desk.  The most recent tickets are shown first:\n\n";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_lookup', '', '$data' )" );
@@ -178,11 +178,11 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_lookup_subject', '', '$data' )" );
 
   // Add email message for ticket lookup
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A ticket has been flagged to you (and possibly other staff):\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n";
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_flagged', '', '$data' )" );
   $data = "Help Desk Notification - Flagged Ticket";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_flagged_subject', '', '$data' )" );
@@ -210,14 +210,14 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}survey" ) )
 
 $admin_exists = get_row_count( "SELECT COUNT(user.id) FROM {$pre}user AS user, {$pre}privilege AS privilege WHERE ( privilege.dept_id = '0' && privilege.admin = '1' && privilege.user_id = user.id )" );
 
-if( $_POST[cmd] == "admin" )
+if( $_POST['cmd'] == "admin" )
 {
-  $already_exist = get_row_count( "SELECT COUNT(user.id) FROM {$pre}user AS user WHERE ( user.email = '$_POST[email]' )" );
+  $already_exist = get_row_count( "SELECT COUNT(user.id) FROM {$pre}user AS user WHERE ( user.email = '{$_POST['email']}' )" );
   
-  if( trim( $_POST[name] ) == "" ||
-      trim( $_POST[email] ) == "" ||
-      trim( $_POST[password1] ) == "" ||
-      $_POST[password1] != $_POST[password2] ||
+  if( trim( $_POST['name'] ) == "" ||
+      trim( $_POST['email'] ) == "" ||
+      trim( $_POST['password1'] ) == "" ||
+      $_POST['password1'] != $_POST['password2'] ||
       $already_exist )
   {
     $errors = 1;
@@ -227,7 +227,7 @@ if( $_POST[cmd] == "admin" )
   {
     if( !$admin_exists )
     {
-      mysql_query( "INSERT INTO {$pre}user ( name, email, password, admin, date ) VALUES ( '{$_POST[name]}', '{$_POST[email]}', '" . crypt( $_POST[password1], $ENCRYPT_KEY ) . "', '1', '" . time( ) . "' )" );
+      mysql_query( "INSERT INTO {$pre}user ( name, email, password, admin, date ) VALUES ( '{$_POST['name']}', '{$_POST['email']}', '" . crypt( $_POST['password1'], $ENCRYPT_KEY ) . "', '1', '" . time( ) . "' )" );
 
       $id = mysql_insert_id( );
       mysql_query( "INSERT INTO {$pre}privilege ( user_id, dept_id, admin ) VALUES ( '$id', '0', '1' )" );
@@ -258,8 +258,8 @@ if( !$admin_exists )
 <table>
 <form action="setup.php" method="post">
   <input type="hidden" name="cmd" value="admin" /> 
-  <tr><td><label for="name">Name: </td><td><input type="text" name="name" size="30" value="<?php echo field( $_POST[name] ) ?>" /></label></td></tr>
-  <tr><td><label for="email">Email: </td><td><input type="text" name="email" size="30" value="<?php echo field( $_POST[email] ) ?>" /></label></td></tr>
+  <tr><td><label for="name">Name: </td><td><input type="text" name="name" size="30" value="<?php echo field( $_POST['name'] ) ?>" /></label></td></tr>
+  <tr><td><label for="email">Email: </td><td><input type="text" name="email" size="30" value="<?php echo field( $_POST['email'] ) ?>" /></label></td></tr>
   <tr><td><label for="password1">Password: </td><td><input type="password" name="password1" size="30" /></label></td></tr>
   <tr><td><label for="password2">Password Again: </td><td><input type="password" name="password2" size="30" /></label></td></tr>
   <tr><td><br /><input type="submit" value="Create Account" /></td></tr>

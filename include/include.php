@@ -14,6 +14,7 @@
 // -----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////
 include "./lang/language.php"; // Language pack file
+require_once __DIR__ . "/mysql-compat.php";
 
 $website_name = "LynxHD";
 $script_name = "";
@@ -148,28 +149,20 @@ $CODETO = array(
 );
 
 $version = phpversion( );
-if( $version[0] < 3 || ($version[0] == 4 && $version[2] < 1) )
+if( version_compare( $version, '8.0.0', '<' ) )
 {
-  echo "You are running version $version of PHP.  The Help Desk requires at least version 4.1.0.  Please ask your systems administrator to install the latest version of PHP.";
+  echo "You are running version $version of PHP. The Help Desk requires PHP 8.0.0 or newer.";
   exit;
 }
 
 $pre = $db_prefix;
 
-if( !get_magic_quotes_gpc( ) )
-{
-  if( isset( $_POST ) )
-    while( list( $key, $val ) = each( $_POST ) )
-      $_POST[$key] = addslashes( $val );
-  
-  if( isset( $_GET ) )
-    while( list( $key, $val ) = each( $_GET ) )
-      $_GET[$key] = addslashes( $val );
-
-  if( isset( $_COOKIE ) )
-    while( list( $key, $val ) = each( $_COOKIE ) )
-      $_COOKIE[$key] = addslashes( $val );
-}
+foreach( $_POST as $key => $val )
+  $_POST[$key] = is_array( $val ) ? $val : addslashes( $val );
+foreach( $_GET as $key => $val )
+  $_GET[$key] = is_array( $val ) ? $val : addslashes( $val );
+foreach( $_COOKIE as $key => $val )
+  $_COOKIE[$key] = is_array( $val ) ? $val : addslashes( $val );
 // If trying to connect...
 if( !mysql_connect( $db_host, $db_user, $db_password ) )
   die( "Could not connect to MySQL.  Please check the database settings in settings.php" );
@@ -179,7 +172,7 @@ mysql_select_db( $db_name );
 // If trying to install...
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}user" ) )
 {
-  if( strtoupper( basename( $_SERVER[PHP_SELF] ) ) != strtoupper( $HD_URL_SETUP ) )
+  if( strtoupper( basename( $_SERVER['PHP_SELF'] ) ) != strtoupper( $HD_URL_SETUP ) )
   {
     
 	//header("Location: /helpdesk/setup.php");
@@ -196,26 +189,26 @@ else // Otherwise, setup sessions and help desk path
   if( !headers_sent( ) )
     session_start( );
  
-  if( !isset( $_SESSION[user][password] ) && isset( $_COOKIE[iv_helpdesk_password] ) )
+  if( !isset( $_SESSION['user']['password'] ) && isset( $_COOKIE['iv_helpdesk_password'] ) )
   {
-    $res = mysql_query( "SELECT * FROM {$pre}user WHERE ( email = '{$_COOKIE[iv_helpdesk_login]}' && password = '{$_COOKIE[iv_helpdesk_password]}' )" );
+    $res = mysql_query( "SELECT * FROM {$pre}user WHERE ( email = '{$_COOKIE['iv_helpdesk_login']}' && password = '{$_COOKIE['iv_helpdesk_password']}' )" );
     $row = mysql_fetch_array( $res );
-    if( $row && ($row[notify] & $HD_NOTIFY_SAVELOGIN) )
+    if( $row && ($row['notify'] & $HD_NOTIFY_SAVELOGIN) )
     {
-      $_SESSION[login] = $row[email];
-      $_SESSION[password] = $row[password];
-      $_SESSION[login_type] = $LOGIN_USER;
-      $_SESSION[user] = $row;
-      $_SESSION[time] = time( );
+      $_SESSION['login'] = $row['email'];
+      $_SESSION['password'] = $row['password'];
+      $_SESSION['login_type'] = $LOGIN_USER;
+      $_SESSION['user'] = $row;
+      $_SESSION['time'] = time( );
     }
   }
 
-  if( !get_row_count( "SELECT COUNT(*) FROM {$pre}user WHERE ( id = '{$_SESSION[user][id]}' && password = '{$_SESSION[user][password]}' )" ) )
-    $_SESSION[login_type] = $LOGIN_INVALID;
-  else if( (time( ) - $_SESSION[time]) > 1800 )
-    $_SESSION[login_type] = $LOGIN_INVALID;
+  if( !get_row_count( "SELECT COUNT(*) FROM {$pre}user WHERE ( id = '{$_SESSION['user']['id']}' && password = '{$_SESSION['user']['password']}' )" ) )
+    $_SESSION['login_type'] = $LOGIN_INVALID;
+  else if( (time( ) - $_SESSION['time']) > 1800 )
+    $_SESSION['login_type'] = $LOGIN_INVALID;
   else
-    $_SESSION[time] = time( );
+    $_SESSION['time'] = time( );
 
   get_helpdesk_path( );
 }
@@ -308,21 +301,21 @@ function send_survey( $id )
     if( $repeat )     // Allow repeat surveys, so don't check for email, only same ticket
       $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}survey WHERE ( ticket_id = '$id' )" );
     else
-      $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}survey WHERE ( email = '{$row[email]}' || ticket_id = '$id' )" );
+      $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}survey WHERE ( email = '{$row['email']}' || ticket_id = '$id' )" );
 
     if( !$exists )
     {
       $options = array( "email", "url", "title", "emailheader", "emailfooter", "email_ticket_survey", "email_ticket_survey_subject" );
       $data = get_options( $options );
 
-      $subject = $row[subject];
-      $name = $row[name];
-      $ticket = $row[ticket_id];
-      $email = $row[email];
+      $subject = $row['subject'];
+      $name = $row['name'];
+      $ticket = $row['ticket_id'];
+      $email = $row['email'];
 
-      eval( "\$sub = \"{$data[email_ticket_survey_subject]}\";" );
-      eval( "\$mes = \"{$data[email_ticket_survey]}\";" );
-      mail( $row[email], $sub, $mes, "From: {$data[email]}" );
+      eval( "\$sub = \"{$data['email_ticket_survey_subject']}\";" );
+      eval( "\$mes = \"{$data['email_ticket_survey']}\";" );
+      mail( $row['email'], $sub, $mes, "From: {$data['email']}" );
     }
   }
 }

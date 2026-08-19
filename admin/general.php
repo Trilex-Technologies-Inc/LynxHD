@@ -18,16 +18,16 @@ include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_GENERAL;
 
-if( $_SESSION[login_type] == $LOGIN_INVALID )
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
-$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION[user][id]}' && dept_id = '0' )" );
+$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' )" );
 if( !$global_priv )
   Header( "Location: $HD_URL_BROWSE" );
 
 $options = array( "helpdeskurl", "url", "title", "email", "autoclose", "autodelete", "uploads", "banned_emails", "banned_ips", "floodcontrol", "tags", "cc" );
 
-if( isset( $_POST[helpdeskurl] ) )
+if( isset( $_POST['helpdeskurl'] ) )
 {
   for( $i = 0; $i < count( $options ); $i++ )
   {
@@ -66,13 +66,13 @@ include "./include/header.php";
 <li>
 	   <label class="desc">URL To Help Desk:</label>
     <div>
-    	<input class="field text medium" type="text" name="helpdeskurl" size="30" value="<?php echo field( $_POST[helpdeskurl] ) ?>" />
+    	<input class="field text medium" type="text" name="helpdeskurl" size="30" value="<?php echo field( $_POST['helpdeskurl'] ) ?>" />
    </div>
 </li>
      <li>
 	   <label class="desc">URL To Your Site:</label>
     <div>
-    	<input class="field text medium" type="text" name="url" size="30" value="<?php echo field( $_POST[url] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />  
+    	<input class="field text medium" type="text" name="url" size="30" value="<?php echo field( $_POST['url'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />  
 	</div>
 </li>
       <div class="clean-gray">The name of your help desk will appear in the title of web pages and
@@ -81,14 +81,14 @@ include "./include/header.php";
     <li>
 	   <label class="desc">Name Of Help Desk:</label>
     <div>
-    	<input class="field text medium" type="text" name="title" size="30" value="<?php echo field( $_POST[title] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />
+    	<input class="field text medium" type="text" name="title" size="30" value="<?php echo field( $_POST['title'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />
 	</div>
 </li>
       <div class="clean-gray">This will allow customers and staff to attach files to tickets.</div>
   <li>
 	   <label class="desc">Allow file attachments</label>
     <div>
-    	<input class="field checkbox" type="checkbox" name="uploads" <?php if( $_POST[uploads] ) echo "checked"  ?> />
+    	<input class="field checkbox" type="checkbox" name="uploads" <?php if( $_POST['uploads'] ) echo "checked"  ?> />
 	</div>
 </li>
     <h1>- Email Settings -</h1>   
@@ -99,7 +99,7 @@ include "./include/header.php";
    <li>
 	   <label class="desc">Email Of Help Desk:</label>
     <div>
-    	<input class="field text medium" type="text" name="email" size="30" value="<?php echo field( $_POST[email] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />
+    	<input class="field text medium" type="text" name="email" size="30" value="<?php echo field( $_POST['email'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />
 	</div>
 </li>
    <h1>- Auto-Ticket Management -</h1>    
@@ -108,13 +108,13 @@ include "./include/header.php";
     <li>
 	   <label class="desc">Close Tickets Inactive For:</label>
     <div>
-    	<input type="text" name="autoclose" size="5" value="<?php echo field( $_POST[autoclose] ) ?>" /> days
+    	<input type="text" name="autoclose" size="5" value="<?php echo field( $_POST['autoclose'] ) ?>" /> days
 	</div>
 </li>
     <li>
 	   <label class="desc">Delete Tickets Closed For:</label>
     <div>
-    	<input type="text" name="autodelete" size="5" value="<?php echo field( $_POST[autodelete] ) ?>" /> days
+    	<input type="text" name="autodelete" size="5" value="<?php echo field( $_POST['autodelete'] ) ?>" /> days
 	</div>
 </li>
    <h1>- Banning -</h1>
@@ -122,13 +122,13 @@ include "./include/header.php";
    <li>
 	   <label class="desc">Banned IPs:</label>
     <div>
-    	<textarea class="field textarea medium" name="banned_ips" rows="5" cols="40"><?php echo field( $_POST[banned_ips] ) ?></textarea>
+    	<textarea class="field textarea medium" name="banned_ips" rows="5" cols="40"><?php echo field( $_POST['banned_ips'] ) ?></textarea>
 	</div>
 </li>
    <li>
 	   <label class="desc">Banned Emails:</label>
     <div>
-    	<textarea class="field textarea medium" name="banned_emails" rows="5" cols="40"><?php echo field( $_POST[banned_emails] ) ?></textarea>
+    	<textarea class="field textarea medium" name="banned_emails" rows="5" cols="40"><?php echo field( $_POST['banned_emails'] ) ?></textarea>
 	</div>
 </li>
     <h1>- Flood Control -</h1>   
@@ -136,7 +136,7 @@ include "./include/header.php";
     <li>
 	   <label class="desc">Enable flood control</label>
     <div>
-	   	<input class="field checkbox" type="checkbox" name="floodcontrol" <?php if( $_POST[floodcontrol] ) echo "checked"  ?> />
+	   	<input class="field checkbox" type="checkbox" name="floodcontrol" <?php if( $_POST['floodcontrol'] ) echo "checked"  ?> />
 	</div>
 </li>
 
@@ -147,7 +147,7 @@ include "./include/header.php";
     <li>
 	   <label class="desc">Enable the use of message tags in posts.</label>
     <div>
-		<input class="field checkbox" type="checkbox" name="tags"<?php echo ($_POST[tags] ? " checked" : "") ?>  />
+		<input class="field checkbox" type="checkbox" name="tags"<?php echo ($_POST['tags'] ? " checked" : "") ?>  />
 	</div>
 </li>
     <h1>- Carbon Copies -</h1>
@@ -157,7 +157,7 @@ include "./include/header.php";
    <li>
 	   <label class="desc">Enable the use of carbon copies for customers.</label>
     <div>
-	   	<input class="field checkbox" type="checkbox" name="cc"<?php echo ($_POST[cc] ? " checked" : "") ?>  /> 
+	   	<input class="field checkbox" type="checkbox" name="cc"<?php echo ($_POST['cc'] ? " checked" : "") ?>  /> 
 	</div>
 </li>	
    <div class="buttons">

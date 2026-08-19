@@ -16,11 +16,15 @@
 					'.htpasswd',
 					'.DS_Store');
 			
-	error_reporting(E_ERROR);
+	error_reporting(E_ALL);
+	ini_set('display_errors', '0');
+	ini_set('log_errors', '1');
+	$files = array();
+	$leadon = '';
 	
 	// When downloading force it to actually download
 	// rather than just open it in the browser
-	if ($_GET['download']) {
+	if (!empty($_GET['download'])) {
 		$file = str_replace('/', '', $_GET['download']);
 		$file = str_replace('..', '', $file);
 
@@ -33,9 +37,9 @@
 		}
 	}
 	
-	$filepath = $_SERVER['SCRIPT_FILENAME'];
+	$filepath = __FILE__;
 	$scriptname = basename($filepath);
-	$readpath = str_replace($scriptname, "", $filepath);
+	$readpath = __DIR__ . DIRECTORY_SEPARATOR;
 	$handle = opendir($readpath);
 	
 	// If deleting
@@ -44,7 +48,7 @@
 	}
 	
 	// If uploading
-	if ($_FILES['file']) {
+	if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
 		$success = move_uploaded_file($_FILES['file']['tmp_name'], $_FILES['file']['name']);
 	}
 
@@ -61,11 +65,13 @@
 	closedir($handle); 
 
 	// Sort our files
-	@ksort($files, SORT_NUMERIC);
-	$files = @array_reverse($files);
-include "settings.php";
-include "include.php";
-include "header.php";
+	ksort($files, SORT_NUMERIC);
+	$files = array_reverse($files);
+	$leadon = $readpath;
+	chdir(dirname(__DIR__));
+include "./include/settings.php";
+include "./include/include.php";
+include "./include/header.php";
 ?>
 	
 
@@ -113,5 +119,5 @@ Also individual styling for the files layout.
 			
 			</div>
 <?php /************************************************************/
-include "footer.php";
+include "./include/footer.php";
 /********************************************************** PHP */?>
