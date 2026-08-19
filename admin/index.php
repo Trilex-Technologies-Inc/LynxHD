@@ -26,7 +26,7 @@ $do_redirect = 0;
 $options = array( "email", "url", "title" );
 $data = get_options( $options );
 
-if( $_POST['cmd'] == "login" )
+if( ($_POST['cmd'] ?? '') == "login" )
 {
   if( trim( $_POST['password'] ) == "" )
   {
@@ -116,7 +116,7 @@ if( $_POST['cmd'] == "login" )
     }
   }
 }
-else if( $_GET['cmd'] == "logout" )
+else if( ($_GET['cmd'] ?? '') == "logout" )
 {
   session_destroy( );
   unset( $_SESSION );
@@ -129,35 +129,32 @@ else
 }
 
 if( !isset( $_POST['email'] ) )
-  $_POST['email'] = $_COOKIE['iv_helpdesk_login'];
+  $_POST['email'] = $_COOKIE['iv_helpdesk_login'] ?? '';
 
 include "./include/header.php";
 /********************************************************** PHP */?>
-<div class="title"><?php echo $script_name ?> User Login</div><br /><?php echo $msg ?>
+<?php echo $msg ?>
 
 <?php /************************************************************/
 if( !$do_redirect )
 {
 /********************************************************** PHP */?>
-<table width="100%" border="0" cellpadding="5">
-<tr><td>
-  <div class="clean-gray">
-    Please enter your email address and password to login to your help desk account.<br />  
-	If you forgot your password click here to have it emailed to you.
+<p class="text-center text-muted mb-4">Sign in with your administrator account.</p>
+<form class="user" action="<?php echo $HD_CURPAGE ?>" method="post">
+  <input type="hidden" name="cmd" value="login">
+  <input type="hidden" name="redirect" value="<?php echo field(($_GET['redirect'] ?? '') !== '' ? $_GET['redirect'] : ($_POST['redirect'] ?? '')) ?>">
+  <div class="form-group">
+    <label class="sr-only" for="email">Email address</label>
+    <input class="form-control form-control-user" id="email" type="email" name="email" value="<?php echo field($_POST['email']) ?>" placeholder="Email address" required autocomplete="email">
   </div>
-</td></tr>
-</table>
-<br />
-
-<table>
-<form action="<?php echo $HD_CURPAGE ?>" method="post">
-  <input type="hidden" name="cmd" value="login" /> 
-  <input type="hidden" name="redirect" value="<?php echo ($_GET['redirect'] != "" ) ? $_GET['redirect'] : $_POST['redirect']; ?>">
-  <tr><td><label for="email">Email: </td><td><input type="text" name="email" size="30" value="<?= $_POST['email'] ?>" /></label></td></tr>
-  <tr><td><label for="password">Password: </td><td><input type="password" name="password" size="30" /></label></td></tr>
-  <tr><td><br /><input type="submit" value="Login" /></td></tr>
+  <div class="form-group">
+    <label class="sr-only" for="password">Password</label>
+    <input class="form-control form-control-user" id="password" type="password" name="password" placeholder="Password" autocomplete="current-password">
+  </div>
+  <button class="btn btn-primary btn-user btn-block" type="submit">Sign in</button>
+  <hr>
+  <p class="text-center small text-muted mb-0">Leave the password blank to request password recovery by email.</p>
 </form>
-</table>
 <?php /************************************************************/
 }
 /********************************************************** PHP */?>

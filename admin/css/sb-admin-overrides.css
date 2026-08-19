@@ -1,0 +1,153 @@
+body {
+  font-size: 0.9rem;
+}
+
+.admin-content {
+  overflow-x: auto;
+}
+
+.admin-content > .title {
+  margin-bottom: 1.25rem;
+  color: #5a5c69;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.admin-content table {
+  max-width: 100%;
+}
+
+.admin-content table[width="100%"] {
+  width: 100% !important;
+}
+
+.admin-content td,
+.admin-content th {
+  padding: 0.55rem;
+  vertical-align: middle;
+}
+
+.admin-content input[type="text"],
+.admin-content input[type="password"],
+.admin-content input[type="email"],
+.admin-content input[type="number"],
+.admin-content select,
+.admin-content textarea {
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #6e707e;
+}
+
+.admin-content input:focus,
+.admin-content select:focus,
+.admin-content textarea:focus {
+  border-color: #bac8f3;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
+}
+
+.admin-content input[type="submit"],
+.admin-content button,
+.admin-login-content input[type="submit"] {
+  padding: 0.5rem 1rem;
+  border: 1px solid #4e73df;
+  border-radius: 0.35rem;
+  background: #4e73df;
+  color: #fff;
+  font-weight: 600;
+}
+
+.normal {
+  color: #5a5c69;
+  font-size: 0.9rem;
+}
+
+.smallinfo,
+.smallinfowhite,
+.topinfo,
+.topinfofloat {
+  font-size: 0.8rem;
+}
+
+.tableheader,
+.tableheaderblack {
+  font-weight: 700;
+}
+
+.errorbox,
+.successbox,
+.clean-gray {
+  width: auto;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.35rem;
+}
+
+.errorbox {
+  border: 1px solid #f5c6cb;
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.successbox {
+  border: 1px solid #c3e6cb;
+  background: #d4edda;
+  color: #155724;
+}
+
+.clean-gray {
+  border: 1px solid #e3e6f0;
+  background: #f8f9fc;
+  color: #5a5c69;
+}
+
+#container {
+  max-width: none;
+  margin: 0 0 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #e3e6f0;
+  border-radius: 0.35rem;
+  background: #fff;
+}
+
+#container > h1 {
+  margin: -1.25rem -1.25rem 1.25rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #e3e6f0;
+  color: #4e73df;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.admin-avatar {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #eaecf4;
+  color: #4e73df;
+}
+
+.admin-login-content table {
+  width: 100%;
+}
+
+.admin-login-content td {
+  display: block;
+  padding: 0.25rem 0;
+}
+
+.admin-login-content input[type="text"],
+.admin-login-content input[type="password"] {
+  width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .admin-content {
+    padding-inline: 1rem;
+  }
+}
