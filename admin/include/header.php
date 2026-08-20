@@ -14,12 +14,12 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title><?php echo htmlspecialchars($website_name . ' ' . $script_name, ENT_QUOTES, 'UTF-8') ?></title>
+  <?php echo $EXTRA_HEADER ?? '' ?>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <link href="./vendor/sb-admin-2/css/sb-admin-2.min.css" rel="stylesheet">
   <link href="./css/form.css" rel="stylesheet">
   <link href="./css/buttons.css" rel="stylesheet">
   <link href="./css/sb-admin-overrides.css" rel="stylesheet">
-  <?php echo $EXTRA_HEADER ?? '' ?>
 </head>
 <body id="page-top" class="<?php echo $admin_logged_in ? '' : 'bg-gradient-primary' ?>">
 <?php if ($admin_logged_in): ?>

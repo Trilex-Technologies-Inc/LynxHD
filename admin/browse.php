@@ -168,152 +168,53 @@ mysql_query( "UPDATE {$pre}dept SET id = '0' WHERE ( name = 'Global (All Departm
 
 include "./include/header.php";
 /********************************************************** PHP */?>
-<div class="title">Browse Tickets</div><br /><?php echo $msg ?>
-<div id="container">
-	<h1>Search</h1>
-<table border="0" cellspacing="4" cellpadding="0">
-<form class"wufoo" action="<?php echo $HD_CURPAGE ?>" method="get">
-<tr><td>
-<div class="topinfo">Search:&nbsp;
-<input type="text" name="search" size="20" value="<?php echo field( $_GET['search'] ) ?>" />&nbsp;
-In:&nbsp;
-<select name="lookin">
-<option value="subject" <?php echo ($_GET['lookin'] == "subject") ? "selected" : "" ?>>Subject</option>
-<option value="message" <?php echo ($_GET['lookin'] == "message") ? "selected" : "" ?>>Posts</option>
-<option value="name" <?php echo ($_GET['lookin'] == "name") ? "selected" : "" ?>>Name</option>
-<option value="email" <?php echo ($_GET['lookin'] == "email") ? "selected" : "" ?>>Email</option>
-<?php /************************************************************/
-$res = mysql_query( "SELECT name, text FROM {$pre}options WHERE ( name LIKE 'custom%' )" );
-while( $row = mysql_fetch_array( $res ) )
-  echo "<option value=\"{$row['name']}\" " . (($_GET['lookin'] == $row['name']) ? "selected" : "") . ">" . field( $row['text'] ) . "</option>\n";
-/********************************************************** PHP */?>
-</select>&nbsp;
-Priority:&nbsp;
-<select name="priority">
-<option value="any" <?php echo ($_GET['priority'] == "any") ? "selected" : "" ?>>Any</option>
-<option value="low" <?php echo ($_GET['priority'] == "low") ? "selected" : "" ?>>Low</option>
-<option value="medium" <?php echo ($_GET['priority'] == "medium") ? "selected" : "" ?>>Medium</option>
-<option value="high" <?php echo ($_GET['priority'] == "high") ? "selected" : "" ?>>High</option>&nbsp;
-</select>
-Dept:
-<select name="department">
-<?php /************************************************************/
-if( $global_priv )
-  $res_dept = mysql_query( "SELECT name, id FROM {$pre}dept ORDER BY sortnum" );
-else
-  $res_dept = mysql_query( "SELECT dept.name, dept.id FROM {$pre}privilege AS priv, {$pre}dept AS dept WHERE ( priv.user_id = '{$_SESSION['user']['id']}' && priv.dept_id = dept.id )" );
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h1 class="h3 mb-1 text-gray-800">Browse tickets</h1>
+    <p class="mb-0 text-gray-600">Find, review, and manage support requests.</p>
+  </div>
+  <a class="btn btn-primary btn-sm shadow-sm mt-3 mt-sm-0" href="adminticket.php"><i class="fas fa-plus fa-sm mr-1"></i> New ticket</a>
+</div>
+<?php echo $msg ?>
 
-while( $row_dept = mysql_fetch_array( $res_dept ) )
-  echo "<option value=\"{$row_dept['id']}\" " . (($row_dept['id'] == $_GET['department']) ? "selected" : "") . ">{$row_dept['name']}</option>\n";
-/********************************************************** PHP */?>
-</select>
-</div>
-</td></tr>
-<tr><td>
-<div class="topinfo">
-<input type="checkbox" name="replies" <?php echo ($_GET['replies'] == "on") ? "checked" : "" ?>/> Only show tickets with new replies&nbsp;
-<input type="checkbox" name="closed" <?php echo ($_GET['closed'] == "on") ? "checked" : "" ?>/> Show closed tickets&nbsp;
-<input type="checkbox" name="mine" <?php echo ($_GET['mine'] == "on") ? "checked" : "" ?>/> Only show tickets I've posted in&nbsp;
-</div>
-</td></tr>
-<tr><td>
-<div class="topinfofloat">
-Order By:&nbsp;
-<select name="order">
-<option value="activity" <?php echo ($_GET['order'] == "activity") ? "selected" : "" ?>>Recent Activity (New to Old)</option>
-<option value="date" <?php echo ($_GET['order'] == "date") ? "selected" : "" ?>>Ticket Age (New to Old)</option>
-<option value="priority" <?php echo ($_GET['order'] == "priority") ? "selected" : "" ?>>Priority (High to Low)</option>
-<option value="activityrev" <?php echo ($_GET['order'] == "activityrev") ? "selected" : "" ?>>Recent Activity (Old to New)</option>
-<option value="daterev" <?php echo ($_GET['order'] == "daterev") ? "selected" : "" ?>>Ticket Age (Old to New)</option>
-<option value="priorityrev" <?php echo ($_GET['order'] == "priorityrev") ? "selected" : "" ?>>Priority (Low to High)</option>
-</select>&nbsp;
-Results:&nbsp;
-<input type="text" name="results" size="2" value="<?php if( isset( $_GET['results'] ) ) echo $_GET['results']; else echo "20" ?>" />&nbsp;
-<div class="buttons">
-    <button type="submit" class="buttons">
-        <img src="./images/ticket-search.png" /> Search Now 
-    </button>
-</div>
+<div class="card shadow-sm mb-4 browse-filters">
+  <div class="card-header py-3 d-flex align-items-center"><i class="fas fa-filter text-primary mr-2"></i><h2 class="h6 m-0 font-weight-bold text-primary">Filter tickets</h2></div>
+  <div class="card-body">
+    <form action="<?php echo field( $HD_CURPAGE ) ?>" method="get">
+      <div class="form-row">
+        <div class="form-group col-lg-4 col-md-6"><label for="ticket-search">Search</label><input id="ticket-search" class="form-control" type="search" name="search" value="<?php echo field( $_GET['search'] ) ?>" placeholder="Subject, requester, or message"></div>
+        <div class="form-group col-lg-2 col-md-6"><label for="ticket-lookin">Search in</label><select id="ticket-lookin" class="form-control" name="lookin">
+          <option value="subject" <?php echo ($_GET['lookin'] == "subject") ? "selected" : "" ?>>Subject</option><option value="message" <?php echo ($_GET['lookin'] == "message") ? "selected" : "" ?>>Posts</option><option value="name" <?php echo ($_GET['lookin'] == "name") ? "selected" : "" ?>>Name</option><option value="email" <?php echo ($_GET['lookin'] == "email") ? "selected" : "" ?>>Email</option>
+          <?php $res = mysql_query( "SELECT name, text FROM {$pre}options WHERE ( name LIKE 'custom%' )" ); while( $row = mysql_fetch_array( $res ) ) echo "<option value=\"" . field($row['name']) . "\" " . (($_GET['lookin'] == $row['name']) ? "selected" : "") . ">" . field( $row['text'] ) . "</option>\n"; ?>
+        </select></div>
+        <div class="form-group col-lg-2 col-md-4"><label for="ticket-priority">Priority</label><select id="ticket-priority" class="form-control" name="priority"><option value="any" <?php echo ($_GET['priority'] == "any") ? "selected" : "" ?>>Any priority</option><option value="low" <?php echo ($_GET['priority'] == "low") ? "selected" : "" ?>>Low</option><option value="medium" <?php echo ($_GET['priority'] == "medium") ? "selected" : "" ?>>Medium</option><option value="high" <?php echo ($_GET['priority'] == "high") ? "selected" : "" ?>>High</option></select></div>
+        <div class="form-group col-lg-2 col-md-4"><label for="ticket-department">Department</label><select id="ticket-department" class="form-control" name="department">
+          <?php if( $global_priv ) $res_dept = mysql_query( "SELECT name, id FROM {$pre}dept ORDER BY sortnum" ); else $res_dept = mysql_query( "SELECT dept.name, dept.id FROM {$pre}privilege AS priv, {$pre}dept AS dept WHERE ( priv.user_id = '{$_SESSION['user']['id']}' && priv.dept_id = dept.id )" ); while( $row_dept = mysql_fetch_array( $res_dept ) ) echo "<option value=\"" . (int)$row_dept['id'] . "\" " . (($row_dept['id'] == $_GET['department']) ? "selected" : "") . ">" . field($row_dept['name']) . "</option>\n"; ?>
+        </select></div>
+        <div class="form-group col-lg-2 col-md-4"><label for="ticket-results">Per page</label><input id="ticket-results" class="form-control" type="number" name="results" min="1" max="1000" value="<?php echo (int)$_GET['results'] ?>"></div>
+      </div>
+      <div class="form-row align-items-end">
+        <div class="form-group col-xl-5 col-lg-6"><label for="ticket-order">Sort by</label><select id="ticket-order" class="form-control" name="order"><option value="activity" <?php echo ($_GET['order'] == "activity") ? "selected" : "" ?>>Recent activity — newest first</option><option value="date" <?php echo ($_GET['order'] == "date") ? "selected" : "" ?>>Ticket age — newest first</option><option value="priority" <?php echo ($_GET['order'] == "priority") ? "selected" : "" ?>>Priority — high to low</option><option value="activityrev" <?php echo ($_GET['order'] == "activityrev") ? "selected" : "" ?>>Recent activity — oldest first</option><option value="daterev" <?php echo ($_GET['order'] == "daterev") ? "selected" : "" ?>>Ticket age — oldest first</option><option value="priorityrev" <?php echo ($_GET['order'] == "priorityrev") ? "selected" : "" ?>>Priority — low to high</option></select></div>
+        <div class="form-group col-xl-5 col-lg-6 browse-checks"><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="replies" name="replies" <?php echo ($_GET['replies'] == "on") ? "checked" : "" ?>><label class="custom-control-label" for="replies">New replies only</label></div><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="closed" name="closed" <?php echo ($_GET['closed'] == "on") ? "checked" : "" ?>><label class="custom-control-label" for="closed">Include closed</label></div><div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="mine" name="mine" <?php echo ($_GET['mine'] == "on") ? "checked" : "" ?>><label class="custom-control-label" for="mine">Tickets I've joined</label></div></div>
+        <div class="form-group col-xl-2 text-xl-right"><a class="btn btn-light mr-2" href="<?php echo field($HD_CURPAGE) ?>">Reset</a><button type="submit" class="btn btn-primary"><i class="fas fa-search mr-1"></i> Search</button></div>
+      </div>
+    </form>
+  </div>
 </div>
 
-</td></tr>
-</form>
-</table>
-</div>
-<img src="./images/blank.gif" width="1" height="5" /><br />
-
-
-
-<script name="JavaScript">
-  function checkall( )
-  {
-    var newval = document.tickets.all.checked;
-    for( i = 0; i < document.tickets.length; i++ )
-    {
-      e = document.tickets.elements[i];
-      if( e.type == 'checkbox' )
-        e.checked = newval;
-    }
-  }
-</script>
-<table align="center" border="0" cellspacing="10" cellpadding="0">
-<tr><td align="center">
-<div class="smallinfo">
-<img src="./images/mail-new.png" /> New Ticket&nbsp;&nbsp;
-<img src="./images/mail-newresponse.png" /> Has New Replies&nbsp;&nbsp;
-<img src="./images/mail.png" /> No New Replies&nbsp;&nbsp;
-<img src="./images/mail-closed.png" /> Closed/Held Ticket&nbsp;&nbsp;
-<img src="./images/mail-privatenote.png" /> Private Note&nbsp;&nbsp;
-<img src="./images/mail-flag.png" /> Flagged
-</div>
-</td></tr>
-</table>
-<form name="tickets" method="post">
-<input type="hidden" name="cmd" value="action" />
-<table width="100%" border="0" cellspacing="1" cellpadding="5" bgcolor="#3c91c7"><tr><td><div class="tableheader">
-<?php /************************************************************/
-if( $_GET['offset'] < 0 || $_GET['offset'] >= $results )
-  $_GET['offset'] = 0;
-
-if( $_GET['offset'] > 0 )
-{
-  $prevoffset = $_GET['offset'] - $_GET['results'];
-  if( $prevoffset < 0 )
-    $prevoffset = 0;
-}
-if( $_GET['offset'] < ($results - $_GET['results']) )
-  $nextoffset = $_GET['offset'] + $_GET['results'];
-
-$request = $_SERVER['QUERY_STRING'];
-
-if( isset( $prevoffset ) )
-{
-  if( !preg_match( "/offset=[0-9]*/i", $request ) )
-    $request .= "&offset={$prevoffset}";
-  else
-    $request = preg_replace( "/offset=[0-9]*/i", "offset={$prevoffset}", $request );
-
-  echo "<a href=\"{$CURPAGE}?{$request}\"><b>&lt;&lt;</b></a> - ";
-}
-echo "Browsing $results Ticket(s)";
-
-if( isset( $nextoffset ) )
-{
-  if( !preg_match( "/offset=[0-9]*/i", $request ) )
-    $request .= "&offset={$nextoffset}";
-  else
-    $request = preg_replace( "/offset=[0-9]*/i", "offset={$nextoffset}", $request );
-
-  echo " - <a href=\"{$CURPAGE}?{$request}\"><b>&gt;&gt;</b></a>";
-} 
-/********************************************************** PHP */?>
-</div></td></tr></table>
-<table width="100%" border="0" cellspacing="1" cellpadding="3">
-<tr bgcolor="#99CCFF"><td><input type="checkbox" name="all" onclick="checkall( );" /></td></td><td><div class="tableheaderblack">Ticket#</div></td><td><div class="tableheaderblack">Submitter</div></td><td width="40%"><div class="tableheaderblack">Subject</div></td><td width="15%"><div class="tableheaderblack">Department</div></td><td><div class="tableheaderblack">Priority</div></td><td><div class="tableheaderblack">Status</div></td><td><div class="tableheaderblack">Posts</div></td><td><div class="tableheaderblack">Last Activity</div></td><td><div class="tableheaderblack">Last Post</div></td></tr>
+<form name="tickets" method="post" id="ticket-list-form"><input type="hidden" name="cmd" value="action">
+<div class="card shadow-sm mb-4 browse-results">
+  <div class="card-header py-3 d-flex flex-wrap align-items-center justify-content-between">
+    <div><h2 class="h6 m-0 font-weight-bold text-primary">Tickets</h2><small class="text-muted"><?php echo number_format($results) ?> result<?php echo $results == 1 ? '' : 's' ?></small></div>
+    <div class="browse-legend text-muted mt-2 mt-sm-0"><span><img src="./images/mail-new.png" alt=""> New</span><span><img src="./images/mail-newresponse.png" alt=""> New reply</span><span><img src="./images/mail-closed.png" alt=""> Closed/held</span><span><img src="./images/mail-flag.png" alt=""> Flagged</span></div>
+  </div>
+  <div class="table-responsive"><table class="table table-hover mb-0 ticket-table"><thead><tr><th class="ticket-select"><input type="checkbox" id="select-all-tickets" aria-label="Select all tickets"></th><th>Ticket</th><th>Submitter</th><th>Subject</th><th>Department</th><th>Priority</th><th>Status</th><th class="text-center">Posts</th><th>Activity</th><th>Last post</th></tr></thead><tbody>
 <?php /************************************************************/
 $res = mysql_query( $query );
+$visible_rows = 0;
 while( $row = mysql_fetch_array( $res ) )
 {
+  $visible_rows++;
   $res_post_user = mysql_query( "SELECT user_id, private FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date DESC LIMIT 1" );
   $row_post_user = mysql_fetch_array( $res_post_user );
 
@@ -333,8 +234,7 @@ while( $row = mysql_fetch_array( $res ) )
   $res_post = mysql_query( "SELECT COUNT(*) FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' )" );
   $row_post = mysql_fetch_array( $res_post );
 
-  $bgcolor = ($bgcolor == "#E8EDFF") ? "#E8EDFF" : "#E8EDFF";
-  echo "<tr bgcolor=\"$bgcolor\">";
+  echo "<tr>";
   
   if( $row['status'] != $HD_STATUS_OPEN )
     $image = "./images/mail-closed.png";
@@ -347,82 +247,83 @@ while( $row = mysql_fetch_array( $res ) )
   else
     $image = "./images/mail.png";
 
-  echo "<td><input type=\"checkbox\" name=\"{$row['id']}\" /></td>";
-  echo "<td><div class=\"normal\"><span style=\"font-size: 8pt\"><a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">{$row['ticket_id']}</a></span></div></td>";
-  echo "<td><div class=\"normal\"><span style=\"font-size: 8pt\"><a href=\"mailto:{$row['email']}\">{$row['name']}</a></span></div></td>";
-  echo "<td><div class=\"normal\"><span style=\"font-size: 8pt\">" . (($row['flag'] == 0 || $row['flag'] == $_SESSION['user']['id']) ? "<img src=\"./images/mail-flag.png\" /> " : "") . "<img src=\"{$image}\" /> <a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field( $row['subject'] ) . "</a></span></div></td>";
+  echo "<td><input class=\"ticket-checkbox\" type=\"checkbox\" name=\"{$row['id']}\" aria-label=\"Select ticket " . field($row['ticket_id']) . "\"></td>";
+  echo "<td><a class=\"font-weight-bold text-nowrap\" href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field($row['ticket_id']) . "</a></td>";
+  echo "<td><a href=\"mailto:" . field($row['email']) . "\">" . field($row['name']) . "</a></td>";
+  echo "<td class=\"ticket-subject\">" . (($row['flag'] == 0 || $row['flag'] == $_SESSION['user']['id']) ? "<img src=\"./images/mail-flag.png\" alt=\"Flagged\" title=\"Flagged\"> " : "") . "<img src=\"{$image}\" alt=\"\"> <a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field( $row['subject'] ) . "</a></td>";
 
   $res_dept = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$row['dept_id']}' )" );
   $row_dept = mysql_fetch_array( $res_dept );
 
-  echo "<td><div class=\"normal\"><span style=\"font-size: 8pt\">" . field( $row_dept[0] ) . "</span></div></td>";
+  echo "<td>" . field( $row_dept[0] ) . "</td>";
 
   if( $row['priority'] == $PRIORITY_LOW )
-    $priority = "<center><img src=\"./images/bullet-green.png\"></center>";
+    $priority = "<span class=\"badge badge-success\">Low</span>";
   else if( $row['priority'] == $PRIORITY_MEDIUM )
-    $priority = "<center><img src=\"./images/bullet-orange.png\"></center>";
+    $priority = "<span class=\"badge badge-warning\">Medium</span>";
   else if( $row['priority'] == $PRIORITY_HIGH )
-    $priority = "<center><img src=\"./images/bullet-red.png\"></center>";
+    $priority = "<span class=\"badge badge-danger\">High</span>";
 
-  echo "<td><span style=\"font-size: 8pt\"><div class=\"normal\">$priority</span></div></td>";
+  echo "<td>$priority</td>";
 
   if( $row['status'] == $HD_STATUS_OPEN )
-    $status = "<b>Open</b>";
+    $status = "<span class=\"badge badge-primary\">Open</span>";
   else if( $row['status'] == $HD_STATUS_CLOSED )
-    $status = "Closed";
+    $status = "<span class=\"badge badge-secondary\">Closed</span>";
   else if( $row['status'] == $HD_STATUS_HELD )
-    $status = "Held";
+    $status = "<span class=\"badge badge-warning\">Held</span>";
 
-  echo "<td><div class=\"normal\"><span style=\"font-size: 8pt\">$status</span></div></td>";
+  echo "<td>$status</td>";
   
   if( $row_post[0] <= 0 )
     $replies = "<font color=\"#FF0000\"><b>0</b></font>";
   else
     $replies = $row_post[0];
 
-  echo "<td><div class=\"normal\"><center><span style=\"font-size: 8pt\">$replies</span></center></div></td>";
+  echo "<td class=\"text-center\">$replies</td>";
 
   $lastactivity = time( ) - $row['lastactivity'];
   if( $lastactivity > 86400 )
   {
     if( (int)($lastactivity / 86400 ) <= 1 )
-      $lastactivity = "<font color=\"#FF0000\"><b>" . (int)($lastactivity / 86400) . "d</b></font>";
+      $lastactivity = "<span class=\"text-danger font-weight-bold\">" . (int)($lastactivity / 86400) . "d</span>";
     else
       $lastactivity = (int)($lastactivity / 86400) . "d";
   }
   else if( $lastactivity > 3600 )
-    $lastactivity = "<font color=\"#FF0000\"><b>" . (int)($lastactivity / 3600) . "h</b></font>";
+    $lastactivity = "<span class=\"text-danger font-weight-bold\">" . (int)($lastactivity / 3600) . "h</span>";
   else
-    $lastactivity = "<font color=\"#FF0000\"><b>" . (int)($lastactivity / 60 ) . "m</b></font>";
+    $lastactivity = "<span class=\"text-danger font-weight-bold\">" . max(0, (int)($lastactivity / 60 )) . "m</span>";
 
-  echo "<td><div class=\"normal\"><center><span style=\"font-size: 8pt\">$lastactivity</span></center></div></td>";
-  echo "<td><div class=\"normal\"><span style=\"font-size: 8pt\">$user_info</span></div></td>";
+  echo "<td class=\"text-nowrap\">$lastactivity</td>";
+  echo "<td>$user_info</td>";
 
   echo "</tr>";
 }
+if (!$visible_rows) echo '<tr><td colspan="10"><div class="browse-empty"><i class="far fa-folder-open"></i><h3>No tickets found</h3><p>Try broadening your filters or reset the search.</p></div></td></tr>';
 /********************************************************** PHP */?>
-</table>
-<br />
-<div class="smallinfofloat">
-<select name="action">
-<option value="reply">Mass Reply</option>
-<option value="flag">Flag</option>
-<option value="survey">Survey</option>
-<option value="open">Open</option>
-<option value="close">Close</option>
-<option value="hold">Hold</option>
-<option value="delete">Delete</option>
-</select>
-the selected tickets&nbsp;&nbsp;
-<div class="buttons">
- <button type="submit" class="positive" onclick="if( document.tickets.action.options[document.tickets.action.selectedIndex].value == 'delete' ) { if(confirm('Are you sure you want to do this?')) document.tickets.submit( ); } else { document.tickets.submit( ); }"> 
-       <img src="./images/ticket-selectall.png" /> Save
-    </button>
-</div>
-</div>
-
-
-</form>
+</tbody></table></div>
+<?php
+$query_params = $_GET;
+$previous_url = $next_url = '';
+if ($_GET['offset'] > 0) { $query_params['offset'] = max(0, $_GET['offset'] - $_GET['results']); $previous_url = $HD_CURPAGE . '?' . http_build_query($query_params); }
+if ($_GET['offset'] < ($results - $_GET['results'])) { $query_params['offset'] = $_GET['offset'] + $_GET['results']; $next_url = $HD_CURPAGE . '?' . http_build_query($query_params); }
+?>
+<div class="card-footer d-flex flex-wrap align-items-center justify-content-between">
+  <div class="form-inline browse-actions"><label class="mr-2" for="bulk-action">With selected</label><select class="form-control form-control-sm mr-2" id="bulk-action" name="action"><option value="reply">Mass reply</option><option value="flag">Toggle flag</option><option value="survey">Send survey</option><option value="open">Mark open</option><option value="close">Mark closed</option><option value="hold">Put on hold</option><option value="delete">Delete</option></select><button type="submit" class="btn btn-primary btn-sm">Apply</button></div>
+  <nav class="mt-3 mt-md-0" aria-label="Ticket pages"><ul class="pagination pagination-sm mb-0"><li class="page-item <?php echo $previous_url ? '' : 'disabled' ?>"><a class="page-link" <?php echo $previous_url ? 'href="' . field($previous_url) . '"' : 'href="#" tabindex="-1" aria-disabled="true"' ?>><i class="fas fa-chevron-left mr-1"></i> Previous</a></li><li class="page-item disabled"><span class="page-link"><?php echo $results ? number_format($_GET['offset'] + 1) . '–' . number_format(min($_GET['offset'] + $_GET['results'], $results)) : '0' ?> of <?php echo number_format($results) ?></span></li><li class="page-item <?php echo $next_url ? '' : 'disabled' ?>"><a class="page-link" <?php echo $next_url ? 'href="' . field($next_url) . '"' : 'href="#" tabindex="-1" aria-disabled="true"' ?>>Next <i class="fas fa-chevron-right ml-1"></i></a></li></ul></nav>
+</div></div></form>
+<script>
+(function () {
+  var form = document.getElementById('ticket-list-form');
+  var selectAll = document.getElementById('select-all-tickets');
+  if (!form || !selectAll) return;
+  var boxes = Array.prototype.slice.call(form.querySelectorAll('.ticket-checkbox'));
+  selectAll.addEventListener('change', function () { boxes.forEach(function (box) { box.checked = selectAll.checked; }); });
+  boxes.forEach(function (box) { box.addEventListener('change', function () { selectAll.checked = boxes.length > 0 && boxes.every(function (item) { return item.checked; }); selectAll.indeterminate = !selectAll.checked && boxes.some(function (item) { return item.checked; }); }); });
+  form.addEventListener('submit', function (event) { var selected = boxes.some(function (box) { return box.checked; }); var action = form.querySelector('[name="action"]'); if (!selected) { event.preventDefault(); window.alert('Select at least one ticket first.'); return; } if (action && action.value === 'delete' && !window.confirm('Delete the selected tickets? This cannot be undone.')) event.preventDefault(); });
+}());
+</script>
 <?php /************************************************************/
 include "./include/footer.php";
 /********************************************************** PHP */?>
