@@ -36,9 +36,9 @@ if( isset( $_POST['name'] ) )
 {
   $error = 0;
 
-  if( trim( $_POST['name'] ) == "" ||
-      trim( $_POST['subject'] ) == "" ||
-      trim( $_POST['message'] ) == "" ||
+  if( trim( $_POST['name'] ?? '' ) == "" ||
+      trim( $_POST['subject'] ?? '' ) == "" ||
+      trim( $_POST['message'] ?? '' ) == "" ||
       !eregi( "^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2}([zmuvtg]|fo|me)?$", $_POST['email'] ) )
     $error = 1;
 
@@ -75,7 +75,7 @@ if( isset( $_POST['name'] ) )
     eval( "\$mes = \"{$data['email_ticket_created']}\";" );
     mail( $_POST['email'], $sub, $mes, "From: {$data['email']}" );
 
-    if( trim( $_POST['replymessage'] ) != "" )
+    if( trim( $_POST['replymessage'] ?? '' ) != "" )
     {
       // (time() + 1) makes sure this post follows the previous
       mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '$id', '{$_SESSION['user']['id']}', '" . (time( ) + 1) . "', '{$_POST['replysubject']}', '{$_POST['replymessage']}' )" );

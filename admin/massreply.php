@@ -39,7 +39,7 @@ else
 
 if( $_POST['cmd'] == "reply" )
 {
-  if( trim( $_POST['message'] ) == "" )
+  if( trim( $_POST['message'] ?? '' ) == "" )
     $msg = "<div class=\"normal\"><font color=\"#FF0000\">You must specify a message in your reply (subjects are optional).</font></div><br />";
   else
   {
@@ -72,7 +72,7 @@ if( $_POST['cmd'] == "reply" )
 
         if( $_POST['save'] == "on" )
         {
-          if( trim( $_POST['replyname'] ) != "" )
+          if( trim( $_POST['replyname'] ?? '' ) != "" )
           {
             if( get_row_count( "SELECT COUNT(*) FROM {$pre}reply WHERE ( phrase = '{$_POST['replyname']}' && dept_id = '-1' )" ) )
               mysql_query( "UPDATE {$pre}reply SET reply = '{$_POST['message']}' WHERE ( phrase = '{$_POST['replyname']}' )" );

@@ -79,7 +79,7 @@ if( $ticketexists )
 
   if( $_POST['cmd'] == "reply" )
   {
-    if( trim( $_POST['message'] ) == "" )
+    if( trim( $_POST['message'] ?? '' ) == "" )
       $msg = "<div class=\"errorbox\">You must specify a message in your reply (subjects are optional).</div><br />";
     else
     {
@@ -130,7 +130,7 @@ if( $ticketexists )
       }
       if( $_POST['save'] == "on" )
       {
-        if( trim( $_POST['replyname'] ) != "" )
+        if( trim( $_POST['replyname'] ?? '' ) != "" )
         {
           if( get_row_count( "SELECT COUNT(*) FROM {$pre}reply WHERE ( phrase = '{$_POST['replyname']}' && dept_id = '-1' )" ) )
             mysql_query( "UPDATE {$pre}reply SET reply = '{$_POST['message']}' WHERE ( phrase = '{$_POST['replyname']}' )" );
@@ -223,7 +223,7 @@ if( $ticketexists )
     mysql_query( "UPDATE {$pre}ticket SET lastactivity = '" . time( ) . "', status = '{$HD_STATUS_CLOSED}' WHERE ( ticket_id = '{$_GET['id']}' )" );
   else if( $_POST['cmd'] == "deletereply" )
     mysql_query( "DELETE FROM {$pre}reply WHERE ( phrase = '{$_POST['replyname']}' && dept_id = '-1' )" );
-  else if( $_POST['cmd'] == "attach" && (trim( $HTTP_POST_FILES["userfile"]["name"] ) != "") )
+  else if( $_POST['cmd'] == "attach" && (trim( $HTTP_POST_FILES["userfile"]["name"] ?? '' ) != "") )
   {
     if( !is_dir( "{$HD_TICKET_FILES}/{$row['id']}" ) )
     {

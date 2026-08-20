@@ -28,7 +28,7 @@ $data = get_options( $options );
 
 if( ($_POST['cmd'] ?? '') == "login" )
 {
-  if( trim( $_POST['password'] ) == "" )
+  if( trim( $_POST['password'] ?? '' ) == "" )
   {
     $res = mysql_query( "SELECT id FROM {$pre}user WHERE ( email = '{$_POST['email']}' )" );
     if( mysql_num_rows( $res ) )
@@ -104,7 +104,7 @@ if( ($_POST['cmd'] ?? '') == "login" )
         }
       }
 
-      if( trim( $_POST['redirect'] ) != "" )     
+      if( trim( $_POST['redirect'] ?? '' ) != "" )
         $redirect = $_POST['redirect'];
       else
         $redirect = $HD_URL_BROWSE;

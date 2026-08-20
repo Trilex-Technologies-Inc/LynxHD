@@ -30,7 +30,7 @@ if( $_POST['cmd'] == "add" )
 {
   if( $global_priv )
   {
-    if( trim( $_POST['email'] ) != "" && trim( $_POST['name'] ) != "" )
+    if( trim( $_POST['email'] ?? '' ) != "" && trim( $_POST['name'] ?? '' ) != "" )
     {
       if( !get_row_count( "SELECT COUNT(*) FROM {$pre}user WHERE ( email = '{$_POST['email']}' )" ) )
       {

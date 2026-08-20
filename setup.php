@@ -232,9 +232,9 @@ if( ($_POST['cmd'] ?? '') == "admin" )
 {
   $already_exist = get_row_count( "SELECT COUNT(user.id) FROM {$pre}user AS user WHERE ( user.email = '{$_POST['email']}' )" );
   
-  if( trim( $_POST['name'] ) == "" ||
-      trim( $_POST['email'] ) == "" ||
-      trim( $_POST['password1'] ) == "" ||
+  if( trim( $_POST['name'] ?? '' ) == "" ||
+      trim( $_POST['email'] ?? '' ) == "" ||
+      trim( $_POST['password1'] ?? '' ) == "" ||
       $_POST['password1'] != $_POST['password2'] ||
       $already_exist )
   {

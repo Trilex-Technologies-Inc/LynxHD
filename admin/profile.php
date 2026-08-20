@@ -23,13 +23,13 @@ if( $_SESSION['login_type'] == $LOGIN_INVALID )
 
 if( isset( $_POST['name'] ) )
 {
-  if( trim( $_POST['name'] ) == "" ||
-      trim( $_POST['email'] ) == "" ||
-      ( (trim( $_POST['password1'] ) != "") && ($_POST['password1'] != $_POST['password2']) ) )
+  if( trim( $_POST['name'] ?? '' ) == "" ||
+      trim( $_POST['email'] ?? '' ) == "" ||
+      ( (trim( $_POST['password1'] ?? '' ) != "") && ($_POST['password1'] != $_POST['password2']) ) )
     $msg = "<div class=\"errorbox\">Please completely fill the name and email fields, and make sure your passwords (if specified) match.</div><br />";
   else
   {
-    if( trim( $_POST['password1'] ) == "" )
+    if( trim( $_POST['password1'] ?? '' ) == "" )
       $password = $_SESSION['user']['password'];
     else
       $password = crypt( $_POST['password1'], $ENCRYPT_KEY );

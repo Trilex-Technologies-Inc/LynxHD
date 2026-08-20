@@ -66,7 +66,7 @@ if( $_POST['cmd'] == "new" )
   $_POST['users'] = $selected_users;
   $_POST['dept'] = $selected_departments;
 
-  if( ((count( $_POST['users'] ) + count( $_POST['dept'] )) > 0) && (trim( $_POST['subject'] ) != "") && (trim( $_POST['message'] ) != "") )
+  if( ((count( $_POST['users'] ) + count( $_POST['dept'] )) > 0) && (trim( $_POST['subject'] ?? '' ) != "") && (trim( $_POST['message'] ?? '' ) != "") )
   {
     for( $i = 0; $i < count( $_POST['dept'] ); $i++ )
     {

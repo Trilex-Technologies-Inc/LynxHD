@@ -32,7 +32,7 @@ if( isset( $_POST['survey1'] ) )
 {
   for( $i = 1; $i <= 10; $i++ )
   {
-    if( trim( $_POST["survey{$i}"] ) != "" )
+    if( trim( $_POST["survey{$i}"] ?? '' ) != "" )
     {
       $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}options WHERE ( name = 'survey{$i}' )" );
       if( !$exists )

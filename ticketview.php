@@ -53,7 +53,7 @@ if( $ticketexists )
 
   if( ($_POST['cmd'] ?? '') == "reply" )
   {
-    if( trim( $_POST['message'] ) == "" )
+    if( trim( $_POST['message'] ?? '' ) == "" )
       $msg = "<div class=\"alert alert-danger\" role=\"alert\">{$LANG['specify_message']}</div>";
     else
     {
@@ -63,8 +63,8 @@ if( $ticketexists )
     $res_check = mysql_query( "SELECT subject, message FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date DESC LIMIT 1" );
     $row_check = mysql_fetch_array( $res_check );
     if( !$data['floodcontrol'] || 
-        (trim( $row_check['subject'] ) != trim( stripslashes( $_POST['subject'] ) )) || 
-        (trim( $row_check['message'] ) != trim( stripslashes( $_POST['message'] ) )) )
+        (trim( $row_check['subject'] ) != trim( stripslashes( $_POST['subject'] ?? '' ) )) ||
+        (trim( $row_check['message'] ) != trim( stripslashes( $_POST['message'] ?? '' ) )) )
     {
       mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message, ip ) VALUES ( '{$row['id']}', '$userid', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}', '{$_SERVER['REMOTE_ADDR']}' )" );
 

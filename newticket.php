@@ -47,9 +47,9 @@ if( isset( $_POST['name'] ) )
     && hash_equals($_SESSION['vihash'], md5((string) $_POST['key'] . 'mySecRetkEy'));
   unset($_SESSION['vihash']);
 
-  if( trim( $_POST['name'] ) == "" ||
-      trim( $_POST['subject'] ) == "" ||
-      trim( $_POST['message'] ) == "" ||
+  if( trim( $_POST['name'] ?? '' ) == "" ||
+      trim( $_POST['subject'] ?? '' ) == "" ||
+      trim( $_POST['message'] ?? '' ) == "" ||
       !$captcha_valid ||
       !eregi( "^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2,}([zmuvtg]|fo|me)?$", $_POST['email'] ) )
     $error = 1;
@@ -59,7 +59,7 @@ if( isset( $_POST['name'] ) )
     $res = mysql_query( "SELECT * FROM {$pre}field WHERE ( dept_id = '0' || dept_id = '$dept_id' )" );
     while( $row = mysql_fetch_array( $res ) )
     {
-      if( $row['required'] && trim( $_POST[$row['id']] ) == "" )
+      if( $row['required'] && trim( $_POST[$row['id']] ?? '' ) == "" )
       {
         $error = 1;
         break;
@@ -87,7 +87,7 @@ if( isset( $_POST['name'] ) )
         $res_check_post = mysql_query( "SELECT message FROM {$pre}post WHERE ( ticket_id = '{$row_check['id']}' && user_id = '-1' ) ORDER BY date LIMIT 1" );
         $row_check_post = mysql_fetch_array( $res_check_post );
 
-        if( trim( $row_check_post['message'] ) == trim( stripslashes( $_POST['message'] ) ) )
+        if( trim( $row_check_post['message'] ) == trim( stripslashes( $_POST['message'] ?? '' ) ) )
         {
           Header( "Location: {$HD_URL_TICKET_VIEW}?id={$row_check['ticket_id']}&email={$_POST['email']}" );
           exit;

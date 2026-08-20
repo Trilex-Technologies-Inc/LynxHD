@@ -117,7 +117,7 @@ else if( $_POST['cmd'] == "fields" )
     }
   }
 
-  if( trim( $_POST['newfield'] ) != "" )
+  if( trim( $_POST['newfield'] ?? '' ) != "" )
   {
     if( !get_row_count( "SELECT COUNT(*) FROM {$pre}field WHERE ( name = '{$_POST['newfield']}' && (dept_id = '{$_POST['dept_id']}' || dept_id = '0') )" ) )
     {

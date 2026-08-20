@@ -31,7 +31,7 @@ if( $_POST['cmd'] == "add" )
   $priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '{$_GET['dept_id']}' && admin = '1' )" );
   if( $priv || $global_priv )
   {
-    $_POST['phrase'] = trim( $_POST['phrase'] );
+    $_POST['phrase'] = trim( $_POST['phrase'] ?? '' );
   
     if( $_POST['phrase'] == "" )
       $exists = get_row_count( "SELECT COUNT(id) FROM {$pre}reply WHERE ( dept_id = '{$_POST['dept_id']}' )" );
@@ -67,7 +67,7 @@ else if( $_POST['cmd'] == "edit" )
   }
   else if( $global_priv || $priv )
   {
-    $_POST['phrase'] = trim( $_POST['phrase'] );
+    $_POST['phrase'] = trim( $_POST['phrase'] ?? '' );
 
     mysql_query( "UPDATE {$pre}reply SET dept_id = '{$_POST['dept_id']}', reply = '{$_POST['reply']}', phrase = '{$_POST['phrase']}' WHERE ( id = '{$_POST['id']}' )" );
     Header( "Location: $HD_URL_REPLIES" );

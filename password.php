@@ -28,7 +28,7 @@ if( isset( $_POST['password'] ) )
 {
   if( !get_row_count( "SELECT COUNT(*) FROM {$pre}user WHERE ( id = '{$_POST['id']}' && pwkey = '{$_POST['key']}' )" ) )
     Header( "Location: $HD_URL_LOGIN" );
-  else if( trim( $_POST['password'] ) != "" )
+  else if( trim( $_POST['password'] ?? '' ) != "" )
   {
     mysql_query( "UPDATE {$pre}user SET password = '" . crypt( $_POST['password'], $ENCRYPT_KEY ) . "', pwkey = '' WHERE ( id = '{$_POST['id']}' )" );
     $msg = "<div class=\"successbox\">Password successfully set.</div><br />";

@@ -96,7 +96,25 @@ if( $_POST['cmd'] == "action" )
 
 $query = "";
 
-if( trim( $_GET['search'] ) != "" )
+// The browse page can be opened without query parameters.  Populate the
+// filter values before they are used in SQL filters and the form below.
+$browse_defaults = array(
+  "search" => "",
+  "lookin" => "subject",
+  "priority" => "any",
+  "department" => 0,
+  "closed" => "",
+  "mine" => "",
+  "replies" => "",
+  "results" => 20,
+  "order" => "activity"
+);
+
+foreach( $browse_defaults as $key => $value )
+  if( !isset( $_GET[$key] ) )
+    $_GET[$key] = $value;
+
+if( trim( $_GET['search'] ?? '' ) != "" )
 {
   if( $_GET['lookin'] == "subject" )
     $query .= " && ticket.subject LIKE '%{$_GET['search']}%'";

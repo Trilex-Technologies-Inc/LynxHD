@@ -27,7 +27,7 @@ if( !$global_priv )
 
 if( $_POST['cmd'] == "add" )
 {
-  if( trim( $_POST['email'] ) != "" )
+  if( trim( $_POST['email'] ?? '' ) != "" )
   {
     if( !get_row_count( "SELECT COUNT(*) FROM {$pre}pop WHERE ( email = '{$_POST['email']}' )" ) )
       mysql_query( "INSERT INTO {$pre}pop ( email, dept_id, del ) VALUES ( '{$_POST['email']}', '{$_POST['department']}', '1' )" );
@@ -39,7 +39,7 @@ else if( $_POST['cmd'] == "update" )
 {
   $delete = ($_POST['del'] == "on") ? 1 : 0;
 
-  if( trim( $_POST['password'] ) != "" )
+  if( trim( $_POST['password'] ?? '' ) != "" )
     $password = ", password = '{$_POST['password']}'";
   else
     $password = "";

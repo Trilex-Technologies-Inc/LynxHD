@@ -27,7 +27,7 @@ if( $_POST['cmd'] == "newcategory" )
 {
   if( $global_priv )
   {
-    if( trim( $_POST['name'] ) != "" )
+    if( trim( $_POST['name'] ?? '' ) != "" )
     {
       if( !get_row_count( "SELECT COUNT(*) FROM {$pre}faq WHERE ( parent = '{$_POST['parent']}' && description = '{$_POST['name']}' )" ) )
         mysql_query( "INSERT INTO {$pre}faq ( description, symptoms, category, parent, date ) VALUES ( '{$_POST['name']}', '{$_POST['description']}', '-1', '{$_POST['parent']}', '" . time( ) . "' )" );
@@ -58,7 +58,7 @@ else if( $_POST['cmd'] == "edit" )
 {
   if( $global_priv )
   {
-    if( trim( $_POST['description'] ) != "" )
+    if( trim( $_POST['description'] ?? '' ) != "" )
     {
       if( isset( $_POST['id'] ) )
         mysql_query( "UPDATE {$pre}faq SET description = '{$_POST['description']}', symptoms = '{$_POST['symptoms']}', solution = '{$_POST['solution']}' WHERE ( id = '{$_POST['id']}' )" );
