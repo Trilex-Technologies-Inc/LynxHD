@@ -219,10 +219,11 @@ function get_helpdesk_path( )
 
   $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'helpdeskurl' )" );
   $row = mysql_fetch_array( $res );
+  $helpdesk_url = isset( $row[0] ) ? $row[0] : "";
 
-  if( trim( $row[0] ) != "" )
+  if( trim( $helpdesk_url ) != "" )
   {
-    $PATH_TO_HELPDESK = $row[0];
+    $PATH_TO_HELPDESK = $helpdesk_url;
     if( $PATH_TO_HELPDESK[strlen( $PATH_TO_HELPDESK ) - 1] != "/" )
       $PATH_TO_HELPDESK .= "/";
   }
@@ -232,7 +233,7 @@ function get_helpdesk_path( )
 
 function field( $data )
 {
-  return htmlspecialchars( stripslashes( $data ) );
+  return htmlspecialchars( stripslashes( $data ?? "" ) );
 }
 
 function get_row_count( $query )
@@ -252,7 +253,9 @@ function get_options( $options )
     $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = '{$options[$i]}' )" );
     $row = mysql_fetch_array( $res );
 
-    $data[$options[$i]] = $row[0];
+    // A missing option row is valid during partial setup or after an option
+    // has been removed; expose it as an empty value instead of indexing null.
+    $data[$options[$i]] = isset( $row[0] ) ? $row[0] : "";
   }
   return $data;
 }

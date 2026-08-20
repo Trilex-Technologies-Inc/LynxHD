@@ -31,8 +31,23 @@ if( isset( $_GET['department'] ) )
   $_POST['department'] = $_GET['department'];
 
 $success = 0;
+$form_submitted = isset( $_POST['name'] );
+$msg = "";
+$ticket_form_defaults = array(
+  "name" => "",
+  "email" => "",
+  "department" => "",
+  "subject" => "",
+  "message" => "",
+  "priority" => $PRIORITY_LOW,
+  "replysubject" => "",
+  "replymessage" => ""
+);
+foreach( $ticket_form_defaults as $key => $value )
+  if( !isset( $_POST[$key] ) )
+    $_POST[$key] = $value;
 
-if( isset( $_POST['name'] ) )
+if( $form_submitted )
 {
   $error = 0;
 
@@ -57,7 +72,7 @@ if( isset( $_POST['name'] ) )
     $res = mysql_query( "SELECT name, text FROM {$pre}options WHERE ( name LIKE 'custom%' )" );
     $custom = "";
     while( $row = mysql_fetch_array( $res ) )
-      $custom .= addslashes( $row['text'] ) . "\n" . $_POST[$row['name']] . "\n";
+      $custom .= addslashes( $row['text'] ) . "\n" . ( $_POST[$row['name']] ?? "" ) . "\n";
 
     mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, email, name, subject, date, status, notify, priority, custom, lastactivity ) VALUES ( '$ticket', '{$_POST['department']}', '{$_POST['email']}', '{$_POST['name']}', '{$_POST['subject']}', '" . time( ) . "', '$HD_STATUS_OPEN', '1', '{$_POST['priority']}', '$custom', '" . time( ) . "' )" );
 

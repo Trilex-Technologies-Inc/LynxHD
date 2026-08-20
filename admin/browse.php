@@ -17,13 +17,14 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_BROWSE;
+$msg = "";
 
 if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
 $global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' )" );
 
-if( $_POST['cmd'] == "action" )
+if( ( $_POST['cmd'] ?? "" ) == "action" )
 {
   if( $_POST['action'] == "reply" )
   {
