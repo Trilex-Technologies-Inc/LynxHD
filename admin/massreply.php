@@ -18,6 +18,8 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_MASSREPLY;
+$_GET['id'] = $_GET['id'] ?? '';
+$_GET['tickets'] = $_GET['tickets'] ?? '';
 
 if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE . "?id={$_GET['id']}" ) );
@@ -39,6 +41,7 @@ else
 
 if( $_POST['cmd'] == "reply" )
 {
+  $_POST['subject'] = $_POST['subject'] ?? '';
   if( trim( $_POST['message'] ?? '' ) == "" )
     $msg = "<div class=\"normal\"><font color=\"#FF0000\">You must specify a message in your reply (subjects are optional).</font></div><br />";
   else
@@ -118,8 +121,8 @@ if( mysql_num_rows( $res ) )
 <input type="hidden" name="cmd" value="reply" />
 <input type="hidden" name="tickets" value="<?php echo $_GET['tickets'] ?>" />
 <tr><td colspan="2">&nbsp;</td></tr>
-<tr><td width="150" align="right"><div class="normal">Subject:</div></td><td><input type="text" name="subject" value="<?php echo field( $_POST['subject'] ) ?>" size="30" /></td></tr>
-<tr><td width="150" align="right"><div class="normal">Message:<font color="#FF0000">*</font></div></td><td><?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?><textarea name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ) ?></textarea></td></tr>
+<tr><td width="150" align="right"><div class="normal">Subject:</div></td><td><input type="text" name="subject" value="<?php echo field( $_POST['subject'] ?? '' ) ?>" size="30" /></td></tr>
+<tr><td width="150" align="right"><div class="normal">Message:<font color="#FF0000">*</font></div></td><td><?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?><textarea name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ?? '' ) ?></textarea></td></tr>
 <tr><td></td><td><img src="./images/blank.gif" width="1" height="12" /><br />
 <div class="normal">
 <input type="checkbox" name="save" /> Save as a predefined reply named <input type="text" name="replyname" />

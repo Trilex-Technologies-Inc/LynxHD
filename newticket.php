@@ -105,7 +105,7 @@ if( isset( $_POST['name'] ) )
     $res = mysql_query( "SELECT * FROM {$pre}field WHERE ( dept_id = '0' || dept_id = '$dept_id' )" );
     $custom = "";
     while( $row = mysql_fetch_array( $res ) )
-      $custom .= addslashes( $row['name'] ) . "\n" . $_POST[$row['id']] . "\n";
+      $custom .= addslashes( $row['name'] ) . "\n" . ($_POST[$row['id']] ?? '') . "\n";
 
     mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, email, name, subject, date, status, notify, priority, custom, lastactivity, cc ) VALUES ( '$ticket', '{$_POST['department']}', '{$_POST['email']}', '{$_POST['name']}', '{$_POST['subject']}', '" . time( ) . "', '$HD_STATUS_OPEN', '" . (($_POST['notify'] ?? '') == "on" ? "1" : "0") . "', '{$_POST['priority']}', '$custom', '" . time( ) . "', '" . ($_POST['cc'] ?? '') . "' )" );
 

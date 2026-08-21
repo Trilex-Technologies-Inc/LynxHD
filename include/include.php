@@ -253,7 +253,7 @@ function get_row_count( $query )
 {
   $res = mysql_query( $query );
   $row = mysql_fetch_array( $res );
-  return $row[0];
+  return (is_array($row) && isset($row[0])) ? $row[0] : 0;
 }
 
 function get_options( $options )
@@ -307,7 +307,7 @@ function send_survey( $id )
 
   $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'repeatsurvey' )" );
   $row = mysql_fetch_array( $res );
-  $repeat = $row[0];
+  $repeat = (is_array($row) && isset($row[0])) ? $row[0] : 0;
 
   $res = mysql_query( "SELECT * FROM {$pre}ticket WHERE ( id = '$id' )" );
   $row = mysql_fetch_array( $res );
@@ -345,7 +345,8 @@ function new_ticket_id( )
   {
     $res = mysql_query( "SELECT ticket_id FROM {$pre}ticket WHERE ( ticket_id NOT LIKE 'M%' ) ORDER BY ticket_id DESC LIMIT 1" );
     $row = mysql_fetch_array( $res );
-    $ticket = strtoupper( base_convert( base_convert( $row[0], 16, 10 ) + 1, 10, 16 ) );
+    if( is_array($row) && isset($row[0]) )
+      $ticket = strtoupper( base_convert( base_convert( $row[0], 16, 10 ) + 1, 10, 16 ) );
   }
  
   return $ticket;

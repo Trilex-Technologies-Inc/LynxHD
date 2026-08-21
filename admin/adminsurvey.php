@@ -54,17 +54,17 @@ if( isset( $_POST['survey1'] ) )
 
 $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'autosurvey' )" );
 $row = mysql_fetch_array( $res );
-$_POST['autosend'] = $row[0];
+$_POST['autosend'] = (is_array($row) && isset($row[0])) ? $row[0] : 0;
 
 $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'repeatsurvey' )" );
 $row = mysql_fetch_array( $res );
-$_POST['repeat'] = $row[0];
+$_POST['repeat'] = (is_array($row) && isset($row[0])) ? $row[0] : 0;
 
 for( $i = 1; $i <= 10; $i++ )
 {
   $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'survey{$i}' )" );
   $row = mysql_fetch_array( $res );
-  $_POST["survey{$i}"] = $row[0];
+  $_POST["survey{$i}"] = (is_array($row) && isset($row[0])) ? $row[0] : '';
 }
 
 include "./include/header.php";
@@ -79,9 +79,9 @@ if( $num_surveys )
 {
   $res = mysql_query( "SELECT date FROM {$pre}survey ORDER BY date DESC LIMIT 1" );
   $row = mysql_fetch_array( $res );
-  $date = $row[0];
+  $date = (is_array($row) && isset($row[0])) ? $row[0] : 0;
 
-  echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\" bgcolor=\"#3c91c7\"><tr><td><div class=\"normal\" style=\"color: white\">There have been a total of <b>$num_surveys</b> survey(s).  The last survey was conducted on <b>" . date( "F j, Y", $row[0] ) . ".</b></div></td></tr></table><br />";
+  echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\" bgcolor=\"#3c91c7\"><tr><td><div class=\"normal\" style=\"color: white\">There have been a total of <b>$num_surveys</b> survey(s).  The last survey was conducted on <b>" . date( "F j, Y", $date ) . ".</b></div></td></tr></table><br />";
 
   $res = mysql_query( "SELECT * FROM {$pre}options WHERE ( name LIKE 'survey%' ) ORDER BY num" );
   while( $row = mysql_fetch_array( $res ) )

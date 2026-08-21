@@ -60,7 +60,7 @@ td { font-family: Verdana, Arial, Helvetica; font-size: 10pt }
 <br />
 <table border="0" cellspacing="5" cellpadding="0">
 <tr><td align="right"><b>Subject:</td><td><?php echo field( $row['subject'] ) ?></td></tr>
-<tr><td align="right"><b>Ticket#:</td><td><?php echo $_GET['id'] ?></td></tr>
+<tr><td align="right"><b>Ticket#:</td><td><?php echo $print_ticket_id ?></td></tr>
 <tr><td align="right"><b>Created On:</td><td><?php echo date( "F j, Y", $row['date'] ) ?></td></tr>
 <?php /************************************************************/
 if( trim( $row['custom'] ) != "" )

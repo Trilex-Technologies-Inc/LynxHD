@@ -235,7 +235,7 @@ while( $row = mysql_fetch_array( $res ) )
 {
   $visible_rows++;
   $res_post_user = mysql_query( "SELECT user_id, private FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date DESC LIMIT 1" );
-  $row_post_user = mysql_fetch_array( $res_post_user );
+  $row_post_user = mysql_fetch_array( $res_post_user ) ?: array( 'user_id' => 0, 'private' => 0 );
 
   if( $row_post_user['user_id'] == -1 )
     $user_info = "<a href=\"mailto:{$row['email']}\">{$row['name']}</a>";  

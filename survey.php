@@ -54,6 +54,8 @@ if( $ticketexists )
 {
   if( isset( $_POST['comments'] ) )
   {
+    for( $survey_index = 1; $survey_index <= 10; $survey_index++ )
+      $_POST["survey{$survey_index}"] = $_POST["survey{$survey_index}"] ?? 0;
     $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}survey WHERE ( ticket_id = '$id' )" );
     if( !$exists )
       mysql_query( "INSERT INTO {$pre}survey ( ticket_id, rating1, rating2, rating3, rating4, rating5, rating6, rating7, rating8, rating9, rating10, comments, date, email ) VALUES ( '$id', '{$_POST['survey1']}', '{$_POST['survey2']}', '{$_POST['survey3']}', '{$_POST['survey4']}', '{$_POST['survey5']}', '{$_POST['survey6']}', '{$_POST['survey7']}', '{$_POST['survey8']}', '{$_POST['survey9']}', '{$_POST['survey10']}', '{$_POST['comments']}', '" . time( ) . "', '{$_GET['email']}' )" );
