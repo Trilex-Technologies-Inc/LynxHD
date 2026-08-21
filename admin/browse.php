@@ -242,7 +242,7 @@ while( $row = mysql_fetch_array( $res ) )
   else
   {
     $res_staff_user = mysql_query( "SELECT name FROM {$pre}user WHERE ( id = '{$row_post_user['user_id']}' )" );
-    $row_staff_user = mysql_fetch_array( $res_staff_user );
+    $row_staff_user = mysql_fetch_array( $res_staff_user ) ?: array( 'name' => 'Unknown user' );
 
     if( $row_post_user['user_id'] == $_SESSION['user']['id'] )
       $user_info = "<b>" . $row_staff_user['name'] . "</b>";
@@ -251,7 +251,7 @@ while( $row = mysql_fetch_array( $res ) )
   }
 
   $res_post = mysql_query( "SELECT COUNT(*) FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' )" );
-  $row_post = mysql_fetch_array( $res_post );
+  $row_post = mysql_fetch_array( $res_post ) ?: array( 0 => 0 );
 
   echo "<tr>";
   
@@ -272,7 +272,7 @@ while( $row = mysql_fetch_array( $res ) )
   echo "<td class=\"ticket-subject\">" . (($row['flag'] == 0 || $row['flag'] == $_SESSION['user']['id']) ? "<img src=\"./images/mail-flag.png\" alt=\"Flagged\" title=\"Flagged\"> " : "") . "<img src=\"{$image}\" alt=\"\"> <a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field( $row['subject'] ) . "</a></td>";
 
   $res_dept = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$row['dept_id']}' )" );
-  $row_dept = mysql_fetch_array( $res_dept );
+  $row_dept = mysql_fetch_array( $res_dept ) ?: array( 0 => 'Unknown department' );
 
   echo "<td>" . field( $row_dept[0] ) . "</td>";
 

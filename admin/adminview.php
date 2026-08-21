@@ -17,6 +17,7 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_ADMINVIEW;
+$CURPAGE = $HD_CURPAGE;
 $_GET['id'] = $_GET['id'] ?? '';
 
 function attach_sort( $a, $b )
@@ -57,7 +58,7 @@ if( $is_ticket )
 else
 {
   $res = mysql_query( "SELECT id FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' )" );
-  $row = mysql_fetch_array( $res );
+  $row = mysql_fetch_array( $res ) ?: array( 0 => 0 );
   $message_id = $row[0];
 
   $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}message WHERE ( ticket_id = '$message_id' && user_id = '{$_SESSION['user']['id']}' )" );    
@@ -370,7 +371,7 @@ Status:&nbsp;
 <tr><td align="right"><div class="normal"><b>Department:</b></div></td><td><div class="normal">
 <?php /************************************************************/
     $res_dept = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$row['dept_id']}' )" );
-    $row_dept = mysql_fetch_array( $res_dept );
+    $row_dept = mysql_fetch_array( $res_dept ) ?: array( 0 => 'Unknown department' );
     echo field( $row_dept[0] );
 /********************************************************** PHP */?>
 </div></td></tr>
@@ -385,7 +386,7 @@ Status:&nbsp;
       for( $i = 0; $i < count( $fields ); $i += 2 )
       {
         if( trim( $fields[$i] ) != "" )
-          echo "<tr bgcolor=\"#EEEEEE\"><td align=\"right\"><div class=\"normal\"><b>" . field( $fields[$i] ) . ":</b></div></td><td><div class=\"normal\">" . field( $fields[$i+1] ) . "</div></td></tr>\n";
+          echo "<tr bgcolor=\"#EEEEEE\"><td align=\"right\"><div class=\"normal\"><b>" . field( $fields[$i] ) . ":</b></div></td><td><div class=\"normal\">" . field( $fields[$i+1] ?? '' ) . "</div></td></tr>\n";
       }
     }
   }
@@ -417,7 +418,7 @@ Status:&nbsp;
 <table width="100%" border="0" cellspacing="0" cellpadding="8">
 <?php /************************************************************/
   $res_temp = mysql_query( "SELECT id FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date LIMIT 1" );
-  $row_temp = mysql_fetch_array( $res_temp );
+  $row_temp = mysql_fetch_array( $res_temp ) ?: array( 0 => 0 );
   $first_id = $row_temp[0];
   
   $res_post = mysql_query( "SELECT * FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date DESC" );
@@ -451,7 +452,7 @@ Status:&nbsp;
     else
     {
       $res_user = mysql_query( "SELECT name, signature FROM {$pre}user WHERE ( id = '{$row_post['user_id']}' )" );
-      $row_user = mysql_fetch_array( $res_user );
+      $row_user = mysql_fetch_array( $res_user ) ?: array( 'name' => 'Unknown user', 'signature' => '' );
 
       if( trim( $row_user['signature'] ) != "" )
         $row_post['message'] .= "\n\n{$row_user['signature']}";
@@ -623,7 +624,7 @@ Status:&nbsp;
     while( $row_others = mysql_fetch_array( $res_others ) )
     {
       $res_dept = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$row_others['dept_id']}' )" );
-      $row_dept = mysql_fetch_array( $res_dept );
+      $row_dept = mysql_fetch_array( $res_dept ) ?: array( 0 => 'Unknown department' );
 
       $bgcolor = ($bgcolor == "#E8EDFF") ? "#E8EDFF" : "#E8EDFF";
 /********************************************************** PHP */?>

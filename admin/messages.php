@@ -158,7 +158,7 @@ while( $row = mysql_fetch_array( $res ) )
     $user_info = $last_user_name;
   
   $res_post = mysql_query( "SELECT COUNT(*) FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' )" );
-  $row_post = mysql_fetch_array( $res_post );
+  $row_post = mysql_fetch_array( $res_post ) ?: array( 0 => 0 );
 
   echo $row['viewed'] ? "<tr>" : "<tr class=\"message-unread\">";
   

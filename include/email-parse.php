@@ -217,7 +217,7 @@ function parse_email_to_ticket( $email, $receiver )
       while( $row_check = mysql_fetch_array( $res_check ) )
       {
         $res_check_post = mysql_query( "SELECT message FROM {$pre}post WHERE ( ticket_id = '{$row_check['id']}' && user_id = '-1' ) ORDER BY date LIMIT 1" );
-        $row_check_post = mysql_fetch_array( $res_check_post );
+        $row_check_post = mysql_fetch_array( $res_check_post ) ?: array( 'message' => '' );
 
         if( trim( $row_check_post['message'] ) == trim( stripslashes( $message ) ) )
           return false;
@@ -276,12 +276,12 @@ function parse_email_to_ticket( $email, $receiver )
   else
   {
     $res = mysql_query( "SELECT id FROM {$pre}ticket WHERE ( ticket_id = '$ticket' )" );
-    $row = mysql_fetch_array( $res );
+    $row = mysql_fetch_array( $res ) ?: array( 0 => 0 );
     $id = $row[0];
 
     // Checks for a duplicate posting if flood protection is enabled
     $res_check = mysql_query( "SELECT subject, message FROM {$pre}post WHERE ( ticket_id = '$id' ) ORDER BY date DESC LIMIT 1" );
-    $row_check = mysql_fetch_array( $res_check );
+    $row_check = mysql_fetch_array( $res_check ) ?: array( 'message' => '' );
     if( $data['floodcontrol'] && (trim( $row_check['message'] ) == trim( stripslashes( $message ) )) )
       return false;
 
@@ -291,7 +291,7 @@ function parse_email_to_ticket( $email, $receiver )
     if( $row_check ) // It's staff's posting
     {
       $res = mysql_query( "SELECT email, notify FROM {$pre}ticket WHERE ( ticket_id = '$ticket' )" );
-      $row = mysql_fetch_array( $res );
+      $row = mysql_fetch_array( $res ) ?: array( 'email' => '', 'notify' => 0 );
       
       mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '$id', '{$row_check['id']}', '" . time( ) . "', '$subject', '$message' )" );
 

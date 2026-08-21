@@ -114,7 +114,7 @@ if( isset( $_POST['name'] ) )
     mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message, ip ) VALUES ( '$id', '-1', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}', '$remote_address' )" );
 
     $res = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$_POST['department']}' )" );
-    $row = mysql_fetch_array( $res );
+    $row = mysql_fetch_array( $res ) ?: array( 0 => '' );
     $department = $row[0];
 
     $autoreply = "";

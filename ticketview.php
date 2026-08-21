@@ -146,7 +146,7 @@ if( $ticketexists )
 /********************************************************** PHP */?>
 <?php /************************************************************/
   $res_dept = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$row['dept_id']}' )" );
-  $row_dept = mysql_fetch_array( $res_dept );
+  $row_dept = mysql_fetch_array( $res_dept ) ?: array( 0 => 'Unknown department' );
   $department_name = field( $row_dept[0] );
   if( $row['priority'] == $PRIORITY_LOW ) $priority_name = $LANG['field_priority_low'];
   else if( $row['priority'] == $PRIORITY_MEDIUM ) $priority_name = $LANG['field_priority_medium'];
@@ -202,7 +202,7 @@ if( $ticketexists )
 <div class="ticket-thread d-grid gap-3 mb-5">
 <?php /************************************************************/
   $res_temp = mysql_query( "SELECT id FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' ) ORDER BY date LIMIT 1" );
-  $row_temp = mysql_fetch_array( $res_temp );
+  $row_temp = mysql_fetch_array( $res_temp ) ?: array( 0 => 0 );
   $first_id = $row_temp[0];
 
   $res_post = mysql_query( "SELECT * FROM {$pre}post WHERE ( ticket_id = '{$row['id']}' && private = '0' ) ORDER BY date DESC" );
@@ -217,7 +217,7 @@ if( $ticketexists )
     else
     {
       $res_user = mysql_query( "SELECT name, signature FROM {$pre}user WHERE ( id = '{$row_post['user_id']}' )" );
-      $row_user = mysql_fetch_array( $res_user );
+      $row_user = mysql_fetch_array( $res_user ) ?: array( 'name' => 'Unknown user', 'signature' => '' );
 
       if( trim( $row_user['signature'] ) != "" )
         $row_post['message'] .= "\n\n{$row_user['signature']}";

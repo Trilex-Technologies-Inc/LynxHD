@@ -125,7 +125,9 @@ else if( $_POST['cmd'] == "view" )
 {
   $faq_id = $_GET['id'] ?? '';
   $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '$faq_id' ) ORDER BY description" );
-  $row = mysql_fetch_array( $res );
+  $row = mysql_fetch_array( $res ) ?: array(
+    'category' => 0, 'description' => 'Article not found', 'symptoms' => '', 'solution' => ''
+  );
 
   echo '<nav aria-label="Article breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="' . $HD_CURPAGE . '">' . $LANG['faq_main_category'] . '</a></li><li class="breadcrumb-item"><a href="' . $HD_CURPAGE . '?parent=' . (int) $row['category'] . '">' . $LANG['faq_parent_category'] . '</a></li><li class="breadcrumb-item active" aria-current="page">' . field($row['description']) . '</li></ol></nav>';
   echo '<article class="faq-article"><h3 class="h2 mb-4">' . field($row['description']) . '</h3>';

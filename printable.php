@@ -40,6 +40,8 @@ if( !$exists )
 
 $res = mysql_query( "SELECT * FROM {$pre}ticket WHERE ( ticket_id = '$print_ticket_id' )" );
 $row = mysql_fetch_array( $res );
+if( !$row )
+  exit;
 $ticket = $row[0];
 
 $options = array( "url", "title", "tags" );
@@ -96,7 +98,7 @@ while( $row_post = mysql_fetch_array( $res_post ) )
   else
   {
     $res_temp = mysql_query( "SELECT name, signature FROM {$pre}user WHERE ( id = '{$row_post['user_id']}' )" );
-    $row_temp = mysql_fetch_array( $res_temp );
+    $row_temp = mysql_fetch_array( $res_temp ) ?: array( 'name' => 'Unknown user', 'signature' => '' );
     echo "<b>" . field( $row_temp['name'] ) . "</b><br />Staff";
 
     if( trim( $row_temp['signature'] ) != "" )

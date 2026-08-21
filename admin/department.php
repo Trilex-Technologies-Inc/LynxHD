@@ -31,7 +31,7 @@ if( $_POST['cmd'] == "add" )
     if( !get_row_count( "SELECT COUNT(*) FROM {$pre}dept WHERE ( name = '{$_POST['name']}' )" ) )
     {
       $res = mysql_query( "SELECT sortnum FROM {$pre}dept ORDER BY sortnum DESC LIMIT 1" );
-      $row = mysql_fetch_array( $res );
+      $row = mysql_fetch_array( $res ) ?: array( 0 => 0 );
       $sortnum = $row[0] + 1;
       
       mysql_query( "INSERT INTO {$pre}dept ( name, sortnum ) VALUES ( '{$_POST['name']}', '$sortnum' )" );

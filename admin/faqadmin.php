@@ -210,7 +210,10 @@ else if( $_POST['cmd'] == "view" )
 {
   $faq_id = $_GET['id'] ?? '';
   $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '$faq_id' ) ORDER BY description" );
-  $row = mysql_fetch_array( $res );
+  $row = mysql_fetch_array( $res ) ?: array(
+    'id' => 0, 'category' => 0, 'description' => 'Article not found',
+    'symptoms' => '', 'solution' => ''
+  );
 
   echo "&lt;&lt; <a href=\"{$HD_CURPAGE}\">Main Category</a> &lt; <a href=\"{$HD_CURPAGE}?parent={$row['category']}\">Parent Category</a><br /><br />";
 
@@ -245,7 +248,9 @@ else if( $_POST['cmd'] == "edit" )
   if( isset( $_GET['id'] ) )
   {
     $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '{$_GET['id']}' )" );
-    $row = mysql_fetch_array( $res );
+    $fetched_row = mysql_fetch_array( $res );
+    if( is_array($fetched_row) )
+      $row = array_merge( $row, $fetched_row );
 
     while( list( $key, $val ) = each( $row ) )
       // This key is sent in the URL (and posted) to tell which category to go back to after editing
