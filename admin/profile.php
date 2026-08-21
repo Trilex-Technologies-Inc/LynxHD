@@ -36,14 +36,14 @@ if( isset( $_POST['name'] ) )
 
     $_POST['notify'] = 0;
 
-    if( $_POST['notifycreation'] == "on" )
+    if( ($_POST['notifycreation'] ?? '') == "on" )
       $_POST['notify'] |= $HD_NOTIFY_CREATION;
-    if( $_POST['notifyreply'] == "on" )
+    if( ($_POST['notifyreply'] ?? '') == "on" )
       $_POST['notify'] |= $HD_NOTIFY_REPLY;
-    if( $_POST['savelogin'] == "on" )
+    if( ($_POST['savelogin'] ?? '') == "on" )
       $_POST['notify'] |= $HD_NOTIFY_SAVELOGIN;
 
-    mysql_query( "UPDATE {$pre}user SET name = '{$_POST['name']}', password = '$password', email = '{$_POST['email']}', sms = '{$_POST['sms']}', signature = '{$_POST['signature']}', notify = '{$_POST['notify']}' WHERE ( id = '{$_SESSION['user']['id']}' )" );
+    mysql_query( "UPDATE {$pre}user SET name = '{$_POST['name']}', password = '$password', email = '{$_POST['email']}', sms = '" . ($_POST['sms'] ?? '') . "', signature = '" . ($_POST['signature'] ?? '') . "', notify = '{$_POST['notify']}' WHERE ( id = '{$_SESSION['user']['id']}' )" );
 
     $row = mysql_fetch_array( mysql_query( "SELECT * FROM {$pre}user WHERE ( id = '{$_SESSION['user']['id']}' )" ) );
     $_SESSION['user'] = $row;

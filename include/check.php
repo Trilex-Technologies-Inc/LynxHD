@@ -12,7 +12,7 @@ $options['blurRadius'] = 3.0;
 $options['secretKey'] = 'mySecRetkEy';
 
 $captcha = new Captcha($options);
-if ($captcha->isKeyRight($_POST['key'])) {
+if ($captcha->isKeyRight($_POST['key'] ?? '')) {
 	echo 'Valid Key';
 } else {
 	echo 'inValid Key';

@@ -17,6 +17,7 @@ include "./include/settings.php";
 include "./include/include.php";
 
 $HD_CURPAGE = $HD_URL_SURVEY;
+$CURPAGE = $HD_CURPAGE;
 
 $options = array( "header", "footer", "logo", "title", "background", "outsidebackground", "border", "topbar", "menu", "styles", "email", "url", "emailheader", "emailfooter" );
 $data = get_options( $options );
@@ -29,7 +30,7 @@ if( isset( $_POST['id'] ) )
 
 $ticketexists = 0;
 
-if( isset( $_GET['id'] ) )
+if( isset( $_GET['id'], $_GET['email'] ) && $_GET['id'] !== '' && $_GET['email'] !== '' )
 {
   $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' && email = '{$_GET['email']}' )" );
   if( !$exists )

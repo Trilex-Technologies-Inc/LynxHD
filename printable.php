@@ -18,22 +18,27 @@
 //         Web: http://www.GetColdBrew.com
 // -----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////
-include "settings.php";
-include "include.php";
+include "./include/settings.php";
+include "./include/include.php";
 
 $HD_CURPAGE = $HD_URL_PRINTABLE;
+$print_ticket_id = $_GET['id'] ?? '';
+$print_email = $_GET['email'] ?? '';
+
+if( $print_ticket_id === '' )
+  exit;
 
 if( $_SESSION['login_type'] != $LOGIN_INVALID )
 {
-  $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket AS ticket, {$pre}privilege AS priv WHERE ( ticket.ticket_id = '{$_GET['id']}' && priv.user_id = '{$_SESSION['user']['id']}' && (priv.dept_id = ticket.dept_id || priv.dept_id = 0) )" );
+  $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket AS ticket, {$pre}privilege AS priv WHERE ( ticket.ticket_id = '$print_ticket_id' && priv.user_id = '{$_SESSION['user']['id']}' && (priv.dept_id = ticket.dept_id || priv.dept_id = 0) )" );
 }
 else
-  $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' && email = '{$_GET['email']}' )" );
+  $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket WHERE ( ticket_id = '$print_ticket_id' && email = '$print_email' )" );
 
 if( !$exists )
   exit;
 
-$res = mysql_query( "SELECT * FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' )" );
+$res = mysql_query( "SELECT * FROM {$pre}ticket WHERE ( ticket_id = '$print_ticket_id' )" );
 $row = mysql_fetch_array( $res );
 $ticket = $row[0];
 

@@ -178,7 +178,7 @@ mysql_select_db( $db_name );
 // If trying to install...
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}user" ) )
 {
-  if( strtoupper( basename( $_SERVER['PHP_SELF'] ) ) != strtoupper( $HD_URL_SETUP ) )
+  if( strtoupper( basename( $_SERVER['PHP_SELF'] ?? '' ) ) != strtoupper( $HD_URL_SETUP ) )
   {
     
 	//header("Location: /helpdesk/setup.php");
@@ -194,8 +194,12 @@ else // Otherwise, setup sessions and help desk path
   
   if( !headers_sent( ) )
     session_start( );
+
+  $_SESSION['login_type'] = $_SESSION['login_type'] ?? $LOGIN_INVALID;
+  $_SESSION['user'] = (isset($_SESSION['user']) && is_array($_SESSION['user'])) ? $_SESSION['user'] : array();
+  $_SESSION['time'] = $_SESSION['time'] ?? 0;
  
-  if( !isset( $_SESSION['user']['password'] ) && isset( $_COOKIE['iv_helpdesk_password'] ) )
+  if( !isset( $_SESSION['user']['password'] ) && isset( $_COOKIE['iv_helpdesk_login'], $_COOKIE['iv_helpdesk_password'] ) )
   {
     $res = mysql_query( "SELECT * FROM {$pre}user WHERE ( email = '{$_COOKIE['iv_helpdesk_login']}' && password = '{$_COOKIE['iv_helpdesk_password']}' )" );
     $row = mysql_fetch_array( $res );

@@ -37,7 +37,7 @@ if( $_POST['cmd'] == "add" )
 }
 else if( $_POST['cmd'] == "update" )
 {
-  $delete = ($_POST['del'] == "on") ? 1 : 0;
+  $delete = (($_POST['del'] ?? '') == "on") ? 1 : 0;
 
   if( trim( $_POST['password'] ?? '' ) != "" )
     $password = ", password = '{$_POST['password']}'";

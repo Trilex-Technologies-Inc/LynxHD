@@ -42,6 +42,10 @@ $success = 0;
 
 if( isset( $_POST['name'] ) )
 {
+  $_POST['email'] = $_POST['email'] ?? '';
+  $_POST['department'] = $_POST['department'] ?? '';
+  $_POST['priority'] = $_POST['priority'] ?? $PRIORITY_MEDIUM;
+  $_POST['cc'] = $_POST['cc'] ?? '';
   $error = 0;
   $captcha_valid = isset($_SESSION['vihash'], $_POST['key'])
     && hash_equals($_SESSION['vihash'], md5((string) $_POST['key'] . 'mySecRetkEy'));
@@ -72,7 +76,8 @@ if( isset( $_POST['name'] ) )
   else
   {
     // Determine if this user is banned
-    if( get_row_count( "SELECT COUNT(*) FROM {$pre}options WHERE ( (name = 'banned_emails' && text LIKE '%{$_POST['email']}%') || (name = 'banned_ips' && text LIKE '%{$_SERVER['REMOTE_ADDR']}%') ) " ) )
+    $remote_address = $_SERVER['REMOTE_ADDR'] ?? '';
+    if( get_row_count( "SELECT COUNT(*) FROM {$pre}options WHERE ( (name = 'banned_emails' && text LIKE '%{$_POST['email']}%') || (name = 'banned_ips' && text LIKE '%$remote_address%') ) " ) )
     {
       echo $LANG['banned'];
       exit;
@@ -102,11 +107,11 @@ if( isset( $_POST['name'] ) )
     while( $row = mysql_fetch_array( $res ) )
       $custom .= addslashes( $row['name'] ) . "\n" . $_POST[$row['id']] . "\n";
 
-    mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, email, name, subject, date, status, notify, priority, custom, lastactivity, cc ) VALUES ( '$ticket', '{$_POST['department']}', '{$_POST['email']}', '{$_POST['name']}', '{$_POST['subject']}', '" . time( ) . "', '$HD_STATUS_OPEN', '" . ($_POST['notify'] == "on" ? "1" : "0") . "', '{$_POST['priority']}', '$custom', '" . time( ) . "', '{$_POST['cc']}' )" );
+    mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, email, name, subject, date, status, notify, priority, custom, lastactivity, cc ) VALUES ( '$ticket', '{$_POST['department']}', '{$_POST['email']}', '{$_POST['name']}', '{$_POST['subject']}', '" . time( ) . "', '$HD_STATUS_OPEN', '" . (($_POST['notify'] ?? '') == "on" ? "1" : "0") . "', '{$_POST['priority']}', '$custom', '" . time( ) . "', '" . ($_POST['cc'] ?? '') . "' )" );
 
     $id = mysql_insert_id( );
 
-    mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message, ip ) VALUES ( '$id', '-1', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}', '{$_SERVER['REMOTE_ADDR']}' )" );
+    mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message, ip ) VALUES ( '$id', '-1', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}', '$remote_address' )" );
 
     $res = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$_POST['department']}' )" );
     $row = mysql_fetch_array( $res );

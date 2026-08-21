@@ -141,7 +141,7 @@ class Captcha {
    * @return bool
    */
   public function isKeyRight($key) {
-    $isKeyRight = $_SESSION[$this->sessionName] == md5($key.$this->secretKey);
+    $isKeyRight = isset($_SESSION[$this->sessionName]) && $_SESSION[$this->sessionName] == md5($key.$this->secretKey);
     unset($_SESSION[$this->sessionName]);
     if ($isKeyRight) {
       return true;

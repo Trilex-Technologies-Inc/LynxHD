@@ -196,6 +196,7 @@ if( !isset( $_POST['cmd'] ) || $_POST['cmd'] == "deletecat" || $_POST['cmd'] == 
   {
     echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"4\">";
     $res = mysql_query( "SELECT id, description FROM {$pre}faq WHERE ( category = '{$_POST['parent']}' ) ORDER BY description" );
+    $bgcolor = "#EEEEEE";
 
     while( $row = mysql_fetch_array( $res ) )
     {
@@ -207,7 +208,8 @@ if( !isset( $_POST['cmd'] ) || $_POST['cmd'] == "deletecat" || $_POST['cmd'] == 
 }
 else if( $_POST['cmd'] == "view" )
 {
-  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '{$_GET['id']}' ) ORDER BY description" );
+  $faq_id = $_GET['id'] ?? '';
+  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '$faq_id' ) ORDER BY description" );
   $row = mysql_fetch_array( $res );
 
   echo "&lt;&lt; <a href=\"{$HD_CURPAGE}\">Main Category</a> &lt; <a href=\"{$HD_CURPAGE}?parent={$row['category']}\">Parent Category</a><br /><br />";
@@ -333,6 +335,7 @@ else if( $_POST['cmd'] == "edit" )
 }
 else if( $_POST['cmd'] == "search" )
 {
+  $_GET['search'] = $_GET['search'] ?? '';
   echo "<a href=\"{$HD_CURPAGE}\"><b>Back to categories</b></a><br /><br />";
   $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( description LIKE '%{$_GET['search']}%' || symptoms LIKE '%{$_GET['search']}%' || solution LIKE '%{$_GET['search']}%' ) ORDER BY date DESC" );
   if( !mysql_num_rows( $res ) )
@@ -340,11 +343,12 @@ else if( $_POST['cmd'] == "search" )
   else
   {
     echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"4\">";
+    $bgcolor = "#EEEEEE";
     
     while( $row = mysql_fetch_array( $res ) )
     {
       $res_cat = mysql_query( "SELECT description FROM {$pre}faq WHERE ( id = '{$row['category']}' )" );
-      $row_cat = mysql_fetch_array( $res_cat );
+      $row_cat = mysql_fetch_array( $res_cat ) ?: array( 'description' => '' );
 
       $bgcolor = ($bgcolor == "#DDDDDD") ? "#EEEEEE" : "#DDDDDD";
       echo "<tr bgcolor=\"$bgcolor\"><td><div class=\"normal\"><a href=\"{$HD_CURPAGE}?parent={$_POST['parent']}&cmd=view&id={$row['id']}\">" . field( $row['description'] ) . "</a>" . ((trim( $row_cat['description'] ) != "") ? "&nbsp;&nbsp;<span class=\"smallinfo\">[{$row_cat['description']}]</span>" : "") . "</div></td></tr>";

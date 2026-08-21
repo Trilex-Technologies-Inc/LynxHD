@@ -17,11 +17,13 @@ include "./include/settings.php";
 include "./include/include.php";
 
 $HD_CURPAGE = $HD_URL_PASSWORD;
+$_POST['key'] = $_POST['key'] ?? '';
+$_POST['id'] = $_POST['id'] ?? '';
 
 if( isset( $_GET['key'] ) )
 {
   $_POST['key'] = $_GET['key'];
-  $_POST['id'] = $_GET['id'];
+  $_POST['id'] = $_GET['id'] ?? '';
 }
 
 if( isset( $_POST['password'] ) )

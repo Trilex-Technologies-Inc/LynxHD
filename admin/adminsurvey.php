@@ -17,6 +17,7 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_SURVEY;
+$CURPAGE = $HD_CURPAGE;
 
 if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
@@ -44,8 +45,8 @@ if( isset( $_POST['survey1'] ) )
       mysql_query( "DELETE FROM {$pre}options WHERE ( name = 'survey{$i}' )" );
   }
 
-  $autosurvey = ($_POST['autosend'] == "on") ? "1" : "0";
-  $repeatsurvey = ($_POST['repeat'] == "on") ? "1" : "0";
+  $autosurvey = (($_POST['autosend'] ?? '') == "on") ? "1" : "0";
+  $repeatsurvey = (($_POST['repeat'] ?? '') == "on") ? "1" : "0";
 
   mysql_query( "UPDATE {$pre}options SET text = '$autosurvey' WHERE ( name = 'autosurvey' ) ");
   mysql_query( "UPDATE {$pre}options SET text = '$repeatsurvey' WHERE ( name = 'repeatsurvey' ) ");
@@ -144,6 +145,7 @@ if( $num_surveys )
 </tr>
 <?php /************************************************************/
   $res = mysql_query( "SELECT * FROM {$pre}survey ORDER BY date DESC LIMIT {$_GET['offset']},$results" );
+  $bgcolor = "#E8EDFF";
   while( $row = mysql_fetch_array( $res ) )
   {
     $bgcolor = ($bgcolor == "#E8EDFF") ? "#E8EDFF" : "#E8EDFF";

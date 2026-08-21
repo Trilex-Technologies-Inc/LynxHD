@@ -18,7 +18,7 @@ include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_BACKUP;
 
-if( $_SESSION['login_type'] == $LOGIN_INVALID || !$_SESSION['user']['admin'] )
+if( $_SESSION['login_type'] == $LOGIN_INVALID || !($_SESSION['user']['admin'] ?? false) )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
 if( (trim( $db_path_to_mysql ) != "") && ($db_path_to_mysql[strlen( $db_path_to_mysql ) - 1] != "/") )
@@ -43,7 +43,7 @@ if( $_GET['cmd'] == "send" )
 }
 else if( $_POST['cmd'] == "import" )
 {
-  if( $_FILES['backup']['size'] )
+  if( !empty($_FILES['backup']['size']) && !empty($_FILES['backup']['tmp_name']) )
   { 
     exec( "{$db_path_to_mysql}mysql -u {$db_user} -p{$db_password} -f {$db_name} < {$_FILES['backup']['tmp_name']}" );
     $msg = "<div class=\"successbox\">Backup restored.</div><br />";

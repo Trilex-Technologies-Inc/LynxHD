@@ -90,7 +90,7 @@ if( $_POST['cmd'] == "new" )
 
     $ticket = "M" . strtoupper( base_convert( time( ), 10, 16 ) );
     
-    mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, subject, date, status, notify, priority, lastactivity ) VALUES ( '$ticket', '{$_SESSION['user']['id']}', '{$_POST['subject']}', '" . time( ) . "', '$HD_STATUS_OPEN', '" . ($_POST['notify'] == "on" ? "1" : "0") . "', '{$_POST['priority']}', '" . time( ) . "' )" );
+    mysql_query( "INSERT INTO {$pre}ticket ( ticket_id, dept_id, subject, date, status, notify, priority, lastactivity ) VALUES ( '$ticket', '{$_SESSION['user']['id']}', '{$_POST['subject']}', '" . time( ) . "', '$HD_STATUS_OPEN', '" . (($_POST['notify'] ?? '') == "on" ? "1" : "0") . "', '{$_POST['priority']}', '" . time( ) . "' )" );
 
     $id = mysql_insert_id( );
 

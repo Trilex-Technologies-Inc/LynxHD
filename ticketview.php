@@ -31,7 +31,7 @@ if( isset( $_POST['id'] ) )
 
 $ticketexists = 0;
 
-if( isset( $_GET['id'] ) )
+if( isset( $_GET['id'], $_GET['email'] ) && $_GET['id'] !== '' && $_GET['email'] !== '' )
 {
   $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' && email = '{$_GET['email']}' )" );
   if( !$exists )
@@ -53,6 +53,7 @@ if( $ticketexists )
 
   if( ($_POST['cmd'] ?? '') == "reply" )
   {
+    $_POST['subject'] = $_POST['subject'] ?? '';
     if( trim( $_POST['message'] ?? '' ) == "" )
       $msg = "<div class=\"alert alert-danger\" role=\"alert\">{$LANG['specify_message']}</div>";
     else
@@ -116,7 +117,7 @@ if( $ticketexists )
     move_uploaded_file($_FILES['userfile']['tmp_name'], "{$HD_TICKET_FILES}/{$row['id']}/" . basename($_FILES['userfile']['name']));
   }
   else if( ($_POST['cmd'] ?? '') == "cc" )
-    mysql_query( "UPDATE {$pre}ticket SET cc = '{$_POST['cc']}' WHERE ( ticket_id = '{$_POST['id']}' )" );
+    mysql_query( "UPDATE {$pre}ticket SET cc = '" . ($_POST['cc'] ?? '') . "' WHERE ( ticket_id = '" . ($_POST['id'] ?? '') . "' )" );
   
   // Get row after possible updates
   $row = mysql_fetch_array( mysql_query( "SELECT * FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' )" ) );

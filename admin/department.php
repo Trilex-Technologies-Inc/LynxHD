@@ -17,6 +17,7 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_DEPARTMENT;
+$HD_URL_CURPAGE = $HD_CURPAGE;
 
 if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
@@ -45,7 +46,7 @@ else if( $_POST['cmd'] == "adduser" )
   {
     mysql_query( "DELETE FROM {$pre}privilege WHERE ( user_id = '{$_POST['user']}' && dept_id = '{$_POST['dept_id']}' )" );
 
-    if( $_POST['admin'] == "on" )
+    if( ($_POST['admin'] ?? '') == "on" )
       $admin = 1;
     else
       $admin = 0;
@@ -100,7 +101,7 @@ else if( $_GET['cmd'] == "unassign" )
 }
 else if( $_POST['cmd'] == "options" )
 {
-  $options = ($_POST['invisible'] == "on");
+  $options = (($_POST['invisible'] ?? '') == "on");
   if( get_row_count( "SELECT COUNT(*) FROM {$pre}dept WHERE ( name = '{$_POST['name']}' && id != '{$_POST['dept_id']}' )" ) )
     $msg = "<div class=\"errorbox\">A department with that name already exists.</div><br />";
   else if( $global_priv )
@@ -112,7 +113,7 @@ else if( $_POST['cmd'] == "fields" )
   {
     if( is_int( $key ) )
     {
-      $required = ($_POST["{$key}req"] == "on");
+      $required = (($_POST["{$key}req"] ?? '') == "on");
       mysql_query( "UPDATE {$pre}field SET name = '{$_POST[$key]}', required = '$required' WHERE ( id = '$key' )" );
     }
   }
@@ -121,7 +122,7 @@ else if( $_POST['cmd'] == "fields" )
   {
     if( !get_row_count( "SELECT COUNT(*) FROM {$pre}field WHERE ( name = '{$_POST['newfield']}' && (dept_id = '{$_POST['dept_id']}' || dept_id = '0') )" ) )
     {
-      $required = ($_POST['required'] == "on");
+      $required = (($_POST['required'] ?? '') == "on");
       mysql_query( "INSERT INTO {$pre}field ( name, required, dept_id ) VALUES ( '{$_POST['newfield']}', '$required', '{$_POST['dept_id']}' )" );
     }
   }

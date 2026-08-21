@@ -17,6 +17,7 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_ADMINVIEW;
+$_GET['id'] = $_GET['id'] ?? '';
 
 function attach_sort( $a, $b )
 {
@@ -37,7 +38,7 @@ if( isset( $_POST['id'] ) )
 
 $ticketexists = 0;
 
-if( $_GET['id'][0] == 'M' )
+if( strncmp( $_GET['id'], 'M', 1 ) == 0 )
   $is_ticket = 0;
 else
   $is_ticket = 1;
@@ -79,11 +80,12 @@ if( $ticketexists )
 
   if( $_POST['cmd'] == "reply" )
   {
+    $_POST['subject'] = $_POST['subject'] ?? '';
     if( trim( $_POST['message'] ?? '' ) == "" )
       $msg = "<div class=\"errorbox\">You must specify a message in your reply (subjects are optional).</div><br />";
     else
     {
-      $private = ($_POST["private"] == "on");
+      $private = (($_POST["private"] ?? '') == "on");
 
       if( $is_ticket )
       {
@@ -114,7 +116,7 @@ if( $ticketexists )
 
       mysql_query( "UPDATE {$pre}message SET viewed = '0' WHERE ( ticket_id = '{$row['id']}' && user_id = '{$_SESSION['user']['id']}' )" );
 
-      if( $_POST['close'] == "on" )
+      if( ($_POST['close'] ?? '') == "on" )
       {
         if( $data['autosurvey'] )
           send_survey( $row['id'] );
@@ -128,7 +130,7 @@ if( $ticketexists )
         else
           mysql_query( "UPDATE {$pre}ticket SET lastactivity = '" . time( ) . "', lastpost = '{$_SESSION['user']['id']}' WHERE ( ticket_id = '{$_GET['id']}' )" );
       }
-      if( $_POST['save'] == "on" )
+      if( ($_POST['save'] ?? '') == "on" )
       {
         if( trim( $_POST['replyname'] ?? '' ) != "" )
         {
@@ -235,7 +237,7 @@ if( $ticketexists )
     copy( $HTTP_POST_FILES["userfile"]["tmp_name"], "{$HD_TICKET_FILES}/{$row['id']}/" . basename( $HTTP_POST_FILES["userfile"]["name"] ) );
   }
   else if( $_POST['cmd'] == "cc" )
-    mysql_query( "UPDATE {$pre}ticket SET cc = '{$_POST['cc']}' WHERE ( ticket_id = '{$_POST['id']}' )" );
+    mysql_query( "UPDATE {$pre}ticket SET cc = '" . ($_POST['cc'] ?? '') . "' WHERE ( ticket_id = '{$_POST['id']}' )" );
 
   // Get row after possible updates
   $row = mysql_fetch_array( mysql_query( "SELECT * FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' )" ) );
@@ -422,6 +424,8 @@ Status:&nbsp;
 
   $priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && admin = '1' && (dept_id = '{$row['dept_id']}' || dept_id = '0') )" );
 
+  $bgcolor = "#EEEEEE";
+  $private_bgcolor = "#FFEEDA";
   while( $row_post = mysql_fetch_array( $res_post ) )
   {
     if( trim( $row_post['subject'] ) == "" )
@@ -615,6 +619,7 @@ Status:&nbsp;
 <table width="100%" border="0" cellspacing="1" cellpadding="3">
 <tr bgcolor="#3c91c7"><td width="100"><div class="tableheader">Ticket#</div></td><td width="40%"><div class="tableheader">Subject</div></td><td width="30%"><div class="tableheader">Department</div></td><td><div class="tableheader">Date</div></td></tr>
 <?php /************************************************************/
+    $bgcolor = "#E8EDFF";
     while( $row_others = mysql_fetch_array( $res_others ) )
     {
       $res_dept = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$row_others['dept_id']}' )" );

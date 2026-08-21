@@ -70,7 +70,7 @@ if( $_POST['cmd'] == "reply" )
 
         mysql_query( "UPDATE {$pre}ticket SET lastactivity = '" . time( ) . "' WHERE ( id = '{$tickets[$i]}' )" );
 
-        if( $_POST['save'] == "on" )
+        if( ($_POST['save'] ?? '') == "on" )
         {
           if( trim( $_POST['replyname'] ?? '' ) != "" )
           {
