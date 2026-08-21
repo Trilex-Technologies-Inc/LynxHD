@@ -75,7 +75,7 @@ else
 </div>
 <?php echo $msg ?? '' ?>
 <?php /************************************************************/
-if( !isset( $_POST['cmd'] ) )
+if( ($_POST['cmd'] ?? '') == '' )
 {
 /********************************************************** PHP */?>
 <nav aria-label="Knowledge base breadcrumb" class="mb-4">
@@ -89,14 +89,14 @@ if( !isset( $_POST['cmd'] ) )
 </nav>
 <h3 class="h5 mb-3"><?php echo $LANG['faq_browsing'] ?> “<?php echo field($row_cat['description']) ?>”</h3>
 <?php /************************************************************/
-  $res = mysql_query( "SELECT id, description, symptoms FROM {$pre}faq WHERE ( parent = '{$_POST['parent']}' ) ORDER BY description" );
+  $res = mysql_query( "SELECT id, description, symptoms FROM {$pre}faq WHERE ( parent = '{$_POST['parent']}' && category = '-1' ) ORDER BY description" );
   if( mysql_num_rows( $res ) )
   {
     echo '<div class="row g-3 mb-4">';
     while( $row = mysql_fetch_array( $res ) )
     {
       $items = get_row_count( "SELECT COUNT(*) FROM {$pre}faq WHERE ( category = '{$row['id']}' )" );
-      $subcats = get_row_count( "SELECT COUNT(*) FROM {$pre}faq WHERE ( parent = '{$row['id']}' )" );
+      $subcats = get_row_count( "SELECT COUNT(*) FROM {$pre}faq WHERE ( parent = '{$row['id']}' && category = '-1' )" );
       $description = trim($row['symptoms']) !== '' ? field($row['symptoms']) : $LANG['faq_no_description'];
       echo '<div class="col-md-6"><a class="faq-category card h-100 border shadow-sm text-decoration-none" href="' . $HD_CURPAGE . '?parent=' . (int) $row['id'] . '"><div class="card-body p-4">';
       echo '<div class="d-flex justify-content-between align-items-start gap-3"><h4 class="h5 text-body mb-2">' . field($row['description']) . '</h4><span class="faq-arrow" aria-hidden="true">&rarr;</span></div>';
@@ -150,7 +150,7 @@ else if( $_POST['cmd'] == "search" )
 {
   $_GET['search'] = $_GET['search'] ?? '';
   echo '<div class="d-flex justify-content-between align-items-center gap-3 mb-3"><h3 class="h5 mb-0">Search results</h3><a class="btn btn-sm btn-outline-secondary" href="' . $HD_CURPAGE . '">' . $LANG['faq_categories'] . '</a></div>';
-  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( description LIKE '%{$_GET['search']}%' || symptoms LIKE '%{$_GET['search']}%' || solution LIKE '%{$_GET['search']}%' ) ORDER BY description" );
+  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( parent = '-1' && (description LIKE '%{$_GET['search']}%' || symptoms LIKE '%{$_GET['search']}%' || solution LIKE '%{$_GET['search']}%') ) ORDER BY description" );
   if( !mysql_num_rows( $res ) )
     echo '<div class="alert alert-light border" role="status">' . $LANG['faq_no_results'] . '</div>';
   else
