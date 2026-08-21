@@ -20,6 +20,25 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
   <link href="./css/form.css" rel="stylesheet">
   <link href="./css/buttons.css" rel="stylesheet">
   <link href="./css/sb-admin-overrides.css" rel="stylesheet">
+  <script src="../include/tinymce/js/tinymce/tinymce.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof tinymce === 'undefined') return;
+      tinymce.init({
+        selector: 'textarea',
+        license_key: 'gpl',
+        plugins: 'advlist autolink autoresize charmap code fullscreen image link lists media preview searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media table | removeformat code fullscreen',
+        menubar: 'file edit view insert format tools table help',
+        min_height: 280,
+        autoresize_bottom_margin: 24,
+        browser_spellcheck: true,
+        convert_urls: false,
+        promotion: false,
+        branding: false
+      });
+    });
+  </script>
 </head>
 <body id="page-top" class="<?php echo $admin_logged_in ? '' : 'bg-gradient-primary' ?>">
 <?php if ($admin_logged_in): ?>

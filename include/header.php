@@ -19,6 +19,25 @@ $asset_prefix = isset($asset_prefix) ? $asset_prefix : '';
   <link rel="stylesheet" href="<?php echo $asset_prefix ?>css/client.css">
 <?php endif; ?>
   <link href="<?php echo $asset_prefix ?>css/home.css" rel="stylesheet">
+  <script src="<?php echo $asset_prefix ?>include/tinymce/js/tinymce/tinymce.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof tinymce === 'undefined') return;
+      tinymce.init({
+        selector: 'textarea',
+        license_key: 'gpl',
+        plugins: 'advlist autolink autoresize charmap code fullscreen image link lists media preview searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media table | removeformat code fullscreen',
+        menubar: 'file edit view insert format tools table help',
+        min_height: 280,
+        autoresize_bottom_margin: 24,
+        browser_spellcheck: true,
+        convert_urls: false,
+        promotion: false,
+        branding: false
+      });
+    });
+  </script>
 </head>
 <body class="<?php echo $is_modern_home ? '' : 'lynx-legacy-page'; ?>">
   <header class="site-header bg-white border-bottom">
