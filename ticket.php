@@ -78,7 +78,7 @@ else
 <li>
 	   <label class="desc">Email:</label>
     <div>   
-    <input class="field text medium" type="text" name="email" size="30" value="<?php echo field( $_GET['email'] ) ?>" /> </div>
+    <input class="field text medium" type="text" name="email" size="30" value="<?php echo field( $_GET['email'] ?? '' ) ?>" /> </div>
 </li>
 <div class="buttons">
     <button type="submit" class="positive">Lookup</button>

@@ -68,14 +68,14 @@ else if( $_GET['cmd'] == "del" && $global_priv )
   mysql_query( "DELETE FROM {$pre}privilege WHERE ( user_id = '{$_GET['id']}' )" );
 }
 
-if( $_GET['tickets'] <= 0 || $_GET['tickets'] > 100 )
+if( !isset($_GET['tickets']) || $_GET['tickets'] <= 0 || $_GET['tickets'] > 100 )
   $_GET['tickets'] = 20;
 
 include "./include/header.php";
 /********************************************************** PHP */?>
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
   <div><h1 class="h3 mb-1 text-gray-800">User management</h1><p class="mb-0 text-gray-600">Create support accounts and review team access.</p></div>
-  <?php if ($_GET['cmd'] == 'view'): ?><a class="btn btn-light btn-sm shadow-sm mt-3 mt-sm-0" href="<?php echo field($HD_CURPAGE) ?>"><i class="fas fa-arrow-left fa-sm mr-1"></i> All users</a><?php elseif ($global_priv): ?><a class="btn btn-primary btn-sm shadow-sm mt-3 mt-sm-0" href="#create-user"><i class="fas fa-user-plus fa-sm mr-1"></i> Create user</a><?php endif; ?>
+  <?php if (($_GET['cmd'] ?? '') == 'view'): ?><a class="btn btn-light btn-sm shadow-sm mt-3 mt-sm-0" href="<?php echo field($HD_CURPAGE) ?>"><i class="fas fa-arrow-left fa-sm mr-1"></i> All users</a><?php elseif ($global_priv): ?><a class="btn btn-primary btn-sm shadow-sm mt-3 mt-sm-0" href="#create-user"><i class="fas fa-user-plus fa-sm mr-1"></i> Create user</a><?php endif; ?>
 </div>
 <?php echo $msg ?>
 <?php /************************************************************/

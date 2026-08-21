@@ -528,7 +528,7 @@ Status:&nbsp;
 	   <label class="desc">Message:</label>
 	   <?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?>
     <div>
-    	<textarea class="field textarea medium" name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ) ?></textarea>
+        <textarea class="field textarea medium" name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ?? '' ) ?></textarea>
 	</div>
 </li>
 <?php /************************************************************/

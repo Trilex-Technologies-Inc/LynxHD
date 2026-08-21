@@ -37,7 +37,7 @@ function admin_download_size( $bytes )
 if( !is_dir($download_directory) )
   @mkdir( $download_directory, 0775, true );
 
-if( $_POST['cmd'] == "upload" )
+if( ($_POST['cmd'] ?? '') == "upload" )
 {
   if( !isset($_FILES['download_file']) || $_FILES['download_file']['error'] != UPLOAD_ERR_OK )
     $msg = '<div class="errorbox">Choose a file to upload.</div>';
@@ -59,7 +59,7 @@ if( $_POST['cmd'] == "upload" )
       $msg = '<div class="successbox">' . field($file_name) . ' is now available in the public download library.</div>';
   }
 }
-else if( $_POST['cmd'] == "delete" )
+else if( ($_POST['cmd'] ?? '') == "delete" )
 {
   $file_name = basename( (string)$_POST['file'] );
   $file_path = $download_directory . DIRECTORY_SEPARATOR . $file_name;

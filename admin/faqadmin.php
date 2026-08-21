@@ -232,6 +232,14 @@ else if( $_POST['cmd'] == "view" )
 }
 else if( $_POST['cmd'] == "edit" )
 {
+  $row = array(
+    'id' => 0,
+    'category' => $_POST['parent'] ?? 0,
+    'description' => '',
+    'symptoms' => '',
+    'solution' => ''
+  );
+
   if( isset( $_GET['id'] ) )
   {
     $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '{$_GET['id']}' )" );
@@ -281,15 +289,15 @@ else if( $_POST['cmd'] == "edit" )
     </td></tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Description:&nbsp;</div></td>
-      <td><input type="text" name="description" size="30" value="<?php echo field( $_POST['description'] ) ?>" /></td>
+      <td><input type="text" name="description" size="30" value="<?php echo field( $_POST['description'] ?? '' ) ?>" /></td>
     </tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Symptoms:&nbsp;</div></td>
-      <td><textarea name="symptoms" rows="5" cols="40"><?php echo field( $_POST['symptoms'] ) ?></textarea></td>
+      <td><textarea name="symptoms" rows="5" cols="40"><?php echo field( $_POST['symptoms'] ?? '' ) ?></textarea></td>
     </tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Solution:&nbsp;</div></td>
-      <td><textarea name="solution" rows="5" cols="40"><?php echo field( $_POST['solution'] ) ?></textarea><br /><img src="./images/blank.gif" width="1" height="12" /></td>
+      <td><textarea name="solution" rows="5" cols="40"><?php echo field( $_POST['solution'] ?? '' ) ?></textarea><br /><img src="./images/blank.gif" width="1" height="12" /></td>
     </tr>
     <tr><td colspan="2" align="center"><input type="submit" value="Update">&nbsp;&nbsp;<input type="reset"><br /><img src="./images/blank.gif" width="1" height="12" /></td></tr>
 <?php /************************************************************/

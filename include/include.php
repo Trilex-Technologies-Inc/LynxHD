@@ -13,8 +13,14 @@
 //         Web: http://www.lynxhd.com
 // -----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////
-include "./lang/language.php"; // Language pack file
+include __DIR__ . "/../lang/language.php"; // Language pack file
 require_once __DIR__ . "/mysql-compat.php";
+
+// Optional request values and page messages are absent on an initial page load.
+// Give legacy pages safe defaults so PHP 8 does not emit undefined-key warnings.
+$msg = "";
+$_GET['cmd'] = $_GET['cmd'] ?? '';
+$_POST['cmd'] = $_POST['cmd'] ?? '';
 
 $website_name = "LynxHD";
 $script_name = "";
@@ -203,7 +209,10 @@ else // Otherwise, setup sessions and help desk path
     }
   }
 
-  if( !get_row_count( "SELECT COUNT(*) FROM {$pre}user WHERE ( id = '{$_SESSION['user']['id']}' && password = '{$_SESSION['user']['password']}' )" ) )
+  $session_user_id = $_SESSION['user']['id'] ?? '';
+  $session_password = $_SESSION['user']['password'] ?? '';
+
+  if( $session_user_id === '' || $session_password === '' || !get_row_count( "SELECT COUNT(*) FROM {$pre}user WHERE ( id = '$session_user_id' && password = '$session_password' )" ) )
     $_SESSION['login_type'] = $LOGIN_INVALID;
   else if( (time( ) - $_SESSION['time']) > 1800 )
     $_SESSION['login_type'] = $LOGIN_INVALID;
