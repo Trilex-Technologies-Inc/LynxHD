@@ -17,22 +17,23 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_SURVEY;
+$CURPAGE = $HD_CURPAGE;
 
-if( $_SESSION[login_type] == $LOGIN_INVALID )
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
-$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION[user][id]}' && dept_id = '0' && admin = '1' )" );
+$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' && admin = '1' )" );
 if( !$global_priv )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
-if( $_GET[cmd] == "delete" )
+if( $_GET['cmd'] == "delete" )
   mysql_query( "DELETE FROM {$pre}survey" );
 
-if( isset( $_POST[survey1] ) )
+if( isset( $_POST['survey1'] ) )
 {
   for( $i = 1; $i <= 10; $i++ )
   {
-    if( trim( $_POST["survey{$i}"] ) != "" )
+    if( trim( $_POST["survey{$i}"] ?? '' ) != "" )
     {
       $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}options WHERE ( name = 'survey{$i}' )" );
       if( !$exists )
@@ -44,8 +45,8 @@ if( isset( $_POST[survey1] ) )
       mysql_query( "DELETE FROM {$pre}options WHERE ( name = 'survey{$i}' )" );
   }
 
-  $autosurvey = ($_POST[autosend] == "on") ? "1" : "0";
-  $repeatsurvey = ($_POST[repeat] == "on") ? "1" : "0";
+  $autosurvey = (($_POST['autosend'] ?? '') == "on") ? "1" : "0";
+  $repeatsurvey = (($_POST['repeat'] ?? '') == "on") ? "1" : "0";
 
   mysql_query( "UPDATE {$pre}options SET text = '$autosurvey' WHERE ( name = 'autosurvey' ) ");
   mysql_query( "UPDATE {$pre}options SET text = '$repeatsurvey' WHERE ( name = 'repeatsurvey' ) ");
@@ -53,17 +54,17 @@ if( isset( $_POST[survey1] ) )
 
 $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'autosurvey' )" );
 $row = mysql_fetch_array( $res );
-$_POST[autosend] = $row[0];
+$_POST['autosend'] = (is_array($row) && isset($row[0])) ? $row[0] : 0;
 
 $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'repeatsurvey' )" );
 $row = mysql_fetch_array( $res );
-$_POST[repeat] = $row[0];
+$_POST['repeat'] = (is_array($row) && isset($row[0])) ? $row[0] : 0;
 
 for( $i = 1; $i <= 10; $i++ )
 {
   $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'survey{$i}' )" );
   $row = mysql_fetch_array( $res );
-  $_POST["survey{$i}"] = $row[0];
+  $_POST["survey{$i}"] = (is_array($row) && isset($row[0])) ? $row[0] : '';
 }
 
 include "./include/header.php";
@@ -78,26 +79,26 @@ if( $num_surveys )
 {
   $res = mysql_query( "SELECT date FROM {$pre}survey ORDER BY date DESC LIMIT 1" );
   $row = mysql_fetch_array( $res );
-  $date = $row[0];
+  $date = (is_array($row) && isset($row[0])) ? $row[0] : 0;
 
-  echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\" bgcolor=\"#3c91c7\"><tr><td><div class=\"normal\" style=\"color: white\">There have been a total of <b>$num_surveys</b> survey(s).  The last survey was conducted on <b>" . date( "F j, Y", $row[0] ) . ".</b></div></td></tr></table><br />";
+  echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\" bgcolor=\"#3c91c7\"><tr><td><div class=\"normal\" style=\"color: white\">There have been a total of <b>$num_surveys</b> survey(s).  The last survey was conducted on <b>" . date( "F j, Y", $date ) . ".</b></div></td></tr></table><br />";
 
   $res = mysql_query( "SELECT * FROM {$pre}options WHERE ( name LIKE 'survey%' ) ORDER BY num" );
   while( $row = mysql_fetch_array( $res ) )
   {
-    $res_temp = mysql_query( "SELECT AVG( rating{$row[num]} ) FROM {$pre}survey" );
+    $res_temp = mysql_query( "SELECT AVG( rating{$row['num']} ) FROM {$pre}survey" );
     $row_temp = mysql_fetch_array( $res_temp );
     $avg = $row_temp[0];
    
     echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\" bgcolor=\"#99CCFF\"><tr><td><div class=\"normal\">";
-    echo "<b>{$row[num]}. " . field( $row[text] ) . "</b> <i>(";
+    echo "<b>{$row['num']}. " . field( $row['text'] ) . "</b> <i>(";
     printf( "%.2f", $avg );
     echo "/5 average rating)</i>"; 
     echo "</div></td></tr></table><br />Customers who rated this a score of:<br /><br />";
 
     for( $i = 1; $i <= 5; $i++ )
     {
-      $num_votes = get_row_count( "SELECT COUNT(*) FROM {$pre}survey WHERE ( rating{$row[num]} = '$i' )" );
+      $num_votes = get_row_count( "SELECT COUNT(*) FROM {$pre}survey WHERE ( rating{$row['num']} = '$i' )" );
       echo "<b>$i</b>:&nbsp;&nbsp;&nbsp;&nbsp;";
       echo "<img src=\"./images/histoclose.gif\" />";
       echo "<img src=\"./images/histobar.gif\" width=\"" . round( $num_votes / $num_surveys * 200 ) . "\" height=\"12\" />";
@@ -112,18 +113,18 @@ if( $num_surveys )
 <a href="javascript:if(confirm('Are you sure you want to delete all surveys?')) window.location.href='<?php echo $CURPAGE ?>?cmd=delete'"><img src="images/ticket-delete.png" border="0" hspace="5" />Delete All Surveys</a><br /><br />
 <?php /************************************************************/
   $results = 10;
-  if( !isset( $_GET[offset] ) || $_GET[offset] < 0 || $_GET[offset] >= $num_surveys )
-    $_GET[offset] = 0;
+  if( !isset( $_GET['offset'] ) || $_GET['offset'] < 0 || $_GET['offset'] >= $num_surveys )
+    $_GET['offset'] = 0;
 /********************************************************** PHP */?>
 <table width="100%" border="0" cellspacing="1" cellpadding="5" bgcolor="#3c91c7"><tr><td><div class="tableheader">
 <?php /************************************************************/
-  if( $_GET[offset] > $results )
-    $prevoffset = $_GET[offset] - $results;
-  else if ( $_GET[offset] != 0 )
+  if( $_GET['offset'] > $results )
+    $prevoffset = $_GET['offset'] - $results;
+  else if ( $_GET['offset'] != 0 )
     $prevoffset = 0;
 
-  if( $_GET[offset] < ($num_surveys - $results) )
-    $nextoffset = $_GET[offset] + $results;
+  if( $_GET['offset'] < ($num_surveys - $results) )
+    $nextoffset = $_GET['offset'] + $results;
 
   if( isset( $prevoffset ) )
     echo "<a href=\"{$CURPAGE}?offset={$prevoffset}#browse\"><b>&lt;&lt;</b></a> - ";
@@ -143,19 +144,20 @@ if( $num_surveys )
 <td><div class="tableheader">Avg</div></td><td><div class="tableheader">Comments</div></td>
 </tr>
 <?php /************************************************************/
-  $res = mysql_query( "SELECT * FROM {$pre}survey ORDER BY date DESC LIMIT {$_GET[offset]},$results" );
+  $res = mysql_query( "SELECT * FROM {$pre}survey ORDER BY date DESC LIMIT {$_GET['offset']},$results" );
+  $bgcolor = "#E8EDFF";
   while( $row = mysql_fetch_array( $res ) )
   {
     $bgcolor = ($bgcolor == "#E8EDFF") ? "#E8EDFF" : "#E8EDFF";
 
-    $res_temp = mysql_query( "SELECT ticket_id FROM {$pre}ticket WHERE ( id = '{$row[ticket_id]}' )" );
+    $res_temp = mysql_query( "SELECT ticket_id FROM {$pre}ticket WHERE ( id = '{$row['ticket_id']}' )" );
     $row_temp = mysql_fetch_array( $res_temp );
     if( $row_temp )
       $ticket = "<a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row_temp[0]}\" target=\"_blank\">{$row_temp[0]}</a>";  
     else
       $ticket = "N/A";
 
-    echo "<tr bgcolor=\"$bgcolor\"><td><div class=\"normal\">$ticket</div></td><td><div class=\"normal\"><a href=\"mailto:{$row[email]}\">{$row[email]}</a></div></td><td><div class=\"normal\">" . date( "m-j-Y", $row[date] ) . "</div></td>\n";
+    echo "<tr bgcolor=\"$bgcolor\"><td><div class=\"normal\">$ticket</div></td><td><div class=\"normal\"><a href=\"mailto:{$row['email']}\">{$row['email']}</a></div></td><td><div class=\"normal\">" . date( "m-j-Y", $row['date'] ) . "</div></td>\n";
 
     $total = 0;
     for( $i = 1; $i <= $num_fields; $i++ )
@@ -168,8 +170,8 @@ if( $num_surveys )
     printf( "%.2f", $total / $num_fields );
     echo "</b>/5</div></td>";
 
-    if( trim( $row[comments] ) != "" )
-      $comments = "<a href=\"javascript:alert('" . addslashes( htmlspecialchars( $row[comments] ) ) . "')\">" . substr( field( $row[comments] ), 0, 10 ) . "...</a>";
+    if( trim( $row['comments'] ) != "" )
+      $comments = "<a href=\"javascript:alert('" . addslashes( htmlspecialchars( $row['comments'] ) ) . "')\">" . substr( field( $row['comments'] ), 0, 10 ) . "...</a>";
     else
       $comments = "No comments";
 
@@ -200,15 +202,15 @@ else echo "<b>There are currently no completed surveys.</b><br />";
 <form class="wufoo" action="<?php echo $CURPAGE ?>" method="post">
 <input type="hidden" name="cmd" value="setup" />
 <table>
-<tr><td align="right"><div class="normal">1.</div></td><td><input type="text" name="survey1" size="50" value="<?php echo field( $_POST[survey1] ) ?>" /></td><td align="right"><div class="normal">6.</div></td><td><input type="text" name="survey6" size="50" value="<?php echo field( $_POST[survey6] ) ?>" /></td></tr>
-<tr><td align="right"><div class="normal">2.</div></td><td><input type="text" name="survey2" size="50" value="<?php echo field( $_POST[survey2] ) ?>" /></td><td align="right"><div class="normal">7.</div></td><td><input type="text" name="survey7" size="50" value="<?php echo field( $_POST[survey7] ) ?>" /></td></tr>
-<tr><td align="right"><div class="normal">3.</div></td><td><input type="text" name="survey3" size="50" value="<?php echo field( $_POST[survey3] ) ?>" /></td><td align="right"><div class="normal">8.</div></td><td><input type="text" name="survey8" size="50" value="<?php echo field( $_POST[survey8] ) ?>" /></td></tr>
-<tr><td align="right"><div class="normal">4.</div></td><td><input type="text" name="survey4" size="50" value="<?php echo field( $_POST[survey4] ) ?>" /></td><td align="right"><div class="normal">9.</div></td><td><input type="text" name="survey9" size="50" value="<?php echo field( $_POST[survey9] ) ?>" /></td></tr>
-<tr><td align="right"><div class="normal">5.</div></td><td><input type="text" name="survey5" size="50" value="<?php echo field( $_POST[survey5] ) ?>" /></td><td align="right"><div class="normal">10.</div></td><td><input type="text" name="survey10" size="50" value="<?php echo field( $_POST[survey10] ) ?>" /></td></tr>
+<tr><td align="right"><div class="normal">1.</div></td><td><input type="text" name="survey1" size="50" value="<?php echo field( $_POST['survey1'] ) ?>" /></td><td align="right"><div class="normal">6.</div></td><td><input type="text" name="survey6" size="50" value="<?php echo field( $_POST['survey6'] ) ?>" /></td></tr>
+<tr><td align="right"><div class="normal">2.</div></td><td><input type="text" name="survey2" size="50" value="<?php echo field( $_POST['survey2'] ) ?>" /></td><td align="right"><div class="normal">7.</div></td><td><input type="text" name="survey7" size="50" value="<?php echo field( $_POST['survey7'] ) ?>" /></td></tr>
+<tr><td align="right"><div class="normal">3.</div></td><td><input type="text" name="survey3" size="50" value="<?php echo field( $_POST['survey3'] ) ?>" /></td><td align="right"><div class="normal">8.</div></td><td><input type="text" name="survey8" size="50" value="<?php echo field( $_POST['survey8'] ) ?>" /></td></tr>
+<tr><td align="right"><div class="normal">4.</div></td><td><input type="text" name="survey4" size="50" value="<?php echo field( $_POST['survey4'] ) ?>" /></td><td align="right"><div class="normal">9.</div></td><td><input type="text" name="survey9" size="50" value="<?php echo field( $_POST['survey9'] ) ?>" /></td></tr>
+<tr><td align="right"><div class="normal">5.</div></td><td><input type="text" name="survey5" size="50" value="<?php echo field( $_POST['survey5'] ) ?>" /></td><td align="right"><div class="normal">10.</div></td><td><input type="text" name="survey10" size="50" value="<?php echo field( $_POST['survey10'] ) ?>" /></td></tr>
 </table>
 <br />
-<input type="checkbox" name="autosend" <?php if( $_POST[autosend] ) echo "checked" ?> /> Auto-send surveys when tickets are closed.<br />
-<input type="checkbox" name="repeat" <?php if( $_POST[repeat] ) echo "checked" ?> /> Send surveys to users who have already been surveyed for other tickets.<br /><br />
+<input type="checkbox" name="autosend" <?php if( $_POST['autosend'] ) echo "checked" ?> /> Auto-send surveys when tickets are closed.<br />
+<input type="checkbox" name="repeat" <?php if( $_POST['repeat'] ) echo "checked" ?> /> Send surveys to users who have already been surveyed for other tickets.<br /><br />
 <div class="buttons">
     <button type="submit" class="positive">Update Configuration</button>
 </div>

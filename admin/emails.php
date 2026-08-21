@@ -18,16 +18,16 @@ include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_EMAILS;
 
-if( $_SESSION[login_type] == $LOGIN_INVALID )
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
-$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION[user][id]}' && dept_id = '0' )" );
+$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' )" );
 if( !$global_priv )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
 $options = array( "emailheader", "emailfooter", "email_ticket_notify", "email_ticket_notify_subject", "email_ticket_created", "email_ticket_created_subject", "email_ticket_survey_subject", "email_ticket_survey", "email_notify_create_subject", "email_notify_create", "email_notify_reply_subject", "email_notify_reply", "email_notifysms_create_subject", "email_notifysms_create", "email_notifysms_reply_subject", "email_notifysms_reply", "email_ticket_lookup", "email_ticket_lookup_subject" );
 
-if( isset( $_POST[emailheader] ) )
+if( isset( $_POST['emailheader'] ) )
 {
   for( $i = 0; $i < count( $options ); $i++ )
   {
@@ -62,13 +62,13 @@ include "./include/header.php";
 <li>
 	   <label class="desc">Header:</label>
     <div>
-    	<textarea class="field textarea medium" name="emailheader" rows="5" cols="40"><?php echo field( $_POST[emailheader] ) ?></textarea>
+    	<textarea class="field textarea medium" name="emailheader" rows="5" cols="40"><?php echo field( $_POST['emailheader'] ) ?></textarea>
 	</div>
 </li>
     <li>
 	   <label class="desc">Footer:</label>
     <div>
-    	<textarea class="field textarea medium" name="emailfooter" rows="5" cols="40"><?php echo field( $_POST[emailfooter] ) ?></textarea>
+    	<textarea class="field textarea medium" name="emailfooter" rows="5" cols="40"><?php echo field( $_POST['emailfooter'] ) ?></textarea>
 	</div>
 </li>
     <h1>- Ticket Creation Email -</h1> 
@@ -78,13 +78,13 @@ include "./include/header.php";
   <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="email_ticket_created_subject" size="30" value="<?php echo field( $_POST[email_ticket_created_subject] ) ?>" />
+    	<input class="field text medium" type="text" name="email_ticket_created_subject" size="30" value="<?php echo field( $_POST['email_ticket_created_subject'] ) ?>" />
 	</div>
 </li>
  <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_ticket_created" rows="5" cols="40"><?php echo field( $_POST[email_ticket_created] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_ticket_created" rows="5" cols="40"><?php echo field( $_POST['email_ticket_created'] ) ?></textarea>
 	</div>
 </li>
     <h1>- Ticket Notification Email -</h1> 
@@ -94,13 +94,13 @@ include "./include/header.php";
 <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="email_ticket_notify_subject" size="30" value="<?php echo field( $_POST[email_ticket_notify_subject] ) ?>" />
+    	<input class="field text medium" type="text" name="email_ticket_notify_subject" size="30" value="<?php echo field( $_POST['email_ticket_notify_subject'] ) ?>" />
 	</div>
 </li>
     <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_ticket_notify" rows="5" cols="40"><?php echo field( $_POST[email_ticket_notify] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_ticket_notify" rows="5" cols="40"><?php echo field( $_POST['email_ticket_notify'] ) ?></textarea>
 	</div>
 </li>
 	<h1>- Ticket Lookup Email -</h1> 
@@ -110,13 +110,13 @@ include "./include/header.php";
 <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="email_ticket_lookup_subject" size="30" value="<?php echo field( $_POST[email_ticket_lookup_subject] ) ?>" />
+    	<input class="field text medium" type="text" name="email_ticket_lookup_subject" size="30" value="<?php echo field( $_POST['email_ticket_lookup_subject'] ) ?>" />
 	</div>
 </li>
    <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_ticket_lookup" rows="5" cols="40"><?php echo field( $_POST[email_ticket_lookup] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_ticket_lookup" rows="5" cols="40"><?php echo field( $_POST['email_ticket_lookup'] ) ?></textarea>
 	</div>
 </li>
     <h1>- User Notification (Ticket Created) -</h1>  
@@ -126,13 +126,13 @@ include "./include/header.php";
 	<li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="email_notify_create_subject" size="30" value="<?php echo field( $_POST[email_notify_create_subject] ) ?>" />
+    	<input class="field text medium" type="text" name="email_notify_create_subject" size="30" value="<?php echo field( $_POST['email_notify_create_subject'] ) ?>" />
 	</div>
 </li>
     <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_notify_create" rows="5" cols="40"><?php echo field( $_POST[email_notify_create] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_notify_create" rows="5" cols="40"><?php echo field( $_POST['email_notify_create'] ) ?></textarea>
 	</div>
 </li>
     <h1>- User Notification (Ticket Reply) -</h1>  
@@ -142,13 +142,13 @@ include "./include/header.php";
 	 <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="email_notify_reply_subject" size="30" value="<?php echo field( $_POST[email_notify_reply_subject] ) ?>" />
+    	<input class="field text medium" type="text" name="email_notify_reply_subject" size="30" value="<?php echo field( $_POST['email_notify_reply_subject'] ) ?>" />
 	</div>
 </li>
    <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_notify_reply" rows="5" cols="40"><?php echo field( $_POST[email_notify_reply] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_notify_reply" rows="5" cols="40"><?php echo field( $_POST['email_notify_reply'] ) ?></textarea>
 	</div>
 </li>
     <h1>- SMS User Notification (Ticket Created) -</h1>  
@@ -158,13 +158,13 @@ include "./include/header.php";
 <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field textarea medium" type="text" name="email_notifysms_create_subject" size="30" value="<?php echo field( $_POST[email_notifysms_create_subject] ) ?>" />
+    	<input class="field textarea medium" type="text" name="email_notifysms_create_subject" size="30" value="<?php echo field( $_POST['email_notifysms_create_subject'] ) ?>" />
 	</div>
 </li>
    <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_notifysms_create" rows="5" cols="40"><?php echo field( $_POST[email_notifysms_create] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_notifysms_create" rows="5" cols="40"><?php echo field( $_POST['email_notifysms_create'] ) ?></textarea>
 	</div>
 </li>
 
@@ -175,13 +175,13 @@ include "./include/header.php";
 <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="email_notifysms_reply_subject" size="30" value="<?php echo field( $_POST[email_notifysms_reply_subject] ) ?>" />
+    	<input class="field text medium" type="text" name="email_notifysms_reply_subject" size="30" value="<?php echo field( $_POST['email_notifysms_reply_subject'] ) ?>" />
 	</div>
 </li>
     <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_notifysms_reply" rows="5" cols="40"><?php echo field( $_POST[email_notifysms_reply] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_notifysms_reply" rows="5" cols="40"><?php echo field( $_POST['email_notifysms_reply'] ) ?></textarea>
 	</div>
 </li>
     <h1>- Ticket Survey Email -</h1>  
@@ -191,13 +191,13 @@ include "./include/header.php";
 <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="email_ticket_survey_subject" size="30" value="<?php echo field( $_POST[email_ticket_survey_subject] ) ?>" />
+    	<input class="field text medium" type="text" name="email_ticket_survey_subject" size="30" value="<?php echo field( $_POST['email_ticket_survey_subject'] ) ?>" />
 	</div>
 </li>
     <li>
 	   <label class="desc">Message:</label>
     <div>
-    	<textarea class="field textarea medium" name="email_ticket_survey" rows="5" cols="40"><?php echo field( $_POST[email_ticket_survey] ) ?></textarea>
+    	<textarea class="field textarea medium" name="email_ticket_survey" rows="5" cols="40"><?php echo field( $_POST['email_ticket_survey'] ) ?></textarea>
 	</div>
 </li>
     <div class="buttons">

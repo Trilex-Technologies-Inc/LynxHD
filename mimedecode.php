@@ -54,6 +54,10 @@
 */
 
 class Mail_mimeDecode {
+    function __construct($input, $crlf = "\r\n")
+    {
+        $this->Mail_mimeDecode($input, $crlf);
+    }
 
     /**
      * The raw email to decode
@@ -203,7 +207,7 @@ class Mail_mimeDecode {
         }
 
         reset($headers);
-        while (list($key, $value) = each($headers)) {
+        foreach ($headers as $key => $value) {
             $headers[$key]['name'] = strtolower($headers[$key]['name']);
             switch ($headers[$key]['name']) {
 
@@ -216,7 +220,7 @@ class Mail_mimeDecode {
                     }
     
                     if (isset($content_type['other'])) {
-                        while (list($p_name, $p_value) = each($content_type['other'])) {
+                        foreach ($content_type['other'] as $p_name => $p_value) {
                             $return->ctype_parameters[$p_name] = $p_value;
                         }
                     }
@@ -226,7 +230,7 @@ class Mail_mimeDecode {
                     $content_disposition = $this->_parseHeaderValue($headers[$key]['value']);
                     $return->disposition   = $content_disposition['value'];
                     if (isset($content_disposition['other'])) {
-                        while (list($p_name, $p_value) = each($content_disposition['other'])) {
+                        foreach ($content_disposition['other'] as $p_name => $p_value) {
                             $return->d_parameters[$p_name] = $p_value;
                         }
                     }

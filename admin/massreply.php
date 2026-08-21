@@ -18,28 +18,31 @@ include "../include/settings.php";
 include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_MASSREPLY;
+$_GET['id'] = $_GET['id'] ?? '';
+$_GET['tickets'] = $_GET['tickets'] ?? '';
 
-if( $_SESSION[login_type] == $LOGIN_INVALID )
-  Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE . "?id={$_GET[id]}" ) );
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
+  Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE . "?id={$_GET['id']}" ) );
 
 $options = array( "email", "url", "emailheader", "emailfooter", "email_ticket_notify_subject", "email_ticket_notify" );
 $data = get_options( $options );
 
-if( isset( $_POST[tickets] ) )
-  $_GET[tickets] = $_POST[tickets];
+if( isset( $_POST['tickets'] ) )
+  $_GET['tickets'] = $_POST['tickets'];
 
-$tickets = split( ";", $_GET[tickets] );
+$tickets = explode( ";", $_GET['tickets'] );
 
 $res = mysql_query( "SELECT num FROM {$pre}options WHERE ( name = 'tags' )" );
 $row = mysql_fetch_array( $res );
 if( !$row )
-  $data[tags] = 0;
+  $data['tags'] = 0;
 else
-  $data[tags] = $row[0];
+  $data['tags'] = $row[0];
 
-if( $_POST[cmd] == "reply" )
+if( $_POST['cmd'] == "reply" )
 {
-  if( trim( $_POST[message] ) == "" )
+  $_POST['subject'] = $_POST['subject'] ?? '';
+  if( trim( $_POST['message'] ?? '' ) == "" )
     $msg = "<div class=\"normal\"><font color=\"#FF0000\">You must specify a message in your reply (subjects are optional).</font></div><br />";
   else
   {
@@ -53,31 +56,31 @@ if( $_POST[cmd] == "reply" )
         $tickets_replied++;
          
         // Send notification if necessary
-        if( $row[notify] )
+        if( $row['notify'] )
         {
-          $ticket = $row[ticket_id];
-          $email = $row[email];
-          $name = stripslashes( $row[name] );
-          $subject = stripslashes( $row[subject] );
-          $message = stripslashes( $_POST[message] );
+          $ticket = $row['ticket_id'];
+          $email = $row['email'];
+          $name = stripslashes( $row['name'] );
+          $subject = stripslashes( $row['subject'] );
+          $message = stripslashes( $_POST['message'] );
 
-          eval( "\$sub = \"{$data[email_ticket_notify_subject]}\";" );
-          eval( "\$mes = \"{$data[email_ticket_notify]}\";" );
-          mail( $row[email], $sub, $mes, "From: {$data[email]}" );
+          eval( "\$sub = \"{$data['email_ticket_notify_subject']}\";" );
+          eval( "\$mes = \"{$data['email_ticket_notify']}\";" );
+          hd_mail( $row['email'], $sub, $mes, "From: {$data['email']}" );
         }
 
-        mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '{$row[id]}', '{$_SESSION[user][id]}', '" . time( ) . "', '{$_POST[subject]}', '$_POST[message]' )" );
+        mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '{$row['id']}', '{$_SESSION['user']['id']}', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}' )" );
 
         mysql_query( "UPDATE {$pre}ticket SET lastactivity = '" . time( ) . "' WHERE ( id = '{$tickets[$i]}' )" );
 
-        if( $_POST[save] == "on" )
+        if( ($_POST['save'] ?? '') == "on" )
         {
-          if( trim( $_POST[replyname] ) != "" )
+          if( trim( $_POST['replyname'] ?? '' ) != "" )
           {
-            if( get_row_count( "SELECT COUNT(*) FROM {$pre}reply WHERE ( phrase = '{$_POST[replyname]}' && dept_id = '-1' )" ) )
-              mysql_query( "UPDATE {$pre}reply SET reply = '{$_POST[message]}' WHERE ( phrase = '{$_POST[replyname]}' )" );
+            if( get_row_count( "SELECT COUNT(*) FROM {$pre}reply WHERE ( phrase = '{$_POST['replyname']}' && dept_id = '-1' )" ) )
+              mysql_query( "UPDATE {$pre}reply SET reply = '{$_POST['message']}' WHERE ( phrase = '{$_POST['replyname']}' )" );
             else
-              mysql_query( "INSERT INTO {$pre}reply ( dept_id, reply, phrase ) VALUES ( '-1', '{$_POST[message]}', '{$_POST[replyname]}' )" );
+              mysql_query( "INSERT INTO {$pre}reply ( dept_id, reply, phrase ) VALUES ( '-1', '{$_POST['message']}', '{$_POST['replyname']}' )" );
           }
         }
       }
@@ -98,14 +101,14 @@ if( mysql_num_rows( $res ) )
 /********************************************************** PHP */?>
 <form name="predefineddelete" action="<?php echo $HD_CURPAGE ?>" method="post">
 <tr><td width="150" align="right"><div class="normal">Predefined Reply:</div></td><td>
-<input type="hidden" name="id" value="<?php echo $_GET[id] ?>" />
+<input type="hidden" name="id" value="<?php echo $_GET['id'] ?>" />
 <input type="hidden" name="replyname" value="" />
 <input type="hidden" name="cmd" value="deletereply" />
 <select name="reply" onchange="document.predefinedreply.message.value = this.options[selectedIndex].value; if( this.options[selectedIndex].value != '' )  { document.predefinedreply.replyname.value = this.options[selectedIndex].text; document.predefineddelete.replyname.value = this.options[selectedIndex].text; } else { document.predefinedreply.replyname.value = ''; document.predefineddelete.replyname.value = ''; }">
 <option value="">(None)</option>
 <?php /************************************************************/
   while( $row = mysql_fetch_array( $res ) )
-    echo "<option value=\"" . field( $row[reply] ) . "\">" . field( $row[phrase] ) . "</option>\n";  
+    echo "<option value=\"" . field( $row['reply'] ) . "\">" . field( $row['phrase'] ) . "</option>\n";  
 /********************************************************** PHP */?>
 </select>
 <input type="submit" value="Delete Selected Reply" />
@@ -116,10 +119,10 @@ if( mysql_num_rows( $res ) )
 /********************************************************** PHP */?>
 <form name="predefinedreply" action="<?php echo $HD_CURPAGE ?>" method="post">
 <input type="hidden" name="cmd" value="reply" />
-<input type="hidden" name="tickets" value="<?php echo $_GET[tickets] ?>" />
+<input type="hidden" name="tickets" value="<?php echo $_GET['tickets'] ?>" />
 <tr><td colspan="2">&nbsp;</td></tr>
-<tr><td width="150" align="right"><div class="normal">Subject:</div></td><td><input type="text" name="subject" value="<?php echo field( $_POST[subject] ) ?>" size="30" /></td></tr>
-<tr><td width="150" align="right"><div class="normal">Message:<font color="#FF0000">*</font></div></td><td><?php if( $data[tags] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?><textarea name="message" rows="8" cols="45"><?php echo field( $_POST[message] ) ?></textarea></td></tr>
+<tr><td width="150" align="right"><div class="normal">Subject:</div></td><td><input type="text" name="subject" value="<?php echo field( $_POST['subject'] ?? '' ) ?>" size="30" /></td></tr>
+<tr><td width="150" align="right"><div class="normal">Message:<font color="#FF0000">*</font></div></td><td><?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?><textarea name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ?? '' ) ?></textarea></td></tr>
 <tr><td></td><td><img src="./images/blank.gif" width="1" height="12" /><br />
 <div class="normal">
 <input type="checkbox" name="save" /> Save as a predefined reply named <input type="text" name="replyname" />

@@ -15,15 +15,15 @@
 
 <?php /************************************************************/
 if( $INSTALLED )
-  $global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION[user][id]}' && dept_id = '0' && admin = '1' )" );
+  $global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' && admin = '1' )" );
 /********************************************************** PHP */?>
 <title>Help Desk</title>
 </head>
 <body>
 <p align="right"><?php /************************************************************/
 if( $INSTALLED )
-  if( $_SESSION[login_type] != $LOGIN_INVALID )
-    echo "<font color=\"white\">You are currently logged in as {$_SESSION[user][name]} | Log Out | View Site</font>";
+  if( $_SESSION['login_type'] != $LOGIN_INVALID )
+    echo "<font color=\"white\">You are currently logged in as {$_SESSION['user']['name']} | Log Out | View Site</font>";
   else 
     echo " ";
  
@@ -121,9 +121,9 @@ if( $INSTALLED )
   <tr>
     <tr valign="center">
 <?php /************************************************************/
-if( $_SESSION[login_type] == $LOGIN_INVALID )
+if( $_SESSION['login_type'] == $LOGIN_INVALID )
   echo "<td><div class=\"smallinfowhite\">Not logged in.</div></td>";
-else if( get_row_count( "SELECT COUNT(*) FROM {$pre}message WHERE ( user_id = '{$_SESSION[user][id]}' && viewed = '0' )" ) )
+else if( get_row_count( "SELECT COUNT(*) FROM {$pre}message WHERE ( user_id = '{$_SESSION['user']['id']}' && viewed = '0' )" ) )
 {
   echo "<td width=\"15\"><a href=\"{$HD_URL_MESSAGES}\"><img src=\"./images/mail-new.png\" border=\"0\"></a></td>\n";
   echo "<td><div class=\"smallinfo\"><a href=\"{$HD_URL_MESSAGES}\">You have new messages</a>.</div></td>";
@@ -135,8 +135,8 @@ else
       <div class="smallinfo">
 <?php /************************************************************/
 if( $INSTALLED )
-  if( $_SESSION[login_type] != $LOGIN_INVALID )
-    echo "Welcome {$_SESSION[user][name]} &nbsp;";
+  if( $_SESSION['login_type'] != $LOGIN_INVALID )
+    echo "Welcome {$_SESSION['user']['name']} &nbsp;";
 /********************************************************** PHP */?>
       </div>
     </td>

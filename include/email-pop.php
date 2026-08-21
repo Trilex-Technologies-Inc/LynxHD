@@ -30,11 +30,11 @@ $error = array( );
 
 while( $row = mysql_fetch_array( $res ) )
 {
-  if( $pop3->connect( $row[server], $row[port] ) )
+  if( $pop3->connect( $row['server'], $row['port'] ) )
   {
-    $count = $pop3->login( $row[username], $row[password] );
+    $count = $pop3->login( $row['username'], $row['password'] );
     if( $count === false )
-      array_push( $error, "<b>[ERROR]</b> Could not login to {$row[server]} on port {$row[port]}" );
+      array_push( $error, "<b>[ERROR]</b> Could not login to {$row['server']} on port {$row['port']}" );
     else
     {
       for( $i = 1; $i <= $count; $i++ )
@@ -46,18 +46,18 @@ while( $row = mysql_fetch_array( $res ) )
           for( $j = 0; $j < count( $email ); $j++ )
             $content .= $email[$j];          
 
-          parse_email_to_ticket( $content, $row[email] );
+          parse_email_to_ticket( $content, $row['email'] );
 
-          if( $row[del] )
+          if( $row['del'] )
             $pop3->delete( $i );
         }
       }
       
-      array_push( $error, "<b>[SUCCESS]</b> Retrieved $count messages from {$row[server]}" );
+      array_push( $error, "<b>[SUCCESS]</b> Retrieved $count messages from {$row['server']}" );
     }
   }
   else
-    array_push( $error, "<b>[ERROR]</b> Could not connect to {$row[server]} on port {$row[port]}" );
+    array_push( $error, "<b>[ERROR]</b> Could not connect to {$row['server']} on port {$row['port']}" );
 
   $pop3->quit( );
 }

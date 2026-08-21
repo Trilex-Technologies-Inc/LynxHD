@@ -1,63 +1,121 @@
-html {
-	background: #333333
+:root {
+  --lynx-primary: #155eef;
+  --lynx-primary-dark: #0b3fa8;
+  --lynx-surface: rgba(255, 255, 255, 0.94);
 }
+
 body {
-	
-	border: medium double #99CCFF;
-	background: #fff;
-	color: #000;
-	font-family: Geneva, Arial, Helvetica, sans-serif;
-	margin-left: 20%;
-	margin-right: 20%;
-	margin-top: 5%;
-	padding: .2em 2em;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(21, 94, 239, 0.18), transparent 32rem),
+    radial-gradient(circle at 85% 85%, rgba(13, 202, 240, 0.14), transparent 28rem),
+    #f4f7fb;
+  color: #172033;
 }
-h1 {
-	color: #000000;
-	font-size: 36px;
-	text-align:center;
-	font-weight: lighter;
-	font-family: Geneva, Arial, Helvetica, sans-serif;
+
+.installer-shell {
+  max-width: 880px;
 }
-h2 {
-	font-size: 16px;
+
+.installer-logo {
+  max-height: 72px;
+  width: auto;
+  border-radius: 0.75rem;
 }
-p, li, dt {
-	line-height: 140%;
-	padding-bottom: 2px;
+
+.card {
+  background: var(--lynx-surface);
+  border-radius: 1.25rem;
+  backdrop-filter: blur(12px);
 }
-ul, ol {
-	padding: 5px 5px 5px 20px;
+
+.btn-primary {
+  --bs-btn-bg: var(--lynx-primary);
+  --bs-btn-border-color: var(--lynx-primary);
+  --bs-btn-hover-bg: var(--lynx-primary-dark);
+  --bs-btn-hover-border-color: var(--lynx-primary-dark);
 }
-.step a, .step input {
-	font-size: 14px;
+
+.form-control:focus {
+  border-color: #84adff;
+  box-shadow: 0 0 0 0.25rem rgba(21, 94, 239, 0.14);
 }
-td input {
-	font-size: 14px;
+
+.progress-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
 }
-.step, th {
-	text-align: right;
+
+.progress-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: #8490a5;
+  text-align: center;
 }
-#fsubmit {
-	width: 67px;
-	height: 23px;
-	border: none;
-	text-indent: -900em;
-	line-height: 0px;
-	background-image: url(../images/button-submit.png);
-	background-repeat: no-repeat;
+
+.progress-step::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 1rem;
+  left: -50%;
+  width: 100%;
+  height: 2px;
+  background: #dce3ee;
 }
-#fback {
-	background: url(../images/button-back.png) no-repeat;
-	width: 53px;
-	height: 23px;
-	border: none;
-	text-indent: -900em;
-	line-height: 0px;
+
+.progress-step:first-child::before {
+  display: none;
 }
-#footer {
-	text-align: center;
-	border-top: 1px solid #ccc;
-	padding-top: 1em;
-	font-style: italic;
+
+.progress-step span {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 2px solid #dce3ee;
+  border-radius: 50%;
+  background: #fff;
+  font-weight: 700;
+}
+
+.progress-step.is-active {
+  color: var(--lynx-primary);
+}
+
+.progress-step.is-active::before {
+  background: var(--lynx-primary);
+}
+
+.progress-step.is-active span {
+  border-color: var(--lynx-primary);
+  background: var(--lynx-primary);
+  color: #fff;
+}
+
+.success-icon {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  margin-inline: auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #d9f8e5;
+  color: #157347;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+@media (max-width: 575.98px) {
+  .progress-step small {
+    font-size: 0.7rem;
+  }
+
+  .card-body {
+    padding: 1.5rem !important;
+  }
 }

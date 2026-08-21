@@ -15,25 +15,42 @@
 ////////////////////////////////////////////////////////////////////
 include "./include/settings.php";
 include "./include/include.php";
-include "./include/header.php";
-/********************************************************** PHP */?>
+?><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LynxHD Setup</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/install.css" rel="stylesheet">
+</head>
+<body>
+<main class="container py-4 py-md-5">
+  <div class="installer-shell mx-auto">
+    <header class="text-center mb-4">
+      <img class="installer-logo img-fluid" src="images/logo.jpg" alt="LynxHD">
+      <p class="text-secondary mt-3 mb-0">Administrator setup</p>
+    </header>
+    <section class="card border-0 shadow-lg">
+      <div class="card-body p-4 p-md-5">
+<?php /********************************************************** PHP */?>
 
 <?php /************************************************************/
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}ticket" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}ticket ( id int(11) NOT NULL auto_increment, ticket_id varchar(40) NOT NULL default '', dept_id int(11) NOT NULL default '0', email varchar(255) NOT NULL default '', name varchar(20) NOT NULL default '', subject varchar(255) NOT NULL default '', date int(11) NOT NULL default '0', status int(11) NOT NULL default '0', notify tinyint(4) NOT NULL default '1', priority tinyint(4) NOT NULL default '0', custom text NOT NULL, lastactivity int(11) NOT NULL default '0',  lastpost int(11) NOT NULL default '-1', flag int(11) NOT NULL default '-1', private int(4) NOT NULL default '0', cc text NOT NULL, PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}ticket ( id int(11) NOT NULL auto_increment, ticket_id varchar(40) NOT NULL default '', dept_id int(11) NOT NULL default '0', email varchar(255) NOT NULL default '', name varchar(20) NOT NULL default '', subject varchar(255) NOT NULL default '', date int(11) NOT NULL default '0', status int(11) NOT NULL default '0', notify tinyint(4) NOT NULL default '1', priority tinyint(4) NOT NULL default '0', custom text NOT NULL, lastactivity int(11) NOT NULL default '0',  lastpost int(11) NOT NULL default '-1', flag int(11) NOT NULL default '-1', private int(4) NOT NULL default '0', cc text NOT NULL, PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}post" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}post ( id int(11) NOT NULL auto_increment, ticket_id int(11) NOT NULL default '0', user_id int(11) NOT NULL default '0', date int(11) NOT NULL default '0', subject varchar(255) NOT NULL default '', message text NOT NULL, ip varchar(20) NOT NULL default '', private tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}post ( id int(11) NOT NULL auto_increment, ticket_id int(11) NOT NULL default '0', user_id int(11) NOT NULL default '0', date int(11) NOT NULL default '0', subject varchar(255) NOT NULL default '', message text NOT NULL, ip varchar(20) NOT NULL default '', private tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}message" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}message ( id int(11) NOT NULL auto_increment, ticket_id int(11) NOT NULL default '0', user_id int(11) NOT NULL default '0', viewed tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}message ( id int(11) NOT NULL auto_increment, ticket_id int(11) NOT NULL default '0', user_id int(11) NOT NULL default '0', viewed tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}dept" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}dept ( id int(11) NOT NULL auto_increment, name varchar(255) NOT NULL default '', options int(11) NOT NULL default '0', sortnum int(11) NOT NULL default '0', description varchar(255) NOT NULL default '', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}dept ( id int(11) NOT NULL auto_increment, name varchar(255) NOT NULL default '', options int(11) NOT NULL default '0', sortnum int(11) NOT NULL default '0', description varchar(255) NOT NULL default '', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
   echo mysql_error( );
 
   mysql_query( "INSERT INTO {$pre}dept ( name ) VALUES ( 'Global (All Departments)' )" );
@@ -41,21 +58,21 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}dept" ) )
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}user" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}user ( id int(11) NOT NULL auto_increment, name varchar(70) NOT NULL default '', email varchar(255) NOT NULL default '', sms varchar(255) NOT NULL default '', signature text NOT NULL, password varchar(20) NOT NULL default '', admin tinyint(4) NOT NULL default '0', date int(11) NOT NULL default '0', lastlogin int(11) NOT NULL default '0', notify int(11) NOT NULL default '0',  pwkey varchar(255) NOT NULL default '', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}user ( id int(11) NOT NULL auto_increment, name varchar(70) NOT NULL default '', email varchar(255) NOT NULL default '', sms varchar(255) NOT NULL default '', signature text NOT NULL, password varchar(20) NOT NULL default '', admin tinyint(4) NOT NULL default '0', date int(11) NOT NULL default '0', lastlogin int(11) NOT NULL default '0', notify int(11) NOT NULL default '0',  pwkey varchar(255) NOT NULL default '', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}privilege" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}privilege ( id int(11) NOT NULL auto_increment, user_id int(11) NOT NULL default '0', dept_id int(11) NOT NULL default '0', admin int(11) NOT NULL default '0', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}privilege ( id int(11) NOT NULL auto_increment, user_id int(11) NOT NULL default '0', dept_id int(11) NOT NULL default '0', admin int(11) NOT NULL default '0', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}field" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}field ( id int(11) NOT NULL auto_increment, dept_id int(11) NOT NULL default '0', name varchar(255) NOT NULL default '', required tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}field ( id int(11) NOT NULL auto_increment, dept_id int(11) NOT NULL default '0', name varchar(255) NOT NULL default '', required tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
 {
   mysql_query( "DELETE FROM {$pre}options" );
 
-  mysql_query( "CREATE TABLE {$pre}options ( id int(11) NOT NULL auto_increment, name varchar(50) NOT NULL default '', num int(11) NOT NULL default '0', text text NOT NULL,  PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}options ( id int(11) NOT NULL auto_increment, name varchar(50) NOT NULL default '', num int(11) NOT NULL default '0', text text NOT NULL,  PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'background', '', '#FFFFFF');" );
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'outsidebackground', '', '#94BECE');" );
@@ -70,60 +87,60 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'survey1', '1', 'Overall Support Rating');" );
 
   // Add email message for new ticket creation
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your support ticket has been created and successfully dispatched to the \$department\n" .
           "department.  Here is the information you will need to access your ticket:\n\n" .
           "Ticket ID: \$ticket\n" .
           "Email: \$email\n" .
-          "Link to view ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_VIEW]}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
+          "Link to view ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_VIEW']}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
           "\$autoreply" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_created', '', '$data' )" );
   $data = "\$ticket - New Ticket Created";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_created_subject', '', '$data' )" );
 
   // Add email message for reply to ticket
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your ticket concerning \'\$subject\' has been responded to.  You can view\n" .
           "this response (and reply to it if necessary) using the information or link below.\n\n" .
           "Ticket ID: \$ticket\n" .
           "Email: \$email\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_VIEW]}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_VIEW']}?cmd=view&id={\$ticket}&email={\$email}\n\n" .
           "Here is the response made to your ticket.  Please do not reply to this email directly, use the link above\n" .
           "to reply.\n\n" .
           "\$message\n\n" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_notify', '', '$data' )" );
   $data = "\$ticket - Reply To Your Ticket";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_notify_subject', '', '$data' )" );
 
   // Add email message for surveys
-  $data = "{\$data[emailheader]}" .
+  $data = "{\$data['emailheader']}" .
           "\$name,\n\n" .
           "Your ticket concerning \'\$subject\' has been closed.  Please take a moment to complete\n" .
           "a short survey that will help us to serve you better in the future.\n\n" .
-          "Link to survey: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_TICKET_SURVEY]}?id={\$ticket}&email={\$email}\n\n" .
+          "Link to survey: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_TICKET_SURVEY']}?id={\$ticket}&email={\$email}\n\n" .
           "We appreciate your time!\n\n" .
-          "{\$data[title]}\n" .
-          "{\$data[url]}" .
-          "{\$data[emailfooter]}";
+          "{\$data['title']}\n" .
+          "{\$data['url']}" .
+          "{\$data['emailfooter']}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_survey', '', '$data' )" );
   $data = "\$ticket - Please Survey Our Support";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_survey_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is replied to
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "One of the tickets in which you have posted has been replied to by the customer.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" . 
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" . 
           "Reply contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_reply', '', '$data' )" );
@@ -131,12 +148,12 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_reply_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is created
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A new ticket has been created in one of the departments you have been assigned to.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" .
           "Ticket contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_create', '', '$data' )" );
@@ -144,12 +161,12 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notify_create_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is replied to (SMS)
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "One of the tickets in which you have posted has been replied to by the customer.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" . 
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" . 
           "Reply contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_reply', '', '$data' )" );
@@ -157,12 +174,12 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_reply_subject', '', '$data' )" );
 
   // Add email message for notification when a ticket is created (SMS)
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A new ticket has been created in one of the departments you have been assigned to.\n\n" .
           "Here is the ticket information:\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n" .
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n" .
           "Ticket contents below:\n\n" .
           "{\$message}";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_create', '', '$data' )" );
@@ -170,7 +187,7 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_notifysms_create_subject', '', '$data' )" );
 
   // Add email message for ticket lookup
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "Here are your all of your tickets for the help desk.  The most recent tickets are shown first:\n\n";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_lookup', '', '$data' )" );
@@ -178,63 +195,81 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}options" ) )
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_lookup_subject', '', '$data' )" );
 
   // Add email message for ticket lookup
-  $data = "{\$data[title]}\n" .
+  $data = "{\$data['title']}\n" .
           "------------------------------\n\n" .
           "A ticket has been flagged to you (and possibly other staff):\n\n" .
           "Ticket ID: {\$ticket}\n" .
-          "Link to ticket: {\$GLOBALS[PATH_TO_HELPDESK]}{\$GLOBALS[HD_URL_ADMINVIEW]}?id={\$ticket}\n\n";
+          "Link to ticket: {\$GLOBALS['PATH_TO_HELPDESK']}{\$GLOBALS['HD_URL_ADMINVIEW']}?id={\$ticket}\n\n";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_flagged', '', '$data' )" );
   $data = "Help Desk Notification - Flagged Ticket";
   mysql_query( "INSERT INTO {$pre}options ( name, num, text ) VALUES ( 'email_ticket_flagged_subject', '', '$data' )" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}reply" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}reply ( id int(11) NOT NULL auto_increment, dept_id int(11) NOT NULL default '0', reply text NOT NULL, phrase varchar(255) NOT NULL default '',  PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}reply ( id int(11) NOT NULL auto_increment, dept_id int(11) NOT NULL default '0', reply text NOT NULL, phrase varchar(255) NOT NULL default '',  PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}pop" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}pop ( id int(11) NOT NULL auto_increment, dept_id int(11) NOT NULL default '0', server varchar(255) NOT NULL default '', port int(11) NOT NULL default '110', username varchar(255) NOT NULL default '', password varchar(255) NOT NULL default '',  email varchar(255) NOT NULL default '', del tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}pop ( id int(11) NOT NULL auto_increment, dept_id int(11) NOT NULL default '0', server varchar(255) NOT NULL default '', port int(11) NOT NULL default '110', username varchar(255) NOT NULL default '', password varchar(255) NOT NULL default '',  email varchar(255) NOT NULL default '', del tinyint(4) NOT NULL default '0', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}faq" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}faq ( id int(11) NOT NULL auto_increment, description text NOT NULL, symptoms text NOT NULL, solution text NOT NULL, category int(11) NOT NULL default '0', parent int(11) NOT NULL default '0', date int(11) NOT NULL default '0', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}faq ( id int(11) NOT NULL auto_increment, description text NOT NULL, symptoms text NOT NULL, solution text NOT NULL, category int(11) NOT NULL default '0', parent int(11) NOT NULL default '0', date int(11) NOT NULL default '0', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}survey" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}survey ( id int(11) NOT NULL auto_increment, ticket_id int(11) NOT NULL default '0', rating1 tinyint(4) NOT NULL default '0', rating2 tinyint(4) NOT NULL default '0', rating3 tinyint(4) NOT NULL default '0', rating4 tinyint(4) NOT NULL default '0', rating5 tinyint(4) NOT NULL default '0', rating6 tinyint(4) NOT NULL default '0', rating7 tinyint(4) NOT NULL default '0', rating8 tinyint(4) NOT NULL default '0', rating9 tinyint(4) NOT NULL default '0', rating10 tinyint(4) NOT NULL default '0', comments text NOT NULL,  date int(11) NOT NULL default '0', email varchar(255) NOT NULL default '', PRIMARY KEY  (id)) TYPE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}survey ( id int(11) NOT NULL auto_increment, ticket_id int(11) NOT NULL default '0', rating1 tinyint(4) NOT NULL default '0', rating2 tinyint(4) NOT NULL default '0', rating3 tinyint(4) NOT NULL default '0', rating4 tinyint(4) NOT NULL default '0', rating5 tinyint(4) NOT NULL default '0', rating6 tinyint(4) NOT NULL default '0', rating7 tinyint(4) NOT NULL default '0', rating8 tinyint(4) NOT NULL default '0', rating9 tinyint(4) NOT NULL default '0', rating10 tinyint(4) NOT NULL default '0', comments text NOT NULL,  date int(11) NOT NULL default '0', email varchar(255) NOT NULL default '', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
 }
  
 /********************************************************** PHP */?>
-<div class="title">Setting Up <?php echo $script_name ?></div><br />
+<span class="badge text-bg-primary mb-3">Final step</span>
+<h1 class="h2 mb-4">Set up <?php echo htmlspecialchars($script_name ?: 'LynxHD', ENT_QUOTES, 'UTF-8') ?></h1>
 <?php /************************************************************/
 
 $admin_exists = get_row_count( "SELECT COUNT(user.id) FROM {$pre}user AS user, {$pre}privilege AS privilege WHERE ( privilege.dept_id = '0' && privilege.admin = '1' && privilege.user_id = user.id )" );
 
-if( $_POST[cmd] == "admin" )
+if( ($_POST['cmd'] ?? '') == "admin" )
 {
-  $already_exist = get_row_count( "SELECT COUNT(user.id) FROM {$pre}user AS user WHERE ( user.email = '$_POST[email]' )" );
+  $already_exist = get_row_count( "SELECT COUNT(user.id) FROM {$pre}user AS user WHERE ( user.email = '{$_POST['email']}' )" );
   
-  if( trim( $_POST[name] ) == "" ||
-      trim( $_POST[email] ) == "" ||
-      trim( $_POST[password1] ) == "" ||
-      $_POST[password1] != $_POST[password2] ||
+  if( trim( $_POST['name'] ?? '' ) == "" ||
+      trim( $_POST['email'] ?? '' ) == "" ||
+      trim( $_POST['password1'] ?? '' ) == "" ||
+      $_POST['password1'] != $_POST['password2'] ||
       $already_exist )
   {
     $errors = 1;
-    echo "<div class=\"errorbox\">Please fill in all fields and make sure that your passwords match.  Also make sure that the email you entered isn't already assigned to another account.</div><br />";
+    echo "<div class=\"alert alert-danger\" role=\"alert\">Please fill in all fields, make sure the passwords match, and use an email address that is not already assigned to an account.</div>";
   }
   else
   {
     if( !$admin_exists )
     {
-      mysql_query( "INSERT INTO {$pre}user ( name, email, password, admin, date ) VALUES ( '{$_POST[name]}', '{$_POST[email]}', '" . crypt( $_POST[password1], $ENCRYPT_KEY ) . "', '1', '" . time( ) . "' )" );
+      $password_hash = crypt( $_POST['password1'], $ENCRYPT_KEY );
+      $user_created = mysql_query( "INSERT INTO {$pre}user ( name, email, sms, signature, password, admin, date, pwkey ) VALUES ( '{$_POST['name']}', '{$_POST['email']}', '', '', '$password_hash', '1', '" . time( ) . "', '' )" );
 
-      $id = mysql_insert_id( );
-      mysql_query( "INSERT INTO {$pre}privilege ( user_id, dept_id, admin ) VALUES ( '$id', '0', '1' )" );
+      if( !$user_created )
+      {
+        error_log( "LynxHD setup could not create administrator: " . mysql_error( ) );
+        echo "<div class=\"alert alert-danger\" role=\"alert\"><h2 class=\"h4 alert-heading\">Administrator was not created</h2><p class=\"mb-0\">The database rejected the administrator record. Check the server error log for details and try again.</p></div>";
+      }
+      else
+      {
+        $id = mysql_insert_id( );
+        $privilege_created = mysql_query( "INSERT INTO {$pre}privilege ( user_id, dept_id, admin ) VALUES ( '$id', '0', '1' )" );
 
-      echo "<div class=\"successbox\">New administrator created successfully.  You may now <a href=\"$HD_URL_LOGIN\">login</a> and begin using the help desk.</div><br />";
-
-      $admin_exists = -1;
+        if( !$privilege_created )
+        {
+          error_log( "LynxHD setup could not create administrator privilege: " . mysql_error( ) );
+          mysql_query( "DELETE FROM {$pre}user WHERE ( id = '$id' )" );
+          echo "<div class=\"alert alert-danger\" role=\"alert\"><h2 class=\"h4 alert-heading\">Administrator was not created</h2><p class=\"mb-0\">The database rejected the administrator permissions. Check the server error log for details and try again.</p></div>";
+        }
+        else
+        {
+          echo "<div class=\"alert alert-success\" role=\"alert\"><h2 class=\"h4 alert-heading\">Administrator created</h2><p class=\"mb-0\">You may now <a class=\"alert-link\" href=\"$HD_URL_LOGIN\">log in</a> and begin using the help desk.</p></div>";
+          $admin_exists = -1;
+        }
+      }
     }
   }
 }
@@ -243,46 +278,50 @@ if( !$admin_exists )
 {
 /********************************************************** PHP */?>
 
-<table width="100%" bgcolor="#EEEEEE" border="0" cellpadding="5">
-<tr><td>
-  <div class="graycontainer">
-    You must create at least one global administrator account for the help desk.  This administrator will
-    be able to manage departments, create accounts, and everything else related to the operation
-    of the help desk.  You will be able to change your other profile information once you
-    are logged in.
-  </div>
-</td></tr>
-</table>
-</div><br />
+<div class="alert alert-info" role="alert">
+  Create the first global administrator. This account can manage departments, staff accounts, and all help desk settings.
+</div>
 
-<table>
-<form action="setup.php" method="post">
-  <input type="hidden" name="cmd" value="admin" /> 
-  <tr><td><label for="name">Name: </td><td><input type="text" name="name" size="30" value="<?php echo field( $_POST[name] ) ?>" /></label></td></tr>
-  <tr><td><label for="email">Email: </td><td><input type="text" name="email" size="30" value="<?php echo field( $_POST[email] ) ?>" /></label></td></tr>
-  <tr><td><label for="password1">Password: </td><td><input type="password" name="password1" size="30" /></label></td></tr>
-  <tr><td><label for="password2">Password Again: </td><td><input type="password" name="password2" size="30" /></label></td></tr>
-  <tr><td><br /><input type="submit" value="Create Account" /></td></tr>
+<form action="setup.php" method="post" class="row g-4">
+  <input type="hidden" name="cmd" value="admin">
+  <div class="col-md-6">
+    <label class="form-label" for="name">Name</label>
+    <input class="form-control form-control-lg" id="name" type="text" name="name" value="<?php echo field($_POST['name'] ?? '') ?>" required autocomplete="name">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label" for="email">Email address</label>
+    <input class="form-control form-control-lg" id="email" type="email" name="email" value="<?php echo field($_POST['email'] ?? '') ?>" required autocomplete="email">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label" for="password1">Password</label>
+    <input class="form-control form-control-lg" id="password1" type="password" name="password1" required autocomplete="new-password">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label" for="password2">Confirm password</label>
+    <input class="form-control form-control-lg" id="password2" type="password" name="password2" required autocomplete="new-password">
+  </div>
+  <div class="col-12 d-flex justify-content-end pt-2">
+    <button class="btn btn-primary btn-lg" type="submit">Create administrator</button>
+  </div>
 </form>
-</table>
 
 <?php /************************************************************/
 }
 else if( $admin_exists != -1 ) // Wasn't just created, already had existed
 {
 /********************************************************** PHP */?>
-<table width="100%" bgcolor="#EEEEEE" border="0" cellpadding="5">
-<tr><td>
-  <div class="graycontainer">
-    A global administrator already exists for the help desk.  If you forgot your login information,
-    you may <a href="<?php echo $HD_URL_LOGIN ?>">retrieve</a> it.
-  </div>
-</td></tr>
-</table>
+<div class="alert alert-success mb-0" role="alert">
+  <h2 class="h4 alert-heading">Setup already completed</h2>
+  <p class="mb-0">A global administrator already exists. You may <a class="alert-link" href="<?php echo $HD_URL_LOGIN ?>">log in or retrieve your account</a>.</p>
+</div>
 <?php /************************************************************/
 }
 /********************************************************** PHP */?>
 
-<?php /************************************************************/
-include "./include/footer.php";
-/********************************************************** PHP */?>
+      </div>
+    </section>
+    <footer class="text-center text-secondary small mt-4">LynxHD Help Desk Setup</footer>
+  </div>
+</main>
+</body>
+</html>

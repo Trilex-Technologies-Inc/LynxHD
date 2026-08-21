@@ -1,4 +1,4 @@
-<? 
+<?php 
 $db_name = 'yourdatabasename';	// The name of the database 
 $db_user = 'yourdatabaseuserid'; 	// MySQL lynxadmin 
 $db_password = 'passwordhere';	// MySQL Password 

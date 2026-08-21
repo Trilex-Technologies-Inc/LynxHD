@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*
 
@@ -11,6 +11,11 @@
 
 class POP3
 {
+	function __construct ( $server = "", $timeout = "" )
+	{
+		$this->POP3( $server, $timeout );
+	}
+
 	var $ERROR		= "";		//	Error string.
 
 	var $TIMEOUT	= 60;		//	Default timeout before giving up on a
@@ -88,7 +93,7 @@ class POP3
 			return false;
 		}
 
-		$fp = fsockopen("$server", $port, &$errno, &$errstr);
+		$fp = fsockopen("$server", $port, $errno, $errstr);
 
 		if(!$fp)
 		{
@@ -301,7 +306,7 @@ class POP3
 		$MsgArray = array();
 
 		$line = fgets($fp,$buffer);
-		while ( !ereg("^\.\r\n",$line))
+		while ( !preg_match("/^\\.\\r\\n/", $line))
 		{
 			$MsgArray[$count] = $line;
 			$count++;
@@ -367,7 +372,7 @@ class POP3
 			if($msgC > $Total) { break; }
 			$line = fgets($fp,$this->BUFFER);
 			$line = $this->strip_clf($line);
-			if(ereg("^\.",$line))
+			if(preg_match("/^\\./", $line))
 			{
 				$this->ERROR = "POP3 pop_list: Premature end of list";
 				return false;
@@ -414,7 +419,7 @@ class POP3
 		$MsgArray = array();
 
 		$line = fgets($fp,$buffer);
-		while ( !ereg("^\.\r\n",$line))
+		while ( !preg_match("/^\\.\\r\\n/", $line))
 		{
 			$MsgArray[$count] = $line;
 			$count++;
@@ -609,9 +614,9 @@ class POP3
 			$line = "";
 			$count = 1;
 			$line = fgets($fp,$buffer);
-			while ( !ereg("^\.\r\n",$line))
+			while ( !preg_match("/^\\.\\r\\n/", $line))
 			{
-				if(ereg("^\.\r\n",$line))
+				if(preg_match("/^\\.\\r\\n/", $line))
 				{
 					break;
 				}
@@ -665,7 +670,7 @@ class POP3
 		//	Return true or false on +OK or -ERR
 
 		if(empty($cmd))					{ return false; }
-		if ( ereg ("^\+OK.*", $cmd ) )	{ return true; }
+		if ( preg_match ("/^\\+OK.*/", $cmd ) )	{ return true; }
 		return false;
 	}
 
