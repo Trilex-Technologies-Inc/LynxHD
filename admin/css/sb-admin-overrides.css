@@ -41,6 +41,86 @@ body {
   color: #6e707e;
 }
 
+/* TinyMCE replaces the textarea with its own container. Keep every editor
+   aligned with the full width of the admin form. */
+.admin-content .tox-tinymce {
+  width: 100% !important;
+  max-width: 100%;
+}
+
+.general-settings-form .card {
+  border: 0;
+}
+
+.general-settings-form .card-header {
+  border-bottom: 1px solid #e3e6f0;
+  background: #fff;
+}
+
+.general-settings-form label {
+  color: #4a4b55;
+  font-weight: 600;
+}
+
+.general-settings-form .custom-control-label {
+  cursor: pointer;
+}
+
+.general-settings-form .custom-control-label::before,
+.general-settings-form .custom-control-label::after {
+  top: 0.15rem;
+}
+
+.smtp-settings-disabled {
+  opacity: 0.55;
+}
+
+.general-settings-actions {
+  position: sticky;
+  bottom: 1rem;
+  z-index: 10;
+}
+
+.email-templates-form .card {
+  border: 0;
+}
+
+.email-templates-form .card-header {
+  border-bottom: 1px solid #e3e6f0;
+  background: #fff;
+}
+
+.email-templates-form label {
+  color: #4a4b55;
+  font-weight: 600;
+}
+
+.email-template-icon {
+  display: inline-flex;
+  flex: 0 0 2.25rem;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: rgba(78, 115, 223, 0.1);
+  color: #4e73df;
+}
+
+.email-template-section-heading::after {
+  flex: 1;
+  height: 1px;
+  margin-left: 1rem;
+  background: #dfe2e9;
+  content: '';
+}
+
+.email-template-actions {
+  position: sticky;
+  bottom: 1rem;
+  z-index: 10;
+}
+
 /* Keep native and Bootstrap selects tall enough for their text. Bootstrap's
    fixed form-control-sm height otherwise conflicts with the padding above. */
 .admin-content select {

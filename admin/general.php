@@ -82,164 +82,69 @@ get_helpdesk_path( );
 
 include "./include/header.php";
 /********************************************************** PHP */?>
-<div class="title">General Settings</div><br /><?php echo $msg ?>
-<table width="100%" border="0" >
-<tr><td>
-  <div class="clean-gray">
-    Below you can modify the general settings.  The 'URL To Help Desk' must be set
-    in order for the help desk to be completely operational.
-  </div>
-</td></tr>
-</table>
-<br />
-<div id="container">
-<h1>- General Settings -</h1>
-<form class="wufoo" action="<?php echo $HD_CURPAGE ?>" method="post">
-	<ul>
-      <div class="clean-gray">The URL to the help desk must be of the full form (ie <i>http://www.yoursite.com/helpdesk/</i>).  The URL
-      of your site should be the URL you want to appear at the bottom of emails (most likely your homepage).
-      </div>
-<li>
-	   <label class="desc">URL To Help Desk:</label>
-    <div>
-    	<input class="field text medium" type="text" name="helpdeskurl" size="30" value="<?php echo field( $_POST['helpdeskurl'] ) ?>" />
-   </div>
-</li>
-     <li>
-	   <label class="desc">URL To Your Site:</label>
-    <div>
-    	<input class="field text medium" type="text" name="url" size="30" value="<?php echo field( $_POST['url'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />  
-	</div>
-</li>
-      <div class="clean-gray">The name of your help desk will appear in the title of web pages and
-      at the bottom of emails sent by the help desk.
-      </div>
-    <li>
-	   <label class="desc">Name Of Help Desk:</label>
-    <div>
-    	<input class="field text medium" type="text" name="title" size="30" value="<?php echo field( $_POST['title'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />
-	</div>
-</li>
-      <div class="clean-gray">This will allow customers and staff to attach files to tickets.</div>
-  <li>
-	   <label class="desc">Allow file attachments</label>
-    <div>
-    	<input class="field checkbox" type="checkbox" name="uploads" <?php if( $_POST['uploads'] ) echo "checked"  ?> />
-	</div>
-</li>
-    <h1>- Email Settings -</h1>   
-      <div class="clean-gray">The email address you specify below is where all emails sent by the help
-      desk will appear to have came from.  This can include both a name and email in standard
-      format (ie '<i>My Help Desk &lt;helpdesk@yoursite.com&gt</i>').
-      </div>
-   <li>
-	   <label class="desc">Email Of Help Desk:</label>
-    <div>
-    	<input class="field text medium" type="text" name="email" size="30" value="<?php echo field( $_POST['email'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />
-	</div>
-	</li>
-	<h1>- SMTP Delivery -</h1>
-	<div class="clean-gray">Send all help desk email through an authenticated SMTP server. When disabled, LynxHD uses PHP mail as before.</div>
-	<li>
-	  <label class="desc" for="smtp-enabled">Use SMTP</label>
-	  <div><input class="field checkbox" id="smtp-enabled" type="checkbox" name="smtp_enabled" <?php if( $_POST['smtp_enabled'] ) echo "checked" ?> /></div>
-	</li>
-	<li>
-	  <label class="desc" for="smtp-host">SMTP Host</label>
-	  <div><input class="field text medium" id="smtp-host" type="text" name="smtp_host" value="<?php echo field($_POST['smtp_host']) ?>" placeholder="smtp.example.com" /></div>
-	</li>
-	<li>
-	  <label class="desc" for="smtp-port">SMTP Port</label>
-	  <div><input class="field text small" id="smtp-port" type="number" min="1" max="65535" name="smtp_port" value="<?php echo field($_POST['smtp_port'] ?: '587') ?>" /></div>
-	</li>
-	<li>
-	  <label class="desc" for="smtp-encryption">Encryption</label>
-	  <div><select class="field select medium" id="smtp-encryption" name="smtp_encryption">
-	    <option value="starttls" <?php if($_POST['smtp_encryption'] === 'starttls' || $_POST['smtp_encryption'] === '') echo 'selected' ?>>STARTTLS (recommended)</option>
-	    <option value="ssl" <?php if($_POST['smtp_encryption'] === 'ssl') echo 'selected' ?>>TLS/SSL</option>
-	    <option value="none" <?php if($_POST['smtp_encryption'] === 'none') echo 'selected' ?>>None</option>
-	  </select></div>
-	</li>
-	<li>
-	  <label class="desc" for="smtp-username">SMTP Username</label>
-	  <div><input class="field text medium" id="smtp-username" type="text" name="smtp_username" value="<?php echo field($_POST['smtp_username']) ?>" autocomplete="username" /></div>
-	</li>
-	<li>
-	  <label class="desc" for="smtp-password">SMTP Password</label>
-	  <div><input class="field text medium" id="smtp-password" type="password" name="smtp_password" value="" autocomplete="new-password" placeholder="Leave blank to keep the saved password" /></div>
-	</li>
-	<li class="smtp-test-panel">
-	  <label class="desc" for="smtp-test-email">Send Test To</label>
-	  <div class="smtp-test-controls">
-	    <input class="field text medium" id="smtp-test-email" type="email" name="smtp_test_email" value="<?php echo field($_SESSION['user']['email'] ?? '') ?>" />
-	    <button class="btn btn-outline-primary" type="submit" name="cmd" value="test_smtp"><i class="fas fa-paper-plane mr-1"></i> Save &amp; Test SMTP</button>
-	  </div>
-	</li>
-	   <h1>- Auto-Ticket Management -</h1>
-      <div class="clean-gray">You can have tickets automatically deleted and closed using the settings below.  Set each to '0' if you don't want
-      them used.</div>
-    <li>
-	   <label class="desc">Close Tickets Inactive For:</label>
-    <div>
-    	<input type="text" name="autoclose" size="5" value="<?php echo field( $_POST['autoclose'] ) ?>" /> days
-	</div>
-</li>
-    <li>
-	   <label class="desc">Delete Tickets Closed For:</label>
-    <div>
-    	<input type="text" name="autodelete" size="5" value="<?php echo field( $_POST['autodelete'] ) ?>" /> days
-	</div>
-</li>
-   <h1>- Banning -</h1>
-      <div class="clean-gray">Specify IPs and email addresses you wish to ban from using the help desk.</div>
-   <li>
-	   <label class="desc">Banned IPs:</label>
-    <div>
-    	<textarea class="field textarea medium" name="banned_ips" rows="5" cols="40"><?php echo field( $_POST['banned_ips'] ) ?></textarea>
-	</div>
-</li>
-   <li>
-	   <label class="desc">Banned Emails:</label>
-    <div>
-    	<textarea class="field textarea medium" name="banned_emails" rows="5" cols="40"><?php echo field( $_POST['banned_emails'] ) ?></textarea>
-	</div>
-</li>
-    <h1>- Flood Control -</h1>   
-      <div class="clean-gray">Allows you to prevent duplicate tickets/postings.</div>
-    <li>
-	   <label class="desc">Enable flood control</label>
-    <div>
-	   	<input class="field checkbox" type="checkbox" name="floodcontrol" <?php if( $_POST['floodcontrol'] ) echo "checked"  ?> />
-	</div>
-</li>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+  <div><h1 class="h3 mb-1 text-gray-800">General settings</h1><p class="mb-0 text-muted">Configure your help desk, email delivery, and ticket policies.</p></div>
+</div>
+<?php echo $msg ?? '' ?>
+<form action="<?php echo field($HD_CURPAGE) ?>" method="post" class="general-settings-form">
+  <div class="row">
+    <div class="col-xl-7">
+      <section class="card shadow-sm mb-4">
+        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-globe mr-2"></i>Help desk identity</h2></div>
+        <div class="card-body">
+          <div class="form-group"><label for="helpdeskurl">Help desk URL</label><input class="form-control" id="helpdeskurl" type="url" name="helpdeskurl" required value="<?php echo field($_POST['helpdeskurl']) ?>" placeholder="https://support.example.com/"><small class="form-text text-muted">Full public URL, including the trailing slash.</small></div>
+          <div class="form-group"><label for="site-url">Website URL</label><input class="form-control" id="site-url" type="url" name="url" value="<?php echo field($_POST['url']) ?>" placeholder="https://www.example.com/"><small class="form-text text-muted">Used for links in outgoing emails.</small></div>
+          <div class="form-group"><label for="helpdesk-title">Help desk name</label><input class="form-control" id="helpdesk-title" type="text" name="title" required value="<?php echo field($_POST['title']) ?>"></div>
+          <div class="custom-control custom-switch"><input class="custom-control-input" id="uploads" type="checkbox" name="uploads" value="1" <?php if($_POST['uploads']) echo 'checked' ?>><label class="custom-control-label" for="uploads">Allow file attachments</label><small class="d-block text-muted">Customers and staff can attach files to tickets.</small></div>
+        </div>
+      </section>
 
-      <h1>- Message Tags -</h1>
-      <div class="clean-gray">Check the box below to enable message tags.  Message tags allow certain tags, such as [b][/b], etc., to create
-      bold text, tables, lists, and more within the message of a post (much like many bulletin boards).  You can 
-      <a href="<?php echo $HD_URL_TICKET_TAGS ?>" target="_blank">view</a> the available tags.</div>
-    <li>
-	   <label class="desc">Enable the use of message tags in posts.</label>
-    <div>
-		<input class="field checkbox" type="checkbox" name="tags"<?php echo ($_POST['tags'] ? " checked" : "") ?>  />
-	</div>
-</li>
-    <h1>- Carbon Copies -</h1>
-      <div class="clean-gray">Carbon copies allow the customer to enter emails on the ticket to receive emails to other addresses
-      when his/her ticket is replied to.  If this is unchecked, the carbon copy box will not appear.  Either way, staff
-      will always be able to setup carbon copies thru the staff ticket view.</div>
-   <li>
-	   <label class="desc">Enable the use of carbon copies for customers.</label>
-    <div>
-	   	<input class="field checkbox" type="checkbox" name="cc"<?php echo ($_POST['cc'] ? " checked" : "") ?>  /> 
-	</div>
-</li>	
-   <div class="buttons">
-	    <button type="submit" class="positive" name="cmd" value="add">Update</button>
-	<button type="reset" class="negative">Reset</button>
-</div>
+      <section class="card shadow-sm mb-4">
+        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-envelope mr-2"></i>Email delivery</h2></div>
+        <div class="card-body">
+          <div class="form-group"><label for="helpdesk-email">Sender address</label><input class="form-control" id="helpdesk-email" type="text" name="email" required value="<?php echo field($_POST['email']) ?>" placeholder="Support Team &lt;support@example.com&gt;"><small class="form-text text-muted">The From address used for help desk email.</small></div>
+          <hr>
+          <div class="custom-control custom-switch mb-3"><input class="custom-control-input" id="smtp-enabled" type="checkbox" name="smtp_enabled" value="1" <?php if($_POST['smtp_enabled']) echo 'checked' ?>><label class="custom-control-label font-weight-bold" for="smtp-enabled">Send through SMTP</label><small class="d-block text-muted">When off, LynxHD uses the server's PHP mail service.</small></div>
+          <div id="smtp-settings" class="border rounded bg-light p-3">
+            <div class="form-row"><div class="form-group col-md-8"><label for="smtp-host">SMTP host</label><input class="form-control" id="smtp-host" type="text" name="smtp_host" value="<?php echo field($_POST['smtp_host']) ?>" placeholder="smtp.example.com"></div><div class="form-group col-md-4"><label for="smtp-port">Port</label><input class="form-control" id="smtp-port" type="number" min="1" max="65535" name="smtp_port" value="<?php echo field($_POST['smtp_port'] ?: '587') ?>"></div></div>
+            <div class="form-group"><label for="smtp-encryption">Encryption</label><select class="form-control" id="smtp-encryption" name="smtp_encryption"><option value="starttls" <?php if($_POST['smtp_encryption'] === 'starttls' || $_POST['smtp_encryption'] === '') echo 'selected' ?>>STARTTLS (recommended)</option><option value="ssl" <?php if($_POST['smtp_encryption'] === 'ssl') echo 'selected' ?>>TLS/SSL</option><option value="none" <?php if($_POST['smtp_encryption'] === 'none') echo 'selected' ?>>None</option></select></div>
+            <div class="form-row"><div class="form-group col-md-6"><label for="smtp-username">Username</label><input class="form-control" id="smtp-username" type="text" name="smtp_username" value="<?php echo field($_POST['smtp_username']) ?>" autocomplete="username"></div><div class="form-group col-md-6"><label for="smtp-password">Password</label><input class="form-control" id="smtp-password" type="password" name="smtp_password" autocomplete="new-password" placeholder="Keep saved password"><small class="form-text text-muted">Leave blank to keep it unchanged.</small></div></div>
+            <div class="form-group mb-0"><label for="smtp-test-email">Test recipient</label><div class="input-group"><input class="form-control" id="smtp-test-email" type="email" name="smtp_test_email" value="<?php echo field($_SESSION['user']['email'] ?? '') ?>"><div class="input-group-append"><button class="btn btn-outline-primary" type="submit" name="cmd" value="test_smtp"><i class="fas fa-paper-plane mr-1"></i>Save &amp; test</button></div></div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-xl-5">
+      <section class="card shadow-sm mb-4">
+        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-clock mr-2"></i>Ticket lifecycle</h2></div>
+        <div class="card-body"><p class="text-muted small">Use 0 to disable either automatic action.</p><div class="form-group"><label for="autoclose">Close inactive tickets after</label><div class="input-group"><input class="form-control" id="autoclose" type="number" min="0" name="autoclose" value="<?php echo field($_POST['autoclose']) ?>"><div class="input-group-append"><span class="input-group-text">days</span></div></div></div><div class="form-group mb-0"><label for="autodelete">Delete closed tickets after</label><div class="input-group"><input class="form-control" id="autodelete" type="number" min="0" name="autodelete" value="<?php echo field($_POST['autodelete']) ?>"><div class="input-group-append"><span class="input-group-text">days</span></div></div></div></div>
+      </section>
+
+      <section class="card shadow-sm mb-4">
+        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-shield-alt mr-2"></i>Access and spam controls</h2></div>
+        <div class="card-body"><div class="form-group"><label for="banned-ips">Banned IP addresses</label><textarea class="form-control no-tinymce" id="banned-ips" name="banned_ips" rows="4" placeholder="One entry per line"><?php echo field($_POST['banned_ips']) ?></textarea></div><div class="form-group"><label for="banned-emails">Banned email addresses</label><textarea class="form-control no-tinymce" id="banned-emails" name="banned_emails" rows="4" placeholder="One entry per line"><?php echo field($_POST['banned_emails']) ?></textarea></div><div class="custom-control custom-switch"><input class="custom-control-input" id="floodcontrol" type="checkbox" name="floodcontrol" value="1" <?php if($_POST['floodcontrol']) echo 'checked' ?>><label class="custom-control-label" for="floodcontrol">Prevent duplicate ticket submissions</label></div></div>
+      </section>
+
+      <section class="card shadow-sm mb-4">
+        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-sliders-h mr-2"></i>Customer features</h2></div>
+        <div class="card-body"><div class="custom-control custom-switch mb-4"><input class="custom-control-input" id="tags" type="checkbox" name="tags" value="1" <?php if($_POST['tags']) echo 'checked' ?>><label class="custom-control-label" for="tags">Enable message tags</label><small class="d-block text-muted">Allow formatting tags in ticket posts. <a href="<?php echo field($HD_URL_TICKET_TAGS) ?>" target="_blank" rel="noopener">View supported tags</a>.</small></div><div class="custom-control custom-switch"><input class="custom-control-input" id="cc" type="checkbox" name="cc" value="1" <?php if($_POST['cc']) echo 'checked' ?>><label class="custom-control-label" for="cc">Allow customer carbon copies</label><small class="d-block text-muted">Customers can add other recipients to ticket updates.</small></div></div>
+      </section>
+    </div>
+  </div>
+  <div class="card shadow-sm mb-4 general-settings-actions"><div class="card-body d-flex flex-column flex-sm-row justify-content-end"><button type="reset" class="btn btn-light mr-sm-2 mb-2 mb-sm-0">Reset changes</button><button type="submit" class="btn btn-primary" name="cmd" value="add"><i class="fas fa-save mr-1"></i>Save settings</button></div></div>
 </form>
-</div>
-<br />
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.getElementById('smtp-enabled');
+  var panel = document.getElementById('smtp-settings');
+  function updateSmtpState() {
+    panel.classList.toggle('smtp-settings-disabled', !toggle.checked);
+  }
+  toggle.addEventListener('change', updateSmtpState);
+  updateSmtpState();
+});
+</script>
 <?php /************************************************************/
 include "./include/footer.php";
 /********************************************************** PHP */?>

@@ -25,11 +25,12 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
     document.addEventListener('DOMContentLoaded', function () {
       if (typeof tinymce === 'undefined') return;
       tinymce.init({
-        selector: 'textarea',
+        selector: 'textarea:not(.no-tinymce)',
         license_key: 'gpl',
         plugins: 'advlist autolink autoresize charmap code fullscreen image link lists media preview searchreplace table visualblocks wordcount',
         toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media table | removeformat code fullscreen',
         menubar: 'file edit view insert format tools table help',
+        width: '100%',
         min_height: 280,
         autoresize_bottom_margin: 24,
         browser_spellcheck: true,
