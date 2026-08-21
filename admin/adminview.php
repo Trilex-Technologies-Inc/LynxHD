@@ -277,7 +277,7 @@ if( $ticketexists )
 <table border="0" cellspacing="0" cellpadding="0">
 <tr>
 <td><a href="#reply"><img src="./images/ticket-reply.png" alt="Post Reply" border="0" hspace="5" valign="middle" /></a></td><td><div class="normal"><a href="#reply">Post Reply</a>&nbsp;&nbsp;&nbsp;</div></td>
-<td><a href="printable.php?id=<?php echo $_GET['id'] ?>" target="_blank"><img src="./images/ticket-print.png" alt="Print" border="0" hspace="5" valign="middle" /></a></td><td><div class="normal"><a href="printable.php?id=<?php echo $_GET['id'] ?>" target="_blank">Print</a>&nbsp;&nbsp;&nbsp;</div></td>
+<td><a href="../printable.php?id=<?php echo $_GET['id'] ?>" target="_blank"><img src="./images/ticket-print.png" alt="Print" border="0" hspace="5" valign="middle" /></a></td><td><div class="normal"><a href="../printable.php?id=<?php echo $_GET['id'] ?>" target="_blank">Print</a>&nbsp;&nbsp;&nbsp;</div></td>
 <?php /************************************************************/
   if( $data['uploads'] )
   {
