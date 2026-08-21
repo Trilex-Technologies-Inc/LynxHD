@@ -43,7 +43,7 @@ if( $_POST['cmd'] == "add" )
 
         $data = get_options( array( "email", "title", "url", "emailheader", "emailfooter" ) );
 
-        mail( $_POST['email'], "New Help Desk Account Created", 
+        hd_mail( $_POST['email'], "New Help Desk Account Created",
               "{$data['title']}\n" .
               "------------------------------\n\n" .
               "{$_POST['name']},\n\n" .

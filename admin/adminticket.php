@@ -88,7 +88,7 @@ if( $form_submitted )
 
     eval( "\$sub = \"{$data['email_ticket_created_subject']}\";" );
     eval( "\$mes = \"{$data['email_ticket_created']}\";" );
-    mail( $_POST['email'], $sub, $mes, "From: {$data['email']}" );
+    hd_mail( $_POST['email'], $sub, $mes, "From: {$data['email']}" );
 
     if( trim( $_POST['replymessage'] ?? '' ) != "" )
     {
@@ -99,7 +99,7 @@ if( $form_submitted )
 
       eval( "\$sub = \"{$data['email_ticket_notify_subject']}\";" );
       eval( "\$mes = \"{$data['email_ticket_notify']}\";" );
-      mail( $_POST['email'], $sub, $mes, "From: {$data['email']}" );
+      hd_mail( $_POST['email'], $sub, $mes, "From: {$data['email']}" );
     }
 
     $autoreply = "";

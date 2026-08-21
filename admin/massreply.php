@@ -66,7 +66,7 @@ if( $_POST['cmd'] == "reply" )
 
           eval( "\$sub = \"{$data['email_ticket_notify_subject']}\";" );
           eval( "\$mes = \"{$data['email_ticket_notify']}\";" );
-          mail( $row['email'], $sub, $mes, "From: {$data['email']}" );
+          hd_mail( $row['email'], $sub, $mes, "From: {$data['email']}" );
         }
 
         mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '{$row['id']}', '{$_SESSION['user']['id']}', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}' )" );

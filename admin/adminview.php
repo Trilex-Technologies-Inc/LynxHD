@@ -108,7 +108,7 @@ if( $ticketexists )
             eval( "\$email_message = \"{$data['email_ticket_notify']}\";" );
 
             for( $i = 0; $i < count( $addresses ); $i++ )
-              mail( $addresses[$i], $email_subject, $email_message, "From: {$data['email']}" );
+              hd_mail( $addresses[$i], $email_subject, $email_message, "From: {$data['email']}" );
           }
         }
       }
@@ -168,7 +168,7 @@ if( $ticketexists )
       while( $row_flag = mysql_fetch_array( $res_flag ) )
       {
         if( $row_flag['id'] != $_SESSION['user']['id'] )
-          mail( $row_flag['email'], $email_subject, $email_message, "From: {$data['email']}" );
+          hd_mail( $row_flag['email'], $email_subject, $email_message, "From: {$data['email']}" );
       }
     }
     else if( ($_POST['flag'] != $_SESSION['user']['id']) && ($_POST['flag'] != -1) )
@@ -181,7 +181,7 @@ if( $ticketexists )
       $res_flag = mysql_query( "SELECT * FROM {$pre}user WHERE ( id = '{$_POST['flag']}' )" ); 
       $row_flag = mysql_fetch_array( $res_flag );
       if( $row_flag )
-        mail( $row_flag['email'], $email_subject, $email_message, "From: {$data['email']}" );
+        hd_mail( $row_flag['email'], $email_subject, $email_message, "From: {$data['email']}" );
     }
   }
   else if( $_GET['cmd'] == "delete" )

@@ -25,10 +25,21 @@ $global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user
 if( !$global_priv )
   Header( "Location: $HD_URL_BROWSE" );
 
-$options = array( "helpdeskurl", "url", "title", "email", "autoclose", "autodelete", "uploads", "banned_emails", "banned_ips", "floodcontrol", "tags", "cc" );
+$options = array(
+  "helpdeskurl", "url", "title", "email", "autoclose", "autodelete", "uploads",
+  "banned_emails", "banned_ips", "floodcontrol", "tags", "cc", "smtp_enabled",
+  "smtp_host", "smtp_port", "smtp_encryption", "smtp_username", "smtp_password"
+);
 
 if( isset( $_POST['helpdeskurl'] ) )
 {
+  $saved_smtp = get_options(array('smtp_password'));
+  foreach( $options as $option )
+    if( !isset($_POST[$option]) )
+      $_POST[$option] = '';
+  if( $_POST['smtp_password'] === '' )
+    $_POST['smtp_password'] = $saved_smtp['smtp_password'];
+
   for( $i = 0; $i < count( $options ); $i++ )
   {
     $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}options WHERE ( name = '{$options[$i]}' )" );
@@ -37,9 +48,35 @@ if( isset( $_POST['helpdeskurl'] ) )
     else
       mysql_query( "INSERT INTO {$pre}options ( name, text ) VALUES ( '{$options[$i]}', '" . $_POST[$options[$i]] . "' )" );
   }
+
+  if( ($_POST['cmd'] ?? '') === 'test_smtp' )
+  {
+    $test_email = trim($_POST['smtp_test_email'] ?? '');
+    if( empty($_POST['smtp_enabled']) )
+      $msg = '<div class="errorbox">Enable SMTP before running the SMTP test.</div><br />';
+    else if( !filter_var($test_email, FILTER_VALIDATE_EMAIL) )
+      $msg = '<div class="errorbox">Enter a valid recipient address for the SMTP test.</div><br />';
+    else
+    {
+      $smtp_error = '';
+      $sent = hd_mail(
+        $test_email,
+        'LynxHD SMTP test',
+        "This test message confirms that SMTP is configured correctly.\n\nSent: " . date(DATE_RFC2822),
+        "From: {$_POST['email']}",
+        $smtp_error
+      );
+      $msg = $sent
+        ? '<div class="successbox">SMTP test sent successfully to ' . field($test_email) . '.</div><br />'
+        : '<div class="errorbox">SMTP test failed: ' . field($smtp_error ?: 'Unknown mail error') . '</div><br />';
+    }
+  }
+  else
+    $msg = '<div class="successbox">Settings updated successfully.</div><br />';
 }
 
 $_POST = get_options( $options );
+$_POST['smtp_password'] = '';
 
 get_helpdesk_path( );
 
@@ -58,8 +95,7 @@ include "./include/header.php";
 <div id="container">
 <h1>- General Settings -</h1>
 <form class="wufoo" action="<?php echo $HD_CURPAGE ?>" method="post">
-<input type="hidden" name="cmd" value="add" />
-<ul>
+	<ul>
       <div class="clean-gray">The URL to the help desk must be of the full form (ie <i>http://www.yoursite.com/helpdesk/</i>).  The URL
       of your site should be the URL you want to appear at the bottom of emails (most likely your homepage).
       </div>
@@ -101,8 +137,45 @@ include "./include/header.php";
     <div>
     	<input class="field text medium" type="text" name="email" size="30" value="<?php echo field( $_POST['email'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" />
 	</div>
-</li>
-   <h1>- Auto-Ticket Management -</h1>    
+	</li>
+	<h1>- SMTP Delivery -</h1>
+	<div class="clean-gray">Send all help desk email through an authenticated SMTP server. When disabled, LynxHD uses PHP mail as before.</div>
+	<li>
+	  <label class="desc" for="smtp-enabled">Use SMTP</label>
+	  <div><input class="field checkbox" id="smtp-enabled" type="checkbox" name="smtp_enabled" <?php if( $_POST['smtp_enabled'] ) echo "checked" ?> /></div>
+	</li>
+	<li>
+	  <label class="desc" for="smtp-host">SMTP Host</label>
+	  <div><input class="field text medium" id="smtp-host" type="text" name="smtp_host" value="<?php echo field($_POST['smtp_host']) ?>" placeholder="smtp.example.com" /></div>
+	</li>
+	<li>
+	  <label class="desc" for="smtp-port">SMTP Port</label>
+	  <div><input class="field text small" id="smtp-port" type="number" min="1" max="65535" name="smtp_port" value="<?php echo field($_POST['smtp_port'] ?: '587') ?>" /></div>
+	</li>
+	<li>
+	  <label class="desc" for="smtp-encryption">Encryption</label>
+	  <div><select class="field select medium" id="smtp-encryption" name="smtp_encryption">
+	    <option value="starttls" <?php if($_POST['smtp_encryption'] === 'starttls' || $_POST['smtp_encryption'] === '') echo 'selected' ?>>STARTTLS (recommended)</option>
+	    <option value="ssl" <?php if($_POST['smtp_encryption'] === 'ssl') echo 'selected' ?>>TLS/SSL</option>
+	    <option value="none" <?php if($_POST['smtp_encryption'] === 'none') echo 'selected' ?>>None</option>
+	  </select></div>
+	</li>
+	<li>
+	  <label class="desc" for="smtp-username">SMTP Username</label>
+	  <div><input class="field text medium" id="smtp-username" type="text" name="smtp_username" value="<?php echo field($_POST['smtp_username']) ?>" autocomplete="username" /></div>
+	</li>
+	<li>
+	  <label class="desc" for="smtp-password">SMTP Password</label>
+	  <div><input class="field text medium" id="smtp-password" type="password" name="smtp_password" value="" autocomplete="new-password" placeholder="Leave blank to keep the saved password" /></div>
+	</li>
+	<li class="smtp-test-panel">
+	  <label class="desc" for="smtp-test-email">Send Test To</label>
+	  <div class="smtp-test-controls">
+	    <input class="field text medium" id="smtp-test-email" type="email" name="smtp_test_email" value="<?php echo field($_SESSION['user']['email'] ?? '') ?>" />
+	    <button class="btn btn-outline-primary" type="submit" name="cmd" value="test_smtp"><i class="fas fa-paper-plane mr-1"></i> Save &amp; Test SMTP</button>
+	  </div>
+	</li>
+	   <h1>- Auto-Ticket Management -</h1>
       <div class="clean-gray">You can have tickets automatically deleted and closed using the settings below.  Set each to '0' if you don't want
       them used.</div>
     <li>
@@ -161,7 +234,7 @@ include "./include/header.php";
 	</div>
 </li>	
    <div class="buttons">
-    <button type="submit" class="positive">Update</button>
+	    <button type="submit" class="positive" name="cmd" value="add">Update</button>
 	<button type="reset" class="negative">Reset</button>
 </div>
 </form>

@@ -72,7 +72,7 @@ function parse_email_to_ticket( $email, $receiver )
     $row = mysql_fetch_array( $res );
     if( $row )
     {
-      mail( $row[0], "Help Desk - Failed email", "The following email could not be received by the help desk due to an error.  It has been forwarded to you to make sure it won't be lost:\n\n{$email}", "From: {$data['email']}" );
+      hd_mail( $row[0], "Help Desk - Failed email", "The following email could not be received by the help desk due to an error.  It has been forwarded to you to make sure it won't be lost:\n\n{$email}", "From: {$data['email']}" );
      
       return false;
     }
@@ -254,7 +254,7 @@ function parse_email_to_ticket( $email, $receiver )
      
     eval( "\$email_subject = \"{$data['email_ticket_created_subject']}\";" );
     eval( "\$email_message = \"{$data['email_ticket_created']}\";" );
-    mail( $email, $email_subject, $email_message, "From: {$data['email']}" );
+    hd_mail( $email, $email_subject, $email_message, "From: {$data['email']}" );
 
     // Notification messages
     $res_user = mysql_query( "SELECT DISTINCT user.email, user.sms FROM {$pre}user AS user, {$pre}privilege AS priv WHERE ( user.id = priv.user_id && (priv.dept_id = '0' || priv.dept_id = '$dept_id') && user.notify & {$GLOBALS['HD_NOTIFY_CREATION']} > '0' )" );
@@ -263,13 +263,13 @@ function parse_email_to_ticket( $email, $receiver )
     {
       eval( "\$email_subject = \"{$data['email_notify_create_subject']}\";" );
       eval( "\$email_message = \"{$data['email_notify_create']}\";" );
-      mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
+      hd_mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
       if( trim( $row_user['sms'] ) != "" )
       {
         eval( "\$email_subject = \"{$data['email_notifysms_create_subject']}\";" );
         eval( "\$email_message = \"{$data['email_notifysms_create']}\";" );
-        mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
+        hd_mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
       }
     }
   }
@@ -308,7 +308,7 @@ function parse_email_to_ticket( $email, $receiver )
         array_push( $addresses, $row['email'] );
 
         for( $i = 0; $i < count( $addresses ); $i++ )
-          mail( $addresses[$i], $email_subject, $email_message, "From: {$data['email']}" );
+          hd_mail( $addresses[$i], $email_subject, $email_message, "From: {$data['email']}" );
       }
     }
     else // It's customer's posting
@@ -326,13 +326,13 @@ function parse_email_to_ticket( $email, $receiver )
       {
         eval( "\$email_subject = \"{$data['email_notify_reply_subject']}\";" );
         eval( "\$email_message = \"{$data['email_notify_reply']}\";" );
-        mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
+        hd_mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
         if( trim( $row_user['sms'] ) != "" )
         {
           eval( "\$email_subject = \"{$data['email_notifysms_create_subject']}\";" );
           eval( "\$email_message = \"{$data['email_notifysms_create']}\";" );
-          mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
+          hd_mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
         }
       }
 

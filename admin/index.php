@@ -36,7 +36,7 @@ if( ($_POST['cmd'] ?? '') == "login" )
       $row = mysql_fetch_array( $res );
       $key = time( );
 
-      mail( $_POST['email'], "Password Change Request", 
+      hd_mail( $_POST['email'], "Password Change Request",
             "{$data['title']}\n" .
             "------------------------------\n\n" .
             "To change your password, go to {$PATH_TO_HELPDESK}{$HD_URL_PASSWORD}?key={$key}&id={$row['id']}",

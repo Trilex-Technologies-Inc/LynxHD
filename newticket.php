@@ -138,7 +138,7 @@ if( isset( $_POST['name'] ) )
 
     eval( "\$email_subject = \"{$data['email_ticket_created_subject']}\";" );
     eval( "\$email_message = \"{$data['email_ticket_created']}\";" );
-    mail( $_POST['email'], $email_subject, $email_message, "From: {$data['email']}" );
+    hd_mail( $_POST['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
     // Notification messages
     $res_user = mysql_query( "SELECT DISTINCT user.email, user.sms FROM {$pre}user AS user, {$pre}privilege AS priv WHERE ( user.id = priv.user_id && (priv.dept_id = '0' || priv.dept_id = '{$_POST['department']}') && user.notify & {$HD_NOTIFY_CREATION} > '0' )" );
@@ -148,13 +148,13 @@ if( isset( $_POST['name'] ) )
 
       eval( "\$email_subject = \"{$data['email_notify_create_subject']}\";" );
       eval( "\$email_message = \"{$data['email_notify_create']}\";" );
-      mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
+      hd_mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
       if( trim( $row_user['sms'] ) != "" )
       {
         eval( "\$email_subject = \"{$data['email_notifysms_create_subject']}\";" );
         eval( "\$email_message = \"{$data['email_notifysms_create']}\";" );
-        mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
+        hd_mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
       }
     }
 

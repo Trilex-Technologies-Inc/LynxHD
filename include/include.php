@@ -273,6 +273,131 @@ function get_options( $options )
   return $data;
 }
 
+function hd_smtp_read( $socket, $expected_codes )
+{
+  $response = "";
+  while( ($line = fgets($socket, 515)) !== false )
+  {
+    $response .= $line;
+    if( strlen($line) < 4 || $line[3] === ' ' )
+      break;
+  }
+
+  $code = (int)substr($response, 0, 3);
+  if( !in_array($code, (array)$expected_codes, true) )
+    throw new Exception(trim($response) ?: 'SMTP server returned an empty response.');
+
+  return $response;
+}
+
+function hd_smtp_command( $socket, $command, $expected_codes )
+{
+  if( fwrite($socket, $command . "\r\n") === false )
+    throw new Exception('Could not write to the SMTP server.');
+  return hd_smtp_read($socket, $expected_codes);
+}
+
+function hd_email_address( $value )
+{
+  if( preg_match('/<([^>]+)>/', (string)$value, $matches) )
+    return trim($matches[1]);
+  return trim((string)$value);
+}
+
+function hd_smtp_mail( $to, $subject, $message, $headers, $settings, &$error = null )
+{
+  $socket = null;
+  try
+  {
+    $host = trim(stripslashes($settings['smtp_host'] ?? ''));
+    $port = (int)($settings['smtp_port'] ?? 587);
+    $encryption = strtolower(trim($settings['smtp_encryption'] ?? 'starttls'));
+    $timeout = 15;
+    if( $host === '' || $port < 1 || $port > 65535 )
+      throw new Exception('SMTP host or port is invalid.');
+
+    $remote = ($encryption === 'ssl' ? 'ssl://' : 'tcp://') . $host . ':' . $port;
+    $socket = @stream_socket_client($remote, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
+    if( !$socket )
+      throw new Exception("Connection failed: $errstr ($errno)");
+
+    stream_set_timeout($socket, $timeout);
+    hd_smtp_read($socket, array(220));
+    $hostname = $_SERVER['SERVER_NAME'] ?? 'localhost';
+    hd_smtp_command($socket, 'EHLO ' . $hostname, array(250));
+
+    if( $encryption === 'starttls' )
+    {
+      hd_smtp_command($socket, 'STARTTLS', array(220));
+      if( !stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) )
+        throw new Exception('Could not establish the TLS connection.');
+      hd_smtp_command($socket, 'EHLO ' . $hostname, array(250));
+    }
+
+    $username = stripslashes((string)($settings['smtp_username'] ?? ''));
+    $password = stripslashes((string)($settings['smtp_password'] ?? ''));
+    if( $username !== '' )
+    {
+      hd_smtp_command($socket, 'AUTH LOGIN', array(334));
+      hd_smtp_command($socket, base64_encode($username), array(334));
+      hd_smtp_command($socket, base64_encode($password), array(235));
+    }
+
+    $from_header = $settings['email'] ?? '';
+    if( preg_match('/^From:\s*(.+)$/mi', (string)$headers, $matches) )
+      $from_header = trim($matches[1]);
+    $from = hd_email_address($from_header);
+    $recipient = hd_email_address($to);
+    if( !filter_var($from, FILTER_VALIDATE_EMAIL) || !filter_var($recipient, FILTER_VALIDATE_EMAIL) )
+      throw new Exception('The sender or recipient email address is invalid.');
+
+    hd_smtp_command($socket, 'MAIL FROM:<' . $from . '>', array(250));
+    hd_smtp_command($socket, 'RCPT TO:<' . $recipient . '>', array(250, 251));
+    hd_smtp_command($socket, 'DATA', array(354));
+
+    $is_html = preg_match('/<[a-z][\s\S]*>/i', (string)$message) === 1;
+    $header_lines = array(
+      'Date: ' . date(DATE_RFC2822),
+      'From: ' . $from_header,
+      'To: ' . $to,
+      'Subject: ' . $subject,
+      'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . $hostname . '>',
+      'MIME-Version: 1.0',
+      'Content-Type: ' . ($is_html ? 'text/html' : 'text/plain') . '; charset=UTF-8',
+      'Content-Transfer-Encoding: 8bit'
+    );
+    foreach( preg_split('/\r\n|\r|\n/', (string)$headers) as $header )
+      if( trim($header) !== '' && stripos($header, 'From:') !== 0 )
+        $header_lines[] = trim($header);
+
+    $body = preg_replace('/\r\n|\r|\n/', "\r\n", (string)$message);
+    $body = preg_replace('/^\./m', '..', $body);
+    fwrite($socket, implode("\r\n", $header_lines) . "\r\n\r\n" . $body . "\r\n.\r\n");
+    hd_smtp_read($socket, array(250));
+    hd_smtp_command($socket, 'QUIT', array(221));
+    fclose($socket);
+    return true;
+  }
+  catch( Throwable $exception )
+  {
+    if( is_resource($socket) )
+      fclose($socket);
+    $error = $exception->getMessage();
+    return false;
+  }
+}
+
+function hd_mail( $to, $subject, $message, $headers = '', &$error = null )
+{
+  $settings = get_options(array(
+    'email', 'smtp_enabled', 'smtp_host', 'smtp_port', 'smtp_encryption',
+    'smtp_username', 'smtp_password'
+  ));
+  if( !empty($settings['smtp_enabled']) )
+    return hd_smtp_mail($to, $subject, $message, $headers, $settings, $error);
+  return mail($to, $subject, $message, $headers);
+}
+
 function parse_tags( $text )
 {
   global $CODEFROM, $CODETO;
@@ -331,7 +456,7 @@ function send_survey( $id )
 
       eval( "\$sub = \"{$data['email_ticket_survey_subject']}\";" );
       eval( "\$mes = \"{$data['email_ticket_survey']}\";" );
-      mail( $row['email'], $sub, $mes, "From: {$data['email']}" );
+      hd_mail( $row['email'], $sub, $mes, "From: {$data['email']}" );
     }
   }
 }

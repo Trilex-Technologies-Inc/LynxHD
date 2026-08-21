@@ -81,13 +81,13 @@ if( $ticketexists )
 
         eval( "\$email_subject = \"{$data['email_notify_reply_subject']}\";" );
         eval( "\$email_message = \"{$data['email_notify_reply']}\";" );
-        mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
+        hd_mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
         if( trim( $row_user['sms'] ) != "" )
         {
           eval( "\$email_subject = \"{$data['email_notifysms_reply_subject']}\";" );
           eval( "\$email_message = \"{$data['email_notifysms_reply']}\";" );
-          mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
+          hd_mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
         }
       }
     }

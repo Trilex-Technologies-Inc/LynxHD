@@ -789,6 +789,22 @@ body {
   background: #fffaf2;
 }
 
+.smtp-test-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.smtp-test-controls input {
+  flex: 1 1 18rem;
+}
+
+.smtp-test-controls button {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 @media (max-width: 767.98px) {
   .admin-content {
     padding-inline: 1rem;
@@ -845,5 +861,15 @@ body {
 
   .reply-name-input {
     width: calc(100% - 1.75rem);
+  }
+
+  .smtp-test-controls {
+    align-items: stretch;
+  }
+
+  .smtp-test-controls input,
+  .smtp-test-controls button {
+    width: 100%;
+    max-width: none;
   }
 }

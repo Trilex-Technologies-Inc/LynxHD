@@ -38,7 +38,7 @@ if( $_GET['cmd'] == "lost" && isset( $_GET['email'] ) )
       $email_message .= $PATH_TO_HELPDESK . $HD_URL_TICKET_VIEW . "?cmd=view&id={$row['ticket_id']}&email={$_GET['email']}\n\n";
     }
 
-    mail( $_GET['email'], $email_subject, $email_message, "From: {$data['email']}" );
+    hd_mail( $_GET['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
     $success = 1;
   }
