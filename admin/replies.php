@@ -54,15 +54,9 @@ $res = mysql_query( "SELECT * FROM {$pre}dept ORDER BY sortnum" );
 while( $row = mysql_fetch_array( $res ) )
 {
 /********************************************************** PHP */?>
-<table width="100%" bgcolor="#3c91c7" border="0" cellspacing="1" cellpadding="2">
-<tr><td bgcolor="#3c91c7">
-<h1><?php echo field( $row['name'] ) ?></h1>
-</td></tr>
-<tr><td bgcolor="#FFFFFF">
-<table width="100%" border="0" cellspacing="0" cellpadding="5"><tr><td>
-  <table bgcolor="#FFFFFF" width="100%" border="0" cellspacing="0" cellpadding="4">
-  <tr><td colspan="2"><div class="clean-gray">Auto-replies for the following phrases will be used in this department:</div></td></tr>
-  <tr><td><img src="./images/blank.gif" height="2" /></td></tr>
+<section class="card shadow-sm mb-4"><div class="card-header"><h2 class="h6 mb-0"><?php echo field( $row['name'] ) ?></h2></div><div class="card-body">
+  <p class="text-muted">Auto-replies for the following phrases will be used in this department:</p>
+  <div class="list-group list-group-flush">
 <?php /************************************************************/
   $res_reply = mysql_query( "SELECT * FROM {$pre}reply WHERE ( dept_id = '{$row['id']}' )" );
   $priv = get_row_count( "SELECT COUNT(id) FROM {$pre}privilege WHERE ( dept_id = '{$row['id']}' && admin = '1' && user_id = '{$_SESSION['user']['id']}' )" );
@@ -72,22 +66,17 @@ while( $row = mysql_fetch_array( $res ) )
     while( $row_reply = mysql_fetch_array( $res_reply ) )
     {
       if( $global_priv || $priv )
-        echo "<tr><td><a href=\"javascript:if(confirm('Are you sure you want to delete this auto-reply?')) window.location.href = '$HD_CURPAGE?cmd=del&id={$row_reply[0]}&dept_id={$row_reply['dept_id']}'\"><img src=\"./images/ticket-delete.png\" border=\"0\" hspace=\"2\" alt=\"Delete\" /></a><a href=\"$HD_URL_REPLIESVIEW?cmd=edit&id={$row_reply[0]}\"><img src=\"ticket-reply.png\" border=\"0\" hspace=\"2\" alt=\"View/Edit\" /></a></td>";
+        echo "<div class=\"list-group-item d-flex align-items-center justify-content-between\"><a href=\"$HD_URL_REPLIESVIEW?cmd=edit&id={$row_reply[0]}\">" . (($row_reply['phrase'] == "") ? "Global auto-reply — all phrases" : field( $row_reply['phrase'] )) . "</a><div><a class=\"btn btn-sm btn-outline-primary mr-2\" href=\"$HD_URL_REPLIESVIEW?cmd=edit&id={$row_reply[0]}\">Edit</a><a class=\"btn btn-sm btn-outline-danger\" href=\"javascript:if(confirm('Are you sure you want to delete this auto-reply?')) window.location.href = '$HD_CURPAGE?cmd=del&id={$row_reply[0]}&dept_id={$row_reply['dept_id']}'\">Delete</a></div></div>";
       else
-        echo "<tr><td><img src=\"./images/nodelete.png\" border=\"0\" hspace=\"2\" /></a><a href=\"$HD_URL_REPLIESVIEW?cmd=edit&id={$row_reply[0]}\"></a></td>";
-
-      echo "<td width=\"100%\"><div class=\"normal\"><a href=\"{$HD_URL_REPLIESVIEW}?cmd=edit&id={$row_reply[0]}\">" . (($row_reply['phrase'] == "") ? "[Global Auto-Reply - All Phrases]" : field( $row_reply['phrase'] )) . "</a>";
+        echo "<div class=\"list-group-item\"><a href=\"{$HD_URL_REPLIESVIEW}?cmd=edit&id={$row_reply[0]}\">" . (($row_reply['phrase'] == "") ? "Global auto-reply — all phrases" : field( $row_reply['phrase'] )) . "</a></div>";
     }
   }
 
   if( $priv || $global_priv )
     echo "";
 /********************************************************** PHP */?>
-  </table>
-</td></tr></table>
-</td></tr>
-<br />
-</table>
+  </div>
+</div></section>
 <?php /************************************************************/
 }
 

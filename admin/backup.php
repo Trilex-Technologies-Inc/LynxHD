@@ -53,16 +53,12 @@ else if( $_POST['cmd'] == "import" )
 include "./include/header.php";
 /********************************************************** PHP */?>
 <div class="title"><?php echo $script_name ?> Help Desk Backup</div><br /><?php echo $msg ?>
-<table width="100%" border="0" cellpadding="5">
-<tr><td>
-  <div class="clean-gray">
+<div class="alert alert-info">
     You can create a backup of the entire help desk, including users, tickets, settings, etc.
     You may also restore a backup.  Note that when you restore a backup, it will append
     to the database.  If you want to start from scratch, first remove all tables associated
     with the help desk.
-  </div>
-</td></tr>
-</table>
+ </div>
 <br />
 <div id="container">
 	<h1>Create Helpdesk Backup</h1>

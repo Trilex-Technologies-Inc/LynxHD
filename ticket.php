@@ -84,7 +84,6 @@ else
     <button type="submit" class="positive">Lookup</button>
 </div>
 </form>
-</table>
 </div>
 <?php /************************************************************/
 }

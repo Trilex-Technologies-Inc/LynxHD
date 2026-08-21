@@ -96,35 +96,31 @@ if( $ticketexists )
 <form action="<?php echo $CURPAGE ?>" method="post">
 <input type="hidden" name="id" value="<?php echo $_GET['id'] ?>" />
 <input type="hidden" name="email" value="<?php echo $_GET['email'] ?>" />
-<table border="0" cellspacing="10" cellpadding="0">
+<div class="survey-questions my-4">
 <?php /************************************************************/
     $res = mysql_query( "SELECT name, text FROM {$pre}options WHERE ( name LIKE 'survey%' ) ORDER BY num" );
     while( $row = mysql_fetch_array( $res ) )
     {
 /********************************************************** PHP */?>
-<tr>
-  <td><div class="normal"><b><?php echo field( $row['text'] ) ?></b></div></td>
-  <td>
-    <div class="normal">
-    <i><?php echo $LANG['survey_poor'] ?></i>
-    <input type="radio" value="1" name="<?php echo field( $row['name'] ) ?>" /> 1
-    <input type="radio" value="2" name="<?php echo field( $row['name'] ) ?>" /> 2
-    <input type="radio" value="3" name="<?php echo field( $row['name'] ) ?>" checked /> 3
-    <input type="radio" value="4" name="<?php echo field( $row['name'] ) ?>" /> 4
-    <input type="radio" value="5" name="<?php echo field( $row['name'] ) ?>" /> 5
-    <i><?php echo $LANG['survey_excellent'] ?></i>
-    </div>
-  </td>
-</tr>
+<fieldset class="form-group border-bottom pb-3 mb-3">
+  <legend class="h6 font-weight-bold"><?php echo field( $row['text'] ) ?></legend>
+  <div class="d-flex flex-wrap align-items-center">
+    <span class="text-muted mr-3"><?php echo $LANG['survey_poor'] ?></span>
+    <?php for( $rating = 1; $rating <= 5; $rating++ ): ?>
+      <div class="custom-control custom-radio custom-control-inline"><input class="custom-control-input" id="<?php echo field($row['name']) ?>-<?php echo $rating ?>" type="radio" value="<?php echo $rating ?>" name="<?php echo field($row['name']) ?>" <?php if($rating == 3) echo 'checked' ?>><label class="custom-control-label" for="<?php echo field($row['name']) ?>-<?php echo $rating ?>"><?php echo $rating ?></label></div>
+    <?php endfor; ?>
+    <span class="text-muted"><?php echo $LANG['survey_excellent'] ?></span>
+  </div>
+</fieldset>
 <?php /************************************************************/
     }
 /********************************************************** PHP */?>
-</table>
+</div>
 <br /><br />
 <b><?php echo $LANG['survey_comments'] ?></b><br />
-<textarea name="comments" rows="8" cols="45"></textarea>
+<textarea class="form-control" name="comments" rows="8"></textarea>
 <br /><br />
-<input type="submit" value="<?php echo $LANG['survey_submit'] ?>" />
+<input class="btn btn-primary" type="submit" value="<?php echo $LANG['survey_submit'] ?>" />
 </div>
 </form>
 <?php /************************************************************/

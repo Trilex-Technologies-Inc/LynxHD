@@ -93,26 +93,24 @@ if( $_POST['cmd'] == "reply" )
 include "./include/header.php";
 /********************************************************** PHP */?>
 <div class="title"><?php echo $script_name ?> Mass Reply</div><br /><?php echo $msg ?>
-<table width="100%" border="0" cellspacing="3" cellpadding="0">
+<div class="card shadow-sm mb-4"><div class="card-body">
 <?php /************************************************************/
 $res = mysql_query( "SELECT * FROM {$pre}reply WHERE ( dept_id = '-1' )" );
 if( mysql_num_rows( $res ) )
 {
 /********************************************************** PHP */?>
-<form name="predefineddelete" action="<?php echo $HD_CURPAGE ?>" method="post">
-<tr><td width="150" align="right"><div class="normal">Predefined Reply:</div></td><td>
+<form class="form-row align-items-end mb-4" name="predefineddelete" action="<?php echo $HD_CURPAGE ?>" method="post">
 <input type="hidden" name="id" value="<?php echo $_GET['id'] ?>" />
 <input type="hidden" name="replyname" value="" />
 <input type="hidden" name="cmd" value="deletereply" />
-<select name="reply" onchange="document.predefinedreply.message.value = this.options[selectedIndex].value; if( this.options[selectedIndex].value != '' )  { document.predefinedreply.replyname.value = this.options[selectedIndex].text; document.predefineddelete.replyname.value = this.options[selectedIndex].text; } else { document.predefinedreply.replyname.value = ''; document.predefineddelete.replyname.value = ''; }">
+<div class="form-group col-md-8 mb-2"><label for="predefined-reply">Predefined Reply</label><select class="form-control" id="predefined-reply" name="reply" onchange="document.predefinedreply.message.value = this.options[selectedIndex].value; if( this.options[selectedIndex].value != '' )  { document.predefinedreply.replyname.value = this.options[selectedIndex].text; document.predefineddelete.replyname.value = this.options[selectedIndex].text; } else { document.predefinedreply.replyname.value = ''; document.predefineddelete.replyname.value = ''; }">
 <option value="">(None)</option>
 <?php /************************************************************/
   while( $row = mysql_fetch_array( $res ) )
     echo "<option value=\"" . field( $row['reply'] ) . "\">" . field( $row['phrase'] ) . "</option>\n";  
 /********************************************************** PHP */?>
-</select>
-<input type="submit" value="Delete Selected Reply" />
-</td></tr>
+</select></div>
+<div class="form-group col-md-4 mb-2"><input class="btn btn-outline-danger" type="submit" value="Delete Selected Reply" /></div>
 </form>
 <?php /************************************************************/
 }
@@ -120,17 +118,12 @@ if( mysql_num_rows( $res ) )
 <form name="predefinedreply" action="<?php echo $HD_CURPAGE ?>" method="post">
 <input type="hidden" name="cmd" value="reply" />
 <input type="hidden" name="tickets" value="<?php echo $_GET['tickets'] ?>" />
-<tr><td colspan="2">&nbsp;</td></tr>
-<tr><td width="150" align="right"><div class="normal">Subject:</div></td><td><input type="text" name="subject" value="<?php echo field( $_POST['subject'] ?? '' ) ?>" size="30" /></td></tr>
-<tr><td width="150" align="right"><div class="normal">Message:<font color="#FF0000">*</font></div></td><td><?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?><textarea name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ?? '' ) ?></textarea></td></tr>
-<tr><td></td><td><img src="./images/blank.gif" width="1" height="12" /><br />
-<div class="normal">
-<input type="checkbox" name="save" /> Save as a predefined reply named <input type="text" name="replyname" />
-</div>
-</td></tr>
-<tr><td></td><td><img src="./images/blank.gif" width="1" height="12" /><br /><input type="submit" value="Post Reply" /> <input type="reset" /></td></tr>
+<div class="form-group"><label for="mass-subject">Subject</label><input class="form-control" id="mass-subject" type="text" name="subject" value="<?php echo field( $_POST['subject'] ?? '' ) ?>" /></div>
+<div class="form-group"><div class="d-flex justify-content-between"><label for="mass-message">Message <span class="text-danger">*</span></label><?php if( $data['tags'] ) echo '<a class="small" href="' . $HD_URL_TICKET_TAGS . '" target="_blank">Message tags</a>'; ?></div><textarea class="form-control" id="mass-message" name="message" rows="8"><?php echo field( $_POST['message'] ?? '' ) ?></textarea></div>
+<div class="form-row align-items-center mb-4"><div class="col-auto"><div class="custom-control custom-checkbox"><input class="custom-control-input" id="save-reply" type="checkbox" name="save"><label class="custom-control-label" for="save-reply">Save as a predefined reply</label></div></div><div class="col"><input class="form-control" type="text" name="replyname" placeholder="Reply name"></div></div>
+<div class="text-right"><input class="btn btn-light mr-2" type="reset" /><input class="btn btn-primary" type="submit" value="Post Reply" /></div>
 </form>
-</table>
+</div></div>
 <br />
 <?php /************************************************************/
 include "./include/footer.php";

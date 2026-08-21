@@ -77,9 +77,8 @@ else if( $_POST['cmd'] == "edit" )
 include "./include/header.php";
 /********************************************************** PHP */?>
 <div class="title"><?php echo $script_name ?> Auto-Replies</div><br /><?php echo $msg ?>
-<div class="normal"><a href="<?php echo $HD_URL_REPLIES ?>">&gt;&gt; Back To Auto-Replies Main Page</a></div><br />
-<table bgcolor="#99CCFF" border="0" cellspacing="0" cellpadding="0"><tr><td align="left"><img src="./images/leftuptransparent.gif" align="top" />&nbsp;</td><td><div class="containertitle">Auto-Reply Options</div></td><td align="right">&nbsp;<img src="./images/rightuptransparent.gif" align="top" /></td></tr></table>
-<table width="100%" bgcolor="#99CCFF" border="0" cellspacing="1" cellpadding="4">
+<a class="btn btn-sm btn-light mb-3" href="<?php echo $HD_URL_REPLIES ?>">&larr; Back to auto-replies</a>
+<section class="card shadow-sm mb-4"><div class="card-header"><h2 class="h6 mb-0">Auto-Reply Options</h2></div><div class="card-body">
 <form action="<?php echo $HD_CURPAGE ?>" method="post">
 <?php /************************************************************/
 if( $_POST['cmd'] == "edit" )
@@ -90,23 +89,13 @@ if( $_POST['cmd'] == "edit" )
 else
   echo "<input type=\"hidden\" name=\"cmd\" value=\"add\" />";
 /********************************************************** PHP */?>
-<tr><td bgcolor="#EEEEEE">
-  <table align="center" border="0" cellspacing="2" cellpadding="0">
-    <tr><td colspan="2" align="center"><div class="subtitle">- Auto-Reply Options -</div><img src="./images/blank.gif" width="1" height="12" />    
 <?php /************************************************************/
 if( $global_priv || $priv )
 {
 /********************************************************** PHP */?>
-    <table width="500" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF"><tr><td>
-      <div class="normal">Specify the department that you would like to use this auto-reply for.</div>
-    </td></tr></table>
-    <img src="./images/blank.gif" width="1" height="12" />
-    </td></tr>
-    <tr valign="top">
-      <td align="right"><div class="topinfo">Department:&nbsp;</div></td>
-      <td>
+    <div class="form-group"><label for="reply-department">Department</label><small class="form-text text-muted mb-2">Select the department that should use this auto-reply.</small>
 <?php /************************************************************/
-echo "<select name=\"dept_id\">";
+echo "<select class=\"form-control\" id=\"reply-department\" name=\"dept_id\">";
 
 if( !$global_priv )
   $res = mysql_query( "SELECT dept.name, dept.id FROM {$pre}dept AS dept, {$pre}privilege AS priv WHERE ( priv.user_id = '{$_SESSION['user']['id']}' && priv.admin = '1' && priv.dept_id = dept.id )" );
@@ -118,47 +107,22 @@ while( $row = mysql_fetch_array( $res ) )
 
 echo "</select>";
 /********************************************************** PHP */?>
-      </td>
-    </tr>
+    </div>
 <?php /************************************************************/
 }
 /********************************************************** PHP */?>
-    <tr><td colspan="2" align="center"><img src="./images/blank.gif" width="1" height="12" /><br />
-    <table width="500" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF"><tr><td>
-      <div class="normal">Specify the message that will be sent to clients creating a ticket.  This message will be appended
-      to the ticket information email that is sent to the client.</div>
-    </td></tr></table>
-    <img src="./images/blank.gif" width="1" height="12" />
-    </td></tr>
-    <tr valign="top">
-      <td align="right"><div class="topinfo">Message:&nbsp;</div></td>
-      <td><textarea name="reply" rows="5" cols="40"><?php echo field( $_POST['reply'] ?? '' ) ?></textarea></td>
-    </tr>
-    <tr><td colspan="2" align="center"><img src="./images/blank.gif" width="1" height="12" /><br />
-    <table width="500" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF"><tr><td>
-      <div class="normal">Specify a phrase that will trigger this auto-reply.  These phrases will be
-      search within the subject of each ticket created. If you leave the phrase blank,
-      then this auto-reply will be sent to all tickets created for the department chosen above.</div>
-    </td></tr></table>
-    <img src="./images/blank.gif" width="1" height="12" />
-    </td></tr>
-    <tr valign="top">
-      <td align="right"><div class="topinfo">Key Phrase:&nbsp;</div></td>
-      <td><input type="text" name="phrase" size="30" value="<?php echo field( $_POST['phrase'] ?? '' ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" /></td>
-    </tr>
+    <div class="form-group"><label for="reply-message">Message</label><small class="form-text text-muted mb-2">Appended to the ticket information email sent to the client.</small><textarea class="form-control" id="reply-message" name="reply" rows="6"><?php echo field( $_POST['reply'] ?? '' ) ?></textarea></div>
+    <div class="form-group"><label for="reply-phrase">Key phrase</label><small class="form-text text-muted mb-2">Matched against the ticket subject. Leave blank to reply to every new ticket in this department.</small><input class="form-control" id="reply-phrase" type="text" name="phrase" value="<?php echo field( $_POST['phrase'] ?? '' ) ?>"></div>
 <?php /************************************************************/
 if( $global_priv || $priv )
 {
 /********************************************************** PHP */?>
-    <tr><td colspan="2" align="center"><input type="submit" value="Update">&nbsp;&nbsp;<input type="reset"><br /><img src="./images/blank.gif" width="1" height="12" /></td></tr>
+    <div class="text-right"><input class="btn btn-light mr-2" type="reset"><input class="btn btn-primary" type="submit" value="Update"></div>
 <?php /************************************************************/
 }
 /********************************************************** PHP */?>
-  </table>
-</td></tr>
 </form>
-</table>
-<br />
+</div></section>
 <?php /************************************************************/
 include "./include/footer.php";
 /********************************************************** PHP */?>

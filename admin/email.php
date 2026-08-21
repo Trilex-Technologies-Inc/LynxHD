@@ -119,38 +119,17 @@ while( $row_dept = mysql_fetch_array( $res_dept ) )
 while( $row = mysql_fetch_array( $res ) )
 {
 /********************************************************** PHP */?>
-<table width="100%" bgcolor="#3c91c7" border="0" cellspacing="1" cellpadding="2">
-<tr><td bgcolor="#3c91c7">
-<h1>
-<a href="javascript:if(confirm('Are you sure you want to remove this email processor?')) window.location.href = '<?php echo $HD_CURPAGE ?>?cmd=del&id=<?php echo $row['id'] ?>'"><img src="./images/ticket-delete.png" border="0" align="absmiddle" alt="Delete" /></a> <?php echo $row['email'] ?> [<?php echo field( $row['name'] ) ?>]
-</h1>
-</td></tr>
-<tr><td bgcolor="#FFFFFF">
-<table width="100%" border="0" cellspacing="0" cellpadding="5"><tr><td>
-  <table bgcolor="#FFFFFF" width="100%" border="0" cellspacing="0" cellpadding="4">
-  <div class="clean-gray">POP3 settings (you may leave these blank if you are using the forwarding method described in the manual):</div>
-  <tr><td><img src="./images/blank.gif" height="2" /></td></tr>
-  </table>
-  <table border="0" cellspacing="5" cellpadding="0">
+<section class="card shadow-sm mb-4"><div class="card-header d-flex align-items-center justify-content-between"><div><h2 class="h6 mb-1"><?php echo field($row['email']) ?></h2><small class="text-muted"><?php echo field($row['name']) ?></small></div><a class="btn btn-sm btn-outline-danger" href="javascript:if(confirm('Are you sure you want to remove this email processor?')) window.location.href = '<?php echo $HD_CURPAGE ?>?cmd=del&id=<?php echo $row['id'] ?>'">Delete</a></div><div class="card-body">
+  <p class="text-muted">POP3 settings may be left blank when using the forwarding method described in the manual.</p>
   <form action="<?php echo $HD_CURPAGE ?>" method="post">
   <input type="hidden" name="cmd" value="update" />
   <input type="hidden" name="id" value="<?php echo $row['id'] ?>" />
-  <tr>
-    <td align="right"><div class="smallinfo">Server:</div></td><td><div class="smallinfo"><input type="text" name="server" value="<?php echo field( $row['server'] ) ?>" />&nbsp;&nbsp;Port: <input type="text" name="port" size="4" value="<?php echo field( $row['port'] ) ?>" /></div></td>
-  </tr>
-  <tr>
-    <td align="right"><div class="smallinfo">Username:</div></td><td><div class="smallinfo"><input type="text" name="username" value="<?php echo field( $row['username'] ) ?>" />&nbsp;&nbsp;Password: <input type="password" name="password" size="12"  /> (Leave blank to keep password)</div></td>
-  </tr>
-  <tr><td></td><td><div class="smallinfo"><input type="checkbox" name="del" <?php if( $row['del'] ) echo "checked" ?> /> Delete emails from server after creating tickets</div></td></tr>
-  <tr><td></td><td><img src="./images/blank.gif" width="1" height="8"><div class="buttons">
-    <button type="submit" class="positive">Update</button>
-    </div></td></tr>
+  <div class="form-row"><div class="form-group col-md-8"><label>Server</label><input class="form-control" type="text" name="server" value="<?php echo field($row['server']) ?>"></div><div class="form-group col-md-4"><label>Port</label><input class="form-control" type="number" name="port" value="<?php echo field($row['port']) ?>"></div></div>
+  <div class="form-row"><div class="form-group col-md-6"><label>Username</label><input class="form-control" type="text" name="username" value="<?php echo field($row['username']) ?>"></div><div class="form-group col-md-6"><label>Password</label><input class="form-control" type="password" name="password" placeholder="Keep saved password"></div></div>
+  <div class="custom-control custom-checkbox mb-3"><input class="custom-control-input" id="delete-mail-<?php echo (int)$row['id'] ?>" type="checkbox" name="del" <?php if($row['del']) echo 'checked' ?>><label class="custom-control-label" for="delete-mail-<?php echo (int)$row['id'] ?>">Delete emails from server after creating tickets</label></div>
+  <button type="submit" class="btn btn-primary">Update</button>
   </form>
-  </table>
-</td></tr></table>
-</td></tr>
-<br />
-</table>
+</div></section>
 <?php /************************************************************/
 }
 
