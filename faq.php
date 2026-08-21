@@ -136,14 +136,14 @@ else if( $_POST['cmd'] == "view" )
   if( trim( $row['symptoms'] ) == "" )
     echo "{$LANG['faq_no_symptoms']}";
   else
-    echo parse_tags( $row['symptoms'] );
+    echo render_editor_content( $row['symptoms'] );
 
   echo '</div></section><section><h4 class="h5 border-bottom pb-2 mb-3">' . $LANG['faq_solution'] . '</h4><div class="faq-copy">';
 
   if( trim( $row['solution'] ) == "" )
     echo "{$LANG['faq_no_solution']}";
   else
-    echo parse_tags( $row['solution'] );
+    echo render_editor_content( $row['solution'] );
   echo '</div></section></article>';
 }
 else if( $_POST['cmd'] == "search" )

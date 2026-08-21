@@ -426,6 +426,21 @@ function parse_no_tags( $text )
   return $text;
 }
 
+function render_editor_content( $text )
+{
+  // TinyMCE stores HTML, while older knowledge-base entries use message tags.
+  if( preg_match( '/<\/?(?:p|div|br|strong|b|em|i|u|s|ul|ol|li|blockquote|h[1-6]|pre|code)\b/i', $text ) )
+  {
+    $text = strip_tags( $text, '<p><div><br><strong><b><em><i><u><s><ul><ol><li><blockquote><h1><h2><h3><h4><h5><h6><pre><code>' );
+
+    // Formatting does not require attributes; removing them also prevents
+    // event handlers and unsafe URLs from reaching the public FAQ page.
+    return preg_replace( '/<([a-z][a-z0-9]*)(?:\s[^>]*)?>/i', '<$1>', $text );
+  }
+
+  return parse_tags( $text );
+}
+
 function send_survey( $id )
 {
   global $pre;
