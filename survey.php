@@ -118,7 +118,7 @@ if( $ticketexists )
 </div>
 <br /><br />
 <b><?php echo $LANG['survey_comments'] ?></b><br />
-<textarea class="form-control" name="comments" rows="8"></textarea>
+<textarea class="form-control no-tinymce" name="comments" rows="8"></textarea>
 <br /><br />
 <input class="btn btn-primary" type="submit" value="<?php echo $LANG['survey_submit'] ?>" />
 </div>

@@ -477,10 +477,7 @@ Status:&nbsp;
       echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td><div class=\"normal\"><font size=\"1\"><b>Subject:</b> " . field( $row_post['subject'] ) . "</font></div></td><td><img src=\"./images/blank.gif\" width=\"10\" height=\"1\" /></td><td align=\"right\"><div class=\"normal\"><font size=\"1\"><b>Posted by " . field( $row_user['name'] ) . " </b><i>(Staff)</i></font></div></td></tr></table>";
     }
 
-    if( $data['tags'] )
-      $row_post['message'] = parse_tags( $row_post['message'] );
-    else
-      $row_post['message'] = parse_no_tags( $row_post['message'] );
+    $row_post['message'] = render_editor_content( $row_post['message'], !empty($data['tags']) );
 
     echo "<img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" bgcolor=\"#AAAAAA\"><tr><td><img src=\"./images/blank.gif\" width=\"1\" height=\"1\" /></td></tr></table><img src=\"./images/blank.gif\" width=\"1\" height=\"15\" /><br />";
 

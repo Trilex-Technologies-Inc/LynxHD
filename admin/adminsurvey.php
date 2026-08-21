@@ -171,7 +171,10 @@ if( $num_surveys )
     echo "</b>/5</div></td>";
 
     if( trim( $row['comments'] ) != "" )
-      $comments = "<a href=\"javascript:alert('" . addslashes( htmlspecialchars( $row['comments'] ) ) . "')\">" . substr( field( $row['comments'] ), 0, 10 ) . "...</a>";
+    {
+      $comment_text = trim( strip_tags( $row['comments'] ) );
+      $comments = "<a href=\"javascript:alert('" . addslashes( htmlspecialchars( $comment_text ) ) . "')\">" . field( substr( $comment_text, 0, 10 ) ) . "...</a>";
+    }
     else
       $comments = "No comments";
 

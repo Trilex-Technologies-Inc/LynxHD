@@ -277,7 +277,7 @@ else
       <label class="form-label" for="ticket-message"><?php echo $LANG['field_message'] ?> <span class="text-danger">*</span></label>
       <?php if ($data['tags']): ?><a class="small" href="<?php echo $HD_URL_TICKET_TAGS ?>" target="_blank" rel="noopener">Message formatting help</a><?php endif; ?>
     </div>
-    <textarea class="form-control" id="ticket-message" name="message" rows="8" required><?php echo field($_POST['message'] ?? '') ?></textarea>
+    <textarea class="form-control" id="ticket-message" name="message" rows="8"><?php echo field($_POST['message'] ?? '') ?></textarea>
     <div class="form-text">Describe the problem, what you expected, and any steps needed to reproduce it.</div>
   </div>
   <div class="col-md-6">

@@ -395,6 +395,14 @@ function hd_mail( $to, $subject, $message, $headers = '', &$error = null )
   ));
   if( !empty($settings['smtp_enabled']) )
     return hd_smtp_mail($to, $subject, $message, $headers, $settings, $error);
+
+  if( preg_match('/<[a-z][\s\S]*>/i', (string)$message) === 1 )
+  {
+    $headers = rtrim((string)$headers);
+    if( $headers !== '' )
+      $headers .= "\r\n";
+    $headers .= "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit";
+  }
   return mail($to, $subject, $message, $headers);
 }
 

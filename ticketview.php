@@ -246,7 +246,7 @@ if( $ticketexists )
 <input type="hidden" name="email" value="<?php echo field($_GET['email']) ?>" />
 <input type="hidden" name="cmd" value="reply" />
 <div class="col-12"><label class="form-label" for="reply-subject"><?php echo $LANG['field_subject'] ?></label><input class="form-control" id="reply-subject" type="text" name="subject" value="<?php echo field($_POST['subject'] ?? '') ?>"></div>
-<div class="col-12"><div class="d-flex justify-content-between"><label class="form-label" for="reply-message"><?php echo $LANG['field_message'] ?></label><?php if ($data['tags']): ?><a class="small" href="<?php echo $HD_URL_TICKET_TAGS ?>" target="_blank">Formatting help</a><?php endif; ?></div><textarea class="form-control" id="reply-message" name="message" rows="7" required><?php echo field($_POST['message'] ?? '') ?></textarea></div>
+<div class="col-12"><div class="d-flex justify-content-between"><label class="form-label" for="reply-message"><?php echo $LANG['field_message'] ?></label><?php if ($data['tags']): ?><a class="small" href="<?php echo $HD_URL_TICKET_TAGS ?>" target="_blank">Formatting help</a><?php endif; ?></div><textarea class="form-control" id="reply-message" name="message" rows="7"><?php echo field($_POST['message'] ?? '') ?></textarea></div>
 <div class="col-12 d-flex justify-content-end gap-2"><button type="reset" class="btn btn-outline-secondary">Reset</button><button type="submit" class="btn btn-primary">Post reply</button></div>
 </form>
 </section>
