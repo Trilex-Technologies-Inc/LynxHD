@@ -540,25 +540,26 @@ Status:&nbsp;
   if( $is_ticket )
   {
 /********************************************************** PHP */?>
-<br />
-<li><div>
-	<input class="field checkbox" type="checkbox" name="save" /> 
-<label class="desc">Save as a predefined reply named</label>
-	
-	    <input type="text" name="replyname" />
-	</div>
-	</li>
-	<li>
-		 <label class="desc">Close this ticket after replying</label>
-		 <div>
-		 	<input class="field checkbox" type="checkbox" name="close" /> 
-		 </div>
-	</li>
-	<li>
-		 <label class="desc">Post as private note (only staff can view)</label>
-		<div>
-		 	<input class="field checkbox" type="checkbox" name="private" /> 
-		 </div>
+	<li class="reply-options-item">
+	  <fieldset class="reply-options-panel">
+	    <legend><i class="fas fa-sliders-h" aria-hidden="true"></i> Reply options</legend>
+	    <div class="reply-option reply-option-save">
+	      <div class="custom-control custom-checkbox">
+	        <input class="custom-control-input" id="reply-save" type="checkbox" name="save" <?php echo (($_POST['save'] ?? '') == 'on') ? 'checked' : '' ?> />
+	        <label class="custom-control-label" for="reply-save"><strong>Save as a predefined reply</strong><span>Reuse this response when answering similar tickets.</span></label>
+	      </div>
+	      <label class="sr-only" for="reply-name">Predefined reply name</label>
+	      <input class="form-control form-control-sm reply-name-input" id="reply-name" type="text" name="replyname" value="<?php echo field($_POST['replyname'] ?? '') ?>" placeholder="Predefined reply name" />
+	    </div>
+	    <div class="reply-option custom-control custom-checkbox">
+	      <input class="custom-control-input" id="reply-close" type="checkbox" name="close" <?php echo (($_POST['close'] ?? '') == 'on') ? 'checked' : '' ?> />
+	      <label class="custom-control-label" for="reply-close"><strong>Close ticket after replying</strong><span>Send the response and mark this ticket as closed.</span></label>
+	    </div>
+	    <div class="reply-option custom-control custom-checkbox reply-option-private">
+	      <input class="custom-control-input" id="reply-private" type="checkbox" name="private" <?php echo (($_POST['private'] ?? '') == 'on') ? 'checked' : '' ?> />
+	      <label class="custom-control-label" for="reply-private"><strong>Post as a private note</strong><span>Only staff members can view private notes.</span></label>
+	    </div>
+	  </fieldset>
 	</li>
 
 <?php /************************************************************/
