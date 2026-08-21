@@ -426,7 +426,7 @@ function parse_no_tags( $text )
   return $text;
 }
 
-function render_editor_content( $text )
+function render_editor_content( $text, $parse_legacy_tags = true )
 {
   // TinyMCE stores HTML, while older knowledge-base entries use message tags.
   if( preg_match( '/<\/?(?:p|div|br|strong|b|em|i|u|s|ul|ol|li|blockquote|h[1-6]|pre|code)\b/i', $text ) )
@@ -438,7 +438,7 @@ function render_editor_content( $text )
     return preg_replace( '/<([a-z][a-z0-9]*)(?:\s[^>]*)?>/i', '<$1>', $text );
   }
 
-  return parse_tags( $text );
+  return $parse_legacy_tags ? parse_tags( $text ) : parse_no_tags( $text );
 }
 
 function send_survey( $id )

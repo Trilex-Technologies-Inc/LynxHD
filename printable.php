@@ -108,7 +108,7 @@ while( $row_post = mysql_fetch_array( $res_post ) )
   echo "<br /><br /><font size=\"1\">" . date( "F j, Y g:ia T", $row_post['date'] ) . "</font>";
 /********************************************************** PHP */?>
 </td>
-<td align="left" valign="top" width="475"><?php if( $data['tags'] ) echo parse_tags( $row_post['message'] ); else echo parse_no_tags( $row_post['message'] ); ?></td>
+<td align="left" valign="top" width="475"><?php echo render_editor_content( $row_post['message'], !empty($data['tags']) ); ?></td>
 </tr>
 <?php /************************************************************/
 }

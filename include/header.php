@@ -24,7 +24,7 @@ $asset_prefix = isset($asset_prefix) ? $asset_prefix : '';
     document.addEventListener('DOMContentLoaded', function () {
       if (typeof tinymce === 'undefined') return;
       tinymce.init({
-        selector: 'textarea',
+        selector: 'textarea:not(.no-tinymce)',
         license_key: 'gpl',
         plugins: 'advlist autolink autoresize charmap code fullscreen image link lists media preview searchreplace table visualblocks wordcount',
         toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media table | removeformat code fullscreen',

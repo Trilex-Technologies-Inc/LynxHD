@@ -225,10 +225,7 @@ if( $ticketexists )
       $author = field($row_user['name']) . ' <span class="badge text-bg-primary">Staff</span>';
     }
 
-    if( $data['tags'] )
-      $row_post['message'] = parse_tags( $row_post['message'] );
-    else
-      $row_post['message'] = parse_no_tags( $row_post['message'] );
+    $row_post['message'] = render_editor_content( $row_post['message'], !empty($data['tags']) );
 
     echo '<article class="ticket-message card border shadow-sm"><div class="card-header bg-white d-flex flex-column flex-sm-row justify-content-between gap-2 p-3"><div><strong>' . field($row_post['subject']) . '</strong><small class="d-block text-secondary">' . $LANG['posted_by'] . ' ' . $author . '</small></div><time class="small text-secondary">' . date("M j, Y g:ia T", $row_post['date']) . '</time></div><div class="card-body ticket-copy">' . $row_post['message'] . '</div>';
     if( ($row_post['user_id'] == -1) && ($row_post['id'] != $first_id) )

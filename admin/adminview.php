@@ -86,7 +86,7 @@ if( $ticketexists )
       $msg = "<div class=\"errorbox\">You must specify a message in your reply (subjects are optional).</div><br />";
     else
     {
-      $private = (($_POST["private"] ?? '') == "on");
+      $private = (($_POST["private"] ?? '') == "on") ? 1 : 0;
 
       if( $is_ticket )
       {
@@ -101,8 +101,10 @@ if( $ticketexists )
             $subject = stripslashes( $row['subject'] );
             $message = stripslashes( $_POST['message'] );
             
-            $addresses = explode( " ", $row['cc'] );
+            $addresses = preg_split( '/\s+/', trim( $row['cc'] ) );
+            $addresses = array_values( array_filter( $addresses ) );
             array_push( $addresses, $row['email'] );
+            $addresses = array_unique( $addresses );
 
             eval( "\$email_subject = \"{$data['email_ticket_notify_subject']}\";" );
             eval( "\$email_message = \"{$data['email_ticket_notify']}\";" );
@@ -113,9 +115,13 @@ if( $ticketexists )
         }
       }
 
-      mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message, private ) VALUES ( '{$row['id']}', '{$_SESSION['user']['id']}', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}', '$private' )" );
+      $reply_saved = mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message, private ) VALUES ( '{$row['id']}', '{$_SESSION['user']['id']}', '" . time( ) . "', '{$_POST['subject']}', '{$_POST['message']}', '$private' )" );
 
-      mysql_query( "UPDATE {$pre}message SET viewed = '0' WHERE ( ticket_id = '{$row['id']}' && user_id = '{$_SESSION['user']['id']}' )" );
+      if( !$reply_saved )
+        $msg = '<div class="alert alert-danger">The reply could not be saved: ' . field( mysql_error() ) . '</div>';
+      else
+      {
+      mysql_query( "UPDATE {$pre}message SET viewed = '0' WHERE ( ticket_id = '{$row['id']}' && user_id != '{$_SESSION['user']['id']}' )" );
 
       if( ($_POST['close'] ?? '') == "on" )
       {
@@ -140,6 +146,9 @@ if( $ticketexists )
           else
             mysql_query( "INSERT INTO {$pre}reply ( dept_id, reply, phrase ) VALUES ( '-1', '{$_POST['message']}', '{$_POST['replyname']}' )" );
         }
+      }
+      Header( "Location: {$HD_CURPAGE}?cmd=view&id=" . urlencode( $_GET['id'] ) . "&replied=1#reply" );
+      exit;
       }
     }
   }
@@ -226,7 +235,7 @@ if( $ticketexists )
     mysql_query( "UPDATE {$pre}ticket SET lastactivity = '" . time( ) . "', status = '{$HD_STATUS_CLOSED}' WHERE ( ticket_id = '{$_GET['id']}' )" );
   else if( $_POST['cmd'] == "deletereply" )
     mysql_query( "DELETE FROM {$pre}reply WHERE ( phrase = '{$_POST['replyname']}' && dept_id = '-1' )" );
-  else if( $_POST['cmd'] == "attach" && (trim( $HTTP_POST_FILES["userfile"]["name"] ?? '' ) != "") )
+  else if( $_POST['cmd'] == "attach" && !empty( $_FILES['userfile']['name'] ) && is_uploaded_file( $_FILES['userfile']['tmp_name'] ) )
   {
     if( !is_dir( "{$HD_TICKET_FILES}/{$row['id']}" ) )
     {
@@ -235,7 +244,7 @@ if( $ticketexists )
       umask( $oldumask );
     }
 
-    copy( $HTTP_POST_FILES["userfile"]["tmp_name"], "{$HD_TICKET_FILES}/{$row['id']}/" . basename( $HTTP_POST_FILES["userfile"]["name"] ) );
+    move_uploaded_file( $_FILES['userfile']['tmp_name'], "{$HD_TICKET_FILES}/{$row['id']}/" . basename( $_FILES['userfile']['name'] ) );
   }
   else if( $_POST['cmd'] == "cc" )
     mysql_query( "UPDATE {$pre}ticket SET cc = '" . ($_POST['cc'] ?? '') . "' WHERE ( ticket_id = '{$_POST['id']}' )" );
@@ -249,7 +258,15 @@ if( $ticketexists )
 
 include "./include/header.php";
 /********************************************************** PHP */?>
-<div class="title"><?php echo $script_name ?> Viewing Ticket</div><br /><?php echo $msg ?>
+<?php echo $msg ?? '' ?>
+<?php
+if( $ticketexists )
+{
+  include "./include/ticket-view-modern.php";
+  include "./include/footer.php";
+  return;
+}
+?>
 <?php /************************************************************/
 if( $ticketexists )
 {
