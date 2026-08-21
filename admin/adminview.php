@@ -526,7 +526,7 @@ Status:&nbsp;
 <li>
 	   <label class="desc">Subject:</label>
     <div>
-    	<input class="field text medium" type="text" name="subject" value="<?php echo field( $_POST['subject'] ) ?>" size="30" />
+        <input class="field text medium" type="text" name="subject" value="<?php echo field( $_POST['subject'] ?? '' ) ?>" size="30" />
 	</div>
 </li>
 <li>

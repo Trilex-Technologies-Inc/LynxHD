@@ -321,11 +321,11 @@ else if( $_POST['cmd'] == "edit" )
     </td></tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Category Name:&nbsp;</div></td>
-      <td><input type="text" name="description" size="30" value="<?php echo field( $_POST['description'] ) ?>" /></td>
+      <td><input type="text" name="description" size="30" value="<?php echo field( $_POST['description'] ?? '' ) ?>" /></td>
     </tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Description:&nbsp;</div></td>
-      <td><input type="text" name="symptoms" size="30" value="<?php echo field( $_POST['symptoms'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" /></td>
+      <td><input type="text" name="symptoms" size="30" value="<?php echo field( $_POST['symptoms'] ?? '' ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" /></td>
     </tr>
     <tr><td colspan="2" align="center"><input type="submit" value="Update">&nbsp;&nbsp;<input type="reset"><br /><img src="./images/blank.gif" width="1" height="12" /></td></tr>
 <?php /************************************************************/

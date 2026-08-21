@@ -77,7 +77,7 @@ $template_groups = array(
 
   <section class="card shadow-sm mb-4">
     <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-layer-group mr-2"></i>Shared email content</h2></div>
-    <div class="card-body"><p class="text-muted">This content is added before and after most outgoing email messages.</p><div class="row"><div class="col-lg-6 mb-4 mb-lg-0"><label for="emailheader">Global header</label><textarea class="form-control" id="emailheader" name="emailheader" rows="6"><?php echo field($_POST['emailheader']) ?></textarea></div><div class="col-lg-6"><label for="emailfooter">Global footer</label><textarea class="form-control" id="emailfooter" name="emailfooter" rows="6"><?php echo field($_POST['emailfooter']) ?></textarea></div></div></div>
+    <div class="card-body"><p class="text-muted">This content is added before and after most outgoing email messages.</p><div class="row"><div class="col-12 mb-4"><label for="emailheader">Global header</label><textarea class="form-control" id="emailheader" name="emailheader" rows="6"><?php echo field($_POST['emailheader']) ?></textarea></div><div class="col-12"><label for="emailfooter">Global footer</label><textarea class="form-control" id="emailfooter" name="emailfooter" rows="6"><?php echo field($_POST['emailfooter']) ?></textarea></div></div></div>
   </section>
 
   <?php foreach($template_groups as $group_name => $templates): ?>

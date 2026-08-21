@@ -132,7 +132,7 @@ echo "</select>";
     </td></tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Message:&nbsp;</div></td>
-      <td><textarea name="reply" rows="5" cols="40"><?php echo field( $_POST['reply'] ) ?></textarea></td>
+      <td><textarea name="reply" rows="5" cols="40"><?php echo field( $_POST['reply'] ?? '' ) ?></textarea></td>
     </tr>
     <tr><td colspan="2" align="center"><img src="./images/blank.gif" width="1" height="12" /><br />
     <table width="500" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF"><tr><td>
@@ -144,7 +144,7 @@ echo "</select>";
     </td></tr>
     <tr valign="top">
       <td align="right"><div class="topinfo">Key Phrase:&nbsp;</div></td>
-      <td><input type="text" name="phrase" size="30" value="<?php echo field( $_POST['phrase'] ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" /></td>
+      <td><input type="text" name="phrase" size="30" value="<?php echo field( $_POST['phrase'] ?? '' ) ?>" /><br /><img src="./images/blank.gif" width="1" height="12" /></td>
     </tr>
 <?php /************************************************************/
 if( $global_priv || $priv )

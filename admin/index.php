@@ -145,7 +145,7 @@ if( !$do_redirect )
   <input type="hidden" name="redirect" value="<?php echo field(($_GET['redirect'] ?? '') !== '' ? $_GET['redirect'] : ($_POST['redirect'] ?? '')) ?>">
   <div class="form-group">
     <label class="sr-only" for="email">Email address</label>
-    <input class="form-control form-control-user" id="email" type="email" name="email" value="<?php echo field($_POST['email']) ?>" placeholder="Email address" required autocomplete="email">
+    <input class="form-control form-control-user" id="email" type="email" name="email" value="<?php echo field($_POST['email'] ?? '') ?>" placeholder="Email address" required autocomplete="email">
   </div>
   <div class="form-group">
     <label class="sr-only" for="password">Password</label>

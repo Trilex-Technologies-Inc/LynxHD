@@ -25,7 +25,7 @@ if( isset( $_POST['id'] ) )
 {
   //Attempt to filter the input
   $_GET['id'] = $_POST['id'];
-  $_GET['email'] = $_POST['email'];
+  $_GET['email'] = $_POST['email'] ?? '';
   
 }
 

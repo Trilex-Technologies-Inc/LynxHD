@@ -25,7 +25,7 @@ $data = get_options( $options );
 if( isset( $_POST['id'] ) )
 {
   $_GET['id'] = $_POST['id'];
-  $_GET['email'] = $_POST['email'];
+  $_GET['email'] = $_POST['email'] ?? '';
 }
 
 $ticketexists = 0;

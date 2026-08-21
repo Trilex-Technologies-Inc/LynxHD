@@ -76,15 +76,21 @@ function parse_email_to_ticket( $email, $receiver )
      
       return false;
     }
+
+    return false;
   }
     
   $email_parts = array( );
   get_message_parts( $structure );
 
-  $i = count( $structure->headers['received'] ) - 1;
+  $received_headers = $structure->headers['received'] ?? array();
+  if( !is_array( $received_headers ) )
+    $received_headers = array( $received_headers );
+
+  $i = count( $received_headers ) - 1;
   if( $i >= 0 )
   {
-    if( preg_match( "/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/", $structure->headers['received'][$i], $match ) )
+    if( preg_match( "/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/", $received_headers[$i], $match ) )
       $ip = $match[0];
     else
       $ip = "";
@@ -92,19 +98,21 @@ function parse_email_to_ticket( $email, $receiver )
   else
     $ip = "";
 
-  $subject = $structure->headers['subject'];
+  $subject = $structure->headers['subject'] ?? '';
+  $from = $structure->headers['from'] ?? '';
+  $to_header = $structure->headers['to'] ?? '';
 
-  if( preg_match( "/^([^<]+)<([^>]+)>/i", $structure->headers['from'], $match ) )
+  if( preg_match( "/^([^<]+)<([^>]+)>/i", $from, $match ) )
   {
     $name = str_replace( "\"", "", $match[1] ); // Get rid of any quotes
     $email = $match[2];
   }
-  else if( preg_match( "/^<?([^>]+)>?/i", $structure->headers['from'], $match ) )
+  else if( preg_match( "/^<?([^>]+)>?/i", $from, $match ) )
     $name = $email = $match[1];
 
-  if( preg_match( "/^([^<]+)<([^>]+)>/i", $structure->headers['to'], $match ) )
+  if( preg_match( "/^([^<]+)<([^>]+)>/i", $to_header, $match ) )
     $to = $match[2];
-  else if( preg_match( "/^<?([^>]+)>?/i", $structure->headers['to'], $match ) )
+  else if( preg_match( "/^<?([^>]+)>?/i", $to_header, $match ) )
     $to = $match[1];
 
   $ticket = new_ticket_id( );
