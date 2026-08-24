@@ -121,6 +121,26 @@ body {
   z-index: 10;
 }
 
+.admin-ticket-form .card {
+  border: 0;
+}
+
+.admin-ticket-form .card-header {
+  border-bottom: 1px solid #e3e6f0;
+  background: #fff;
+}
+
+.admin-ticket-form label {
+  color: #4a4b55;
+  font-weight: 600;
+}
+
+.admin-ticket-actions {
+  position: sticky;
+  bottom: 1rem;
+  z-index: 10;
+}
+
 /* Keep native and Bootstrap selects tall enough for their text. Bootstrap's
    fixed form-control-sm height otherwise conflicts with the padding above. */
 .admin-content select {

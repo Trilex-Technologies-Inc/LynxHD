@@ -47,7 +47,7 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
   <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="browse.php">
       <div class="sidebar-brand-icon"><i class="fas fa-headset"></i></div>
-      <div class="sidebar-brand-text mx-3">LynxHD</div>
+      <div class="sidebar-brand-text mx-3"><?php echo htmlspecialchars($website_name, ENT_QUOTES, 'UTF-8') ?></div>
     </a>
     <hr class="sidebar-divider my-0">
     <li class="nav-item <?php echo $current_admin_page === 'browse.php' ? 'active' : '' ?>">
@@ -128,5 +128,5 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
       <div class="col-xl-7 col-lg-8 col-md-9">
         <div class="card o-hidden border-0 shadow-lg my-5">
           <div class="card-body p-0"><div class="p-4 p-md-5 admin-login-content">
-            <div class="text-center mb-4"><i class="fas fa-headset fa-3x text-primary mb-3"></i><h1 class="h4 text-gray-900">LynxHD Administration</h1></div>
+            <div class="text-center mb-4"><i class="fas fa-headset fa-3x text-primary mb-3"></i><h1 class="h4 text-gray-900"><?php echo htmlspecialchars($website_name, ENT_QUOTES, 'UTF-8') ?> Administration</h1></div>
 <?php endif; ?>

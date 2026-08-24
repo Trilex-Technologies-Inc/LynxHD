@@ -31,7 +31,7 @@ if( isset( $_GET['department'] ) )
   $_POST['department'] = $_GET['department'];
 
 $success = 0;
-$form_submitted = isset( $_POST['name'] );
+$form_submitted = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
 $msg = "";
 $ticket_form_defaults = array(
   "name" => "",
@@ -54,11 +54,11 @@ if( $form_submitted )
   if( trim( $_POST['name'] ?? '' ) == "" ||
       trim( $_POST['subject'] ?? '' ) == "" ||
       trim( $_POST['message'] ?? '' ) == "" ||
-      !eregi( "^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2}([zmuvtg]|fo|me)?$", $_POST['email'] ) )
+      !filter_var( trim( $_POST['email'] ?? '' ), FILTER_VALIDATE_EMAIL ) )
     $error = 1;
 
   if( $error == 1 )
-    $msg = "<div class=\"normal\"><font color=\"#FF0000\">{$LANG['fields_not_filled']}</font></div><br />";
+    $msg = '<div class="alert alert-danger shadow-sm" role="alert"><i class="fas fa-exclamation-circle mr-2"></i>' . field( $LANG['fields_not_filled'] ) . '</div>';
   else
   {
     $ticket = strtoupper( base_convert( time( ), 10, 16 ) );
@@ -127,42 +127,32 @@ if( $form_submitted )
 <?php 
 include "./include/header.php";
 ?>
-<div class="title">Staff Ticket Creation</div><br /><?php echo $msg ?>
-  <div class="clean-gray">
-    Use this form to create a ticket for a user. (For instance when a staff member
-    is helping a user over the phone and needs to create a ticket for that user.)  Simply
-    fill out the ticket form below and optionally give the ticket a reply.  You can
-    reply to the ticket later if you omit one now.
-  </div>
-  <br />
+<div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-4">
+  <div><h1 class="h3 mb-1 text-gray-800">Create ticket</h1><p class="text-muted mb-0">Open a support request on behalf of a customer.</p></div>
+  <a class="btn btn-light btn-sm shadow-sm mt-3 mt-sm-0" href="browse.php"><i class="fas fa-arrow-left fa-sm mr-1"></i> Browse tickets</a>
+</div>
+<?php echo $msg ?>
 <?php /************************************************************/
 if( $success )
 {
-  echo "The ticket <a href=\"{$HD_URL_ADMINVIEW}?id=$ticket\">$ticket</a> has been created.<br /><br />";
+  echo '<div class="card border-left-success shadow-sm mb-4"><div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between"><div><h2 class="h5 text-gray-800 mb-1"><i class="fas fa-check-circle text-success mr-2"></i>Ticket created</h2><p class="text-muted mb-3 mb-md-0">Ticket <strong>' . field( $ticket ) . '</strong> is ready for your team.</p></div><a class="btn btn-success" href="' . field( $HD_URL_ADMINVIEW ) . '?id=' . urlencode( $ticket ) . '">View ticket <i class="fas fa-arrow-right ml-1"></i></a></div></div>';
 }
 else
 {
 /********************************************************** PHP */?>
-<div id="container">
-	<h1>Ticket Information</h1>
-<form class="wufoo" action="<?php echo $HD_CURPAGE ?>" method="post">
-<ul>
-<li>
-	   <label class="desc"><?php echo $LANG['field_name'] ?><span class="req">*</span></label>
-    <div>
-    	<input class="field text medium" type="text" name="name" value="<?php echo field( $_POST['name'] ) ?>" size="30" />   
-	</div>
-</li>
-<li>
-	   <label class="desc"><?php echo $LANG['field_email'] ?><span class="req">*</span></label>
-    <div>
-    	<input class="field text medium" type="text" name="email" value="<?php echo field( $_POST['email'] ) ?>" size="30" />	
-	</div>
-</li>
-<li>
-	   <label class="desc"><?php echo $LANG['field_department'] ?><span class="req">*</span></label>
-	   <span>
-<select class="field select" name="department">
+<form class="admin-ticket-form" action="<?php echo field( $HD_CURPAGE ) ?>" method="post">
+  <div class="row">
+    <div class="col-xl-8">
+      <section class="card shadow-sm mb-4">
+        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-user-circle mr-2"></i>Requester and issue</h2></div>
+        <div class="card-body">
+          <p class="small text-muted mb-4">Fields marked <span class="text-danger">*</span> are required. The requester will receive the standard ticket confirmation email.</p>
+          <div class="form-row">
+            <div class="form-group col-md-6"><label for="ticket-name"><?php echo $LANG['field_name'] ?> <span class="text-danger">*</span></label><input class="form-control" id="ticket-name" type="text" name="name" value="<?php echo field( $_POST['name'] ) ?>" required autocomplete="name" autofocus></div>
+            <div class="form-group col-md-6"><label for="ticket-email"><?php echo $LANG['field_email'] ?> <span class="text-danger">*</span></label><input class="form-control" id="ticket-email" type="email" name="email" value="<?php echo field( $_POST['email'] ) ?>" required autocomplete="email" inputmode="email"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-7"><label for="ticket-department"><?php echo $LANG['field_department'] ?> <span class="text-danger">*</span></label><select class="form-control" id="ticket-department" name="department" required>
 <?php /************************************************************/
   $res = mysql_query( "SELECT * FROM {$pre}dept ORDER BY sortnum" );
 
@@ -172,52 +162,27 @@ else
   }
 /********************************************************** PHP */?>
 </select>
-	   </span>
-</li>
-<li>
-	   <label class="desc"><?php echo $LANG['field_subject'] ?><span class="req">*</span></label>
-    <div>
-    	<input class="field text medium" type="text" name="subject" value="<?php echo field( $_POST['subject'] ) ?>" size="30" />	
-	</div>
-</li>
-<li>
-	   <label class="desc"><?php echo $LANG['field_message'] ?><span class="req">*</span></label>
-	   <?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?>
-    <div>
-	<textarea class="field textarea medium" name="message" rows="8" cols="45"><?php echo field( $_POST['message'] ) ?></textarea>	
-	</div>
-</li>
-<li>
-	   <label class="desc"><?php echo $LANG['field_priority'] ?><span class="req">*</span></label>
-		<span>
-<select class="field select" name="priority">
-	<option value="<?php echo $PRIORITY_LOW ?>"><?php echo $LANG['field_priority_low'] ?></option>
-	<option value="<?php echo $PRIORITY_MEDIUM ?>"><?php echo $LANG['field_priority_medium'] ?></option>
-	<option value="<?php echo $PRIORITY_HIGH ?>"><?php echo $LANG['field_priority_high'] ?></option>
-</select>
-		</span>
-</li>
-<br />
-<h1>Reply Information</h1>
-<li>
-	   <label class="desc"><?php echo $LANG['field_subject'] ?></label>
-    <div>
-    	<input class="field text medium" type="text" name="replysubject" value="<?php echo field( $_POST['replysubject'] ) ?>" size="30" />	
-	</div>
-</li>
-<li>
-	   <label class="desc"><?php echo $LANG['field_message'] ?></label>
-	   <?php if( $data['tags'] ) echo "<br /><div class=\"normal\"><font size=\"-2\"><b>You can use <a href=\"$HD_URL_TICKET_TAGS\" target=\"_blank\">message tags</a></b></font></div><img src=\"./images/blank.gif\" width=\"1\" height=\"5\" /><br />"; ?>
-	   <div>
-	   <textarea class="field textarea medium" name="replymessage" rows="8" cols="45"><?php echo field( $_POST['replymessage'] ) ?></textarea>
-	   </div>
-</li>
-<div class="buttons">
-    <button type="submit" class="positive">Create Ticket</button>
-	<button type="reset" class="negative">Reset</button>
-</div>
+            </div>
+            <div class="form-group col-md-5"><label for="ticket-priority"><?php echo $LANG['field_priority'] ?> <span class="text-danger">*</span></label><select class="form-control" id="ticket-priority" name="priority" required>
+              <option value="<?php echo $PRIORITY_LOW ?>" <?php if($_POST['priority'] == $PRIORITY_LOW) echo 'selected' ?>><?php echo $LANG['field_priority_low'] ?></option>
+              <option value="<?php echo $PRIORITY_MEDIUM ?>" <?php if($_POST['priority'] == $PRIORITY_MEDIUM) echo 'selected' ?>><?php echo $LANG['field_priority_medium'] ?></option>
+              <option value="<?php echo $PRIORITY_HIGH ?>" <?php if($_POST['priority'] == $PRIORITY_HIGH) echo 'selected' ?>><?php echo $LANG['field_priority_high'] ?></option>
+            </select></div>
+          </div>
+          <div class="form-group"><label for="ticket-subject"><?php echo $LANG['field_subject'] ?> <span class="text-danger">*</span></label><input class="form-control" id="ticket-subject" type="text" name="subject" value="<?php echo field( $_POST['subject'] ) ?>" required></div>
+          <div class="form-group mb-0"><div class="d-flex justify-content-between"><label for="ticket-message"><?php echo $LANG['field_message'] ?> <span class="text-danger">*</span></label><?php if( $data['tags'] ): ?><a class="small" href="<?php echo field( $HD_URL_TICKET_TAGS ) ?>" target="_blank" rel="noopener">Message tags <i class="fas fa-external-link-alt fa-xs"></i></a><?php endif; ?></div><textarea class="form-control" id="ticket-message" name="message" rows="9" aria-required="true"><?php echo field( $_POST['message'] ) ?></textarea></div>
+        </div>
+      </section>
+    </div>
+    <div class="col-xl-4">
+      <section class="card shadow-sm mb-4">
+        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-reply mr-2"></i>Initial staff reply <span class="font-weight-normal text-muted">(optional)</span></h2></div>
+        <div class="card-body"><p class="small text-muted">Add a first response now, or leave this blank and reply after reviewing the ticket.</p><div class="form-group"><label for="reply-subject"><?php echo $LANG['field_subject'] ?></label><input class="form-control" id="reply-subject" type="text" name="replysubject" value="<?php echo field( $_POST['replysubject'] ) ?>"></div><div class="form-group mb-0"><div class="d-flex justify-content-between"><label for="reply-message"><?php echo $LANG['field_message'] ?></label><?php if( $data['tags'] ): ?><a class="small" href="<?php echo field( $HD_URL_TICKET_TAGS ) ?>" target="_blank" rel="noopener">Message tags <i class="fas fa-external-link-alt fa-xs"></i></a><?php endif; ?></div><textarea class="form-control" id="reply-message" name="replymessage" rows="9"><?php echo field( $_POST['replymessage'] ) ?></textarea></div></div>
+      </section>
+    </div>
+  </div>
+  <div class="card shadow-sm mb-4 admin-ticket-actions"><div class="card-body d-flex flex-column flex-sm-row align-items-sm-center justify-content-between"><span class="small text-muted mb-3 mb-sm-0"><i class="fas fa-envelope mr-1"></i>The requester will be notified by email.</span><div><button type="reset" class="btn btn-light mr-2">Clear form</button><button type="submit" class="btn btn-primary"><i class="fas fa-plus mr-1"></i>Create ticket</button></div></div></div>
 </form>
-</div>
 <?php /************************************************************/
 }
 /********************************************************** PHP */?>
