@@ -150,6 +150,118 @@ body {
   z-index: 10;
 }
 
+.profile-settings-form {
+  max-width: 1180px;
+}
+
+.profile-settings-form .card {
+  border: 0;
+}
+
+.profile-settings-form .card-header {
+  border-bottom: 1px solid #e3e6f0;
+  background: #fff;
+}
+
+.profile-settings-form label {
+  color: #4a4b55;
+  font-weight: 600;
+}
+
+.profile-settings-form .custom-control small {
+  margin-top: 0.15rem;
+  margin-left: 0.1rem;
+}
+
+.profile-settings-actions {
+  position: sticky;
+  bottom: 1rem;
+  z-index: 10;
+}
+
+.profile-avatar {
+  display: inline-grid;
+  flex: 0 0 3rem;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(78, 115, 223, 0.12);
+  color: #4e73df;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.faq-breadcrumb {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e3e6f0;
+  background: #fff;
+}
+
+.faq-primary-actions {
+  flex-shrink: 0;
+}
+
+.faq-category-card {
+  border: 1px solid transparent;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.faq-category-card:hover {
+  transform: translateY(-2px);
+  border-color: #cdd7f6;
+  box-shadow: 0 0.5rem 1.25rem rgba(58, 59, 69, 0.1) !important;
+}
+
+.faq-folder-icon,
+.faq-section-icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #4e73df;
+}
+
+.faq-folder-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-right: 1rem;
+  border-radius: 0.5rem;
+  background: rgba(78, 115, 223, 0.1);
+  font-size: 1.15rem;
+}
+
+.faq-section-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.faq-empty-state {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.25rem;
+  border: 1px dashed #d1d3e2;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #858796;
+}
+
+.faq-empty-state > i {
+  color: #d1d3e2;
+  font-size: 1.75rem;
+}
+
+.faq-articles .card-header,
+.faq-editor .card-header {
+  border-bottom: 1px solid #e3e6f0;
+  background: #fff;
+}
+
+.faq-editor {
+  max-width: 1100px;
+  border: 0;
+}
+
 /* Keep native and Bootstrap selects tall enough for their text. Bootstrap's
    fixed form-control-sm height otherwise conflicts with the padding above. */
 .admin-content select {
