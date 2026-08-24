@@ -141,9 +141,7 @@ else
 {
 /********************************************************** PHP */?>
 <form class="admin-ticket-form" action="<?php echo field( $HD_CURPAGE ) ?>" method="post">
-  <div class="row">
-    <div class="col-xl-8">
-      <section class="card shadow-sm mb-4">
+  <section class="card shadow-sm mb-4">
         <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-user-circle mr-2"></i>Requester and issue</h2></div>
         <div class="card-body">
           <p class="small text-muted mb-4">Fields marked <span class="text-danger">*</span> are required. The requester will receive the standard ticket confirmation email.</p>
@@ -172,15 +170,17 @@ else
           <div class="form-group"><label for="ticket-subject"><?php echo $LANG['field_subject'] ?> <span class="text-danger">*</span></label><input class="form-control" id="ticket-subject" type="text" name="subject" value="<?php echo field( $_POST['subject'] ) ?>" required></div>
           <div class="form-group mb-0"><div class="d-flex justify-content-between"><label for="ticket-message"><?php echo $LANG['field_message'] ?> <span class="text-danger">*</span></label><?php if( $data['tags'] ): ?><a class="small" href="<?php echo field( $HD_URL_TICKET_TAGS ) ?>" target="_blank" rel="noopener">Message tags <i class="fas fa-external-link-alt fa-xs"></i></a><?php endif; ?></div><textarea class="form-control" id="ticket-message" name="message" rows="9" aria-required="true"><?php echo field( $_POST['message'] ) ?></textarea></div>
         </div>
-      </section>
+  </section>
+  <section class="card shadow-sm mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-reply mr-2"></i>Initial staff reply</h2><span class="badge badge-light mt-2 mt-sm-0">Optional</span></div>
+    <div class="card-body">
+      <p class="small text-muted mb-4">Send the customer a first response with the ticket, or leave both fields blank and reply later.</p>
+      <div class="form-row">
+        <div class="form-group col-lg-4 mb-lg-0"><label for="reply-subject"><?php echo $LANG['field_subject'] ?></label><input class="form-control" id="reply-subject" type="text" name="replysubject" value="<?php echo field( $_POST['replysubject'] ) ?>"><small class="form-text text-muted">Use a concise email subject.</small></div>
+        <div class="form-group col-lg-8 mb-0"><div class="d-flex justify-content-between"><label for="reply-message"><?php echo $LANG['field_message'] ?></label><?php if( $data['tags'] ): ?><a class="small" href="<?php echo field( $HD_URL_TICKET_TAGS ) ?>" target="_blank" rel="noopener">Message tags <i class="fas fa-external-link-alt fa-xs"></i></a><?php endif; ?></div><textarea class="form-control" id="reply-message" name="replymessage" rows="7"><?php echo field( $_POST['replymessage'] ) ?></textarea></div>
+      </div>
     </div>
-    <div class="col-xl-4">
-      <section class="card shadow-sm mb-4">
-        <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-reply mr-2"></i>Initial staff reply <span class="font-weight-normal text-muted">(optional)</span></h2></div>
-        <div class="card-body"><p class="small text-muted">Add a first response now, or leave this blank and reply after reviewing the ticket.</p><div class="form-group"><label for="reply-subject"><?php echo $LANG['field_subject'] ?></label><input class="form-control" id="reply-subject" type="text" name="replysubject" value="<?php echo field( $_POST['replysubject'] ) ?>"></div><div class="form-group mb-0"><div class="d-flex justify-content-between"><label for="reply-message"><?php echo $LANG['field_message'] ?></label><?php if( $data['tags'] ): ?><a class="small" href="<?php echo field( $HD_URL_TICKET_TAGS ) ?>" target="_blank" rel="noopener">Message tags <i class="fas fa-external-link-alt fa-xs"></i></a><?php endif; ?></div><textarea class="form-control" id="reply-message" name="replymessage" rows="9"><?php echo field( $_POST['replymessage'] ) ?></textarea></div></div>
-      </section>
-    </div>
-  </div>
+  </section>
   <div class="card shadow-sm mb-4 admin-ticket-actions"><div class="card-body d-flex flex-column flex-sm-row align-items-sm-center justify-content-between"><span class="small text-muted mb-3 mb-sm-0"><i class="fas fa-envelope mr-1"></i>The requester will be notified by email.</span><div><button type="reset" class="btn btn-light mr-2">Clear form</button><button type="submit" class="btn btn-primary"><i class="fas fa-plus mr-1"></i>Create ticket</button></div></div></div>
 </form>
 <?php /************************************************************/

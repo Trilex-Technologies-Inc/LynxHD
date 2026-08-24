@@ -108,7 +108,8 @@ $browse_defaults = array(
   "mine" => "",
   "replies" => "",
   "results" => 20,
-  "order" => "activity"
+  "order" => "activity",
+  "state" => ""
 );
 
 foreach( $browse_defaults as $key => $value )
@@ -143,7 +144,17 @@ else if( $_GET['priority'] == "high" )
 if( $_GET['department'] != 0 )
   $query .= " && ticket.dept_id = '{$_GET['department']}'";
   
-if( $_GET['closed'] != "on" )
+if( $_GET['state'] == "all" )
+  $_GET['closed'] = "on";
+else if( $_GET['state'] == "open" )
+  $query .= " && ticket.status = '$HD_STATUS_OPEN'";
+else if( $_GET['state'] == "answered" )
+  $query .= " && ticket.status = '$HD_STATUS_OPEN' && ticket.lastpost != '-1'";
+else if( $_GET['state'] == "unanswered" )
+  $query .= " && ticket.status = '$HD_STATUS_OPEN' && ticket.lastpost = '-1'";
+else if( $_GET['state'] == "inactive" )
+  $query .= " && ticket.status != '$HD_STATUS_OPEN'";
+else if( $_GET['closed'] != "on" )
   $query .= " && ticket.status != '$HD_STATUS_CLOSED'";
 
 if( $_GET['mine'] == "on" )
@@ -172,9 +183,9 @@ else if( $_GET['order'] == "priorityrev" )
 else
   $order .= "ticket.lastactivity DESC";
 
-$rows_query = "SELECT COUNT( DISTINCT( ticket.id ) ) FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && ((ticket.dept_id = priv.dept_id && priv.user_id = '{$_SESSION['user']['id']}') || (priv.dept_id = '0' && priv.user_id = '{$_SESSION['user']['id']}')) " . $query . " ) ORDER BY " . $order;
+$rows_query = "SELECT COUNT( DISTINCT( ticket.id ) ) FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && priv.user_id = '{$_SESSION['user']['id']}' && (ticket.dept_id = '0' || ticket.dept_id = priv.dept_id || priv.dept_id = '0') " . $query . " ) ORDER BY " . $order;
 
-$query = "SELECT DISTINCT( ticket.id ), ticket.* FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && ((ticket.dept_id = priv.dept_id && priv.user_id = '{$_SESSION['user']['id']}') || (priv.dept_id = '0' && priv.user_id = '{$_SESSION['user']['id']}')) " . $query . " ) ORDER BY " . $order;
+$query = "SELECT DISTINCT( ticket.id ), ticket.* FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && priv.user_id = '{$_SESSION['user']['id']}' && (ticket.dept_id = '0' || ticket.dept_id = priv.dept_id || priv.dept_id = '0') " . $query . " ) ORDER BY " . $order;
 
 $results = get_row_count( $rows_query );
 

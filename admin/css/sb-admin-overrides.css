@@ -125,14 +125,23 @@ body {
   border: 0;
 }
 
+.admin-ticket-form {
+  max-width: 1180px;
+}
+
 .admin-ticket-form .card-header {
   border-bottom: 1px solid #e3e6f0;
   background: #fff;
 }
 
 .admin-ticket-form label {
+  margin-bottom: 0.45rem;
   color: #4a4b55;
   font-weight: 600;
+}
+
+.admin-ticket-form .card-body {
+  padding: 1.5rem;
 }
 
 .admin-ticket-actions {
@@ -367,12 +376,26 @@ body {
   box-shadow: 0 0.5rem 1.5rem rgba(58, 59, 69, 0.12) !important;
 }
 
+.stats-card-link,
+.stats-card-link:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.stats-card-link:focus-visible,
+.stats-activity-item:focus-visible,
+.stats-breakdown a:focus-visible {
+  outline: 3px solid rgba(78, 115, 223, 0.35);
+  outline-offset: 2px;
+}
+
 .stats-percent {
   padding: 0.45rem 0.65rem;
   font-size: 0.8rem;
 }
 
-.stats-breakdown > div {
+.stats-breakdown > div,
+.stats-breakdown > a {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 0.65rem;
@@ -380,6 +403,18 @@ body {
   padding: 0.7rem 0;
   border-top: 1px solid #eaecf4;
   color: #6e707e;
+}
+
+.stats-breakdown > a {
+  text-decoration: none;
+  transition: background-color 0.15s ease, padding 0.15s ease;
+}
+
+.stats-breakdown > a:hover {
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  background: #f8f9fc;
+  color: #4e73df;
 }
 
 .stats-breakdown strong {
@@ -398,6 +433,15 @@ body {
   grid-template-columns: 2.5rem 1fr;
   gap: 0.9rem;
   align-items: start;
+}
+
+a.stats-activity-item {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.stats-activity-item:hover .font-weight-bold {
+  color: #4e73df !important;
 }
 
 .stats-activity-item + .stats-activity-item {

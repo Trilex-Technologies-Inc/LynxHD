@@ -46,7 +46,7 @@ else
 
 if( $is_ticket )
 {
-  $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket AS ticket, {$pre}privilege AS priv WHERE ( ticket.ticket_id = '{$_GET['id']}' && priv.user_id = '{$_SESSION['user']['id']}' && (priv.dept_id = ticket.dept_id || priv.dept_id = 0) )" );
+  $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}ticket AS ticket, {$pre}privilege AS priv WHERE ( ticket.ticket_id = '{$_GET['id']}' && priv.user_id = '{$_SESSION['user']['id']}' && (ticket.dept_id = 0 || priv.dept_id = ticket.dept_id || priv.dept_id = 0) )" );
   if( !$exists )
   {
     $msg = "<div class=\"errorbox\">Either you are not assigned to the department that this ticket was routed to or this ticket no longer exists.</div><br />";
@@ -253,7 +253,7 @@ if( $ticketexists )
   $row = mysql_fetch_array( mysql_query( "SELECT * FROM {$pre}ticket WHERE ( ticket_id = '{$_GET['id']}' )" ) );
 
   if( $is_ticket )
-    $res_others = mysql_query( "SELECT ticket.* FROM {$pre}ticket AS ticket, {$pre}privilege AS priv WHERE ( ticket.email = '{$row['email']}' && ticket.id != '{$row['id']}' && priv.user_id = '{$_SESSION['user']['id']}' && (priv.dept_id = ticket.dept_id || priv.dept_id = 0) ) ORDER BY date DESC" );
+    $res_others = mysql_query( "SELECT DISTINCT ticket.* FROM {$pre}ticket AS ticket, {$pre}privilege AS priv WHERE ( ticket.email = '{$row['email']}' && ticket.id != '{$row['id']}' && priv.user_id = '{$_SESSION['user']['id']}' && (ticket.dept_id = 0 || priv.dept_id = ticket.dept_id || priv.dept_id = 0) ) ORDER BY date DESC" );
 }
 
 include "./include/header.php";
