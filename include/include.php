@@ -273,6 +273,45 @@ function get_options( $options )
   return $data;
 }
 
+/**
+ * Render legacy email placeholders without executing template text as PHP.
+ * Supports the variable formats used by the bundled templates, including
+ * $ticket, {$data[emailheader]}, and {$GLOBALS[PATH_TO_HELPDESK]}.
+ */
+function render_email_template( $template, $variables = array(), $options = array() )
+{
+  $replacements = array();
+
+  foreach( $variables as $name => $value )
+  {
+    if( !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', (string)$name) )
+      continue;
+    $value = (string)$value;
+    $replacements['{$' . $name . '}'] = $value;
+    $replacements['$' . $name] = $value;
+  }
+
+  foreach( $options as $name => $value )
+  {
+    if( !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', (string)$name) )
+      continue;
+    $value = (string)$value;
+    $replacements['{$data[' . $name . ']}'] = $value;
+    $replacements['{$data[\'' . $name . '\']}'] = $value;
+    $replacements['{$data["' . $name . '"]}'] = $value;
+  }
+
+  foreach( array('PATH_TO_HELPDESK', 'HD_URL_TICKET_VIEW', 'HD_URL_ADMINVIEW', 'HD_URL_TICKET_SURVEY') as $name )
+  {
+    $value = (string)($GLOBALS[$name] ?? '');
+    $replacements['{$GLOBALS[' . $name . ']}'] = $value;
+    $replacements['{$GLOBALS[\'' . $name . '\']}'] = $value;
+    $replacements['{$GLOBALS["' . $name . '"]}'] = $value;
+  }
+
+  return strtr( (string)$template, $replacements );
+}
+
 function hd_smtp_read( $socket, $expected_codes )
 {
   $response = "";
