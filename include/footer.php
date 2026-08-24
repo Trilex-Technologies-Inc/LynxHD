@@ -13,5 +13,11 @@
       </nav>
     </div>
   </footer>
+<?php
+if (isset($INSTALLED) && $INSTALLED) {
+  include_once __DIR__ . '/../modules/livechat/bootstrap.php';
+  livechat_render_widget(isset($asset_prefix) ? $asset_prefix : '');
+}
+?>
 </body>
 </html>

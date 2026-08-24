@@ -1,4 +1,52 @@
---
+-- LynxHD database schema and sample data.
+-- Preserve the connection character-set values before restoring them below.
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+-- WARNING: importing this file replaces the existing LynxHD database tables.
+SET FOREIGN_KEY_CHECKS=0;
+DROP TABLE IF EXISTS `livechat_message`;
+DROP TABLE IF EXISTS `livechat_conversation`;
+DROP TABLE IF EXISTS `message`;
+DROP TABLE IF EXISTS `post`;
+DROP TABLE IF EXISTS `privilege`;
+DROP TABLE IF EXISTS `reply`;
+DROP TABLE IF EXISTS `survey`;
+DROP TABLE IF EXISTS `ticket`;
+DROP TABLE IF EXISTS `field`;
+DROP TABLE IF EXISTS `faq`;
+DROP TABLE IF EXISTS `pop`;
+DROP TABLE IF EXISTS `test`;
+DROP TABLE IF EXISTS `dept`;
+DROP TABLE IF EXISTS `options`;
+DROP TABLE IF EXISTS `user`;
+SET FOREIGN_KEY_CHECKS=1;
+
+-- --------------------------------------------------------
+
+-- Optional live-chat module tables (the module also creates these on first use).
+CREATE TABLE IF NOT EXISTS `livechat_conversation` (
+  `id` int unsigned NOT NULL auto_increment,
+  `visitor_token` char(64) NOT NULL,
+  `visitor_name` varchar(100) NOT NULL,
+  `visitor_email` varchar(190) NOT NULL default '',
+  `status` enum('open','closed') NOT NULL default 'open',
+  `created_at` int unsigned NOT NULL,
+  `updated_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), UNIQUE KEY `visitor_token` (`visitor_token`), KEY `status_updated` (`status`,`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `livechat_message` (
+  `id` int unsigned NOT NULL auto_increment,
+  `conversation_id` int unsigned NOT NULL,
+  `sender` enum('visitor','operator') NOT NULL,
+  `sender_id` int NOT NULL default '0',
+  `body` text NOT NULL,
+  `created_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), KEY `conversation_messages` (`conversation_id`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 

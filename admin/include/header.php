@@ -84,12 +84,13 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="replies.php">Auto-replies</a>
       </div></div>
     </li>
-    <li class="nav-item <?php echo in_array($current_admin_page, array('general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php')) ? 'active' : '' ?>">
+    <li class="nav-item <?php echo in_array($current_admin_page, array('general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php', 'livechat.php')) ? 'active' : '' ?>">
       <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#siteMenu" aria-expanded="false" aria-controls="siteMenu"><i class="fas fa-fw fa-cogs"></i><span>Site management</span></a>
       <div id="siteMenu" class="collapse" data-parent="#accordionSidebar"><div class="bg-white py-2 collapse-inner rounded">
         <?php if ($global_priv): ?>
           <a class="collapse-item" href="general.php">Help desk settings</a>
           <a class="collapse-item" href="emails.php">Email templates</a>
+          <a class="collapse-item" href="livechat.php">Live chat</a>
           <a class="collapse-item" href="./upload/index.php">Download manager</a>
         <?php endif; ?>
         <a class="collapse-item" href="faqadmin.php">Knowledge base</a>

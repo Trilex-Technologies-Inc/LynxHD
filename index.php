@@ -1,5 +1,8 @@
 <?php
 ////////////////////////////////////////////////////////////////////
+
+include __DIR__ . '/include/settings.php';
+include __DIR__ . '/include/include.php';
 // LynxHD Formely ColdBrew Help Desk
 // -----------------------------------------------------------------
 // License info can be found in license.txt.
