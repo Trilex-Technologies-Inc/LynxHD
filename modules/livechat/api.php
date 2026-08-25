@@ -52,7 +52,10 @@ if ($action === 'start') {
     if ($name==='' || strlen($name)>100 || ($email!=='' && !filter_var($email,FILTER_VALIDATE_EMAIL))) lc_reply(array('error'=>'Enter your name and a valid email address.'),422);
     $token=bin2hex(random_bytes(32)); $safeToken=livechat_escape($token); $name=livechat_escape($name); $email=livechat_escape($email); $now=time();
     mysql_query("INSERT INTO {$pre}livechat_conversation (visitor_token,visitor_name,visitor_email,created_at,updated_at) VALUES ('$safeToken','$name','$email',$now,$now)");
-    lc_reply(array('token'=>$token,'conversation_id'=>mysql_insert_id(),'messages'=>array()));
+    $conversation_id=(int)mysql_insert_id();
+    $welcome=livechat_escape('Thank you for contacting us. We will be in touch shortly.');
+    mysql_query("INSERT INTO {$pre}livechat_message (conversation_id,sender,body,created_at) VALUES ($conversation_id,'operator','$welcome',$now)");
+    lc_reply(array('token'=>$token,'conversation_id'=>$conversation_id,'messages'=>lc_messages($conversation_id)));
 }
 if (!preg_match('/^[a-f0-9]{64}$/',$token) || !($conversation=lc_conversation($token))) lc_reply(array('error'=>'Chat session not found.'),404);
 $id=(int)$conversation['id'];
