@@ -1,9 +1,11 @@
 <?php
 $admin_logged_in = $INSTALLED && (($_SESSION['login_type'] ?? $LOGIN_INVALID) != $LOGIN_INVALID);
 $global_priv = 0;
+$module_priv = 0;
 $new_message_count = 0;
 if ($admin_logged_in) {
   $global_priv = get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' && admin = '1' )");
+  $module_priv = get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' )");
   $new_message_count = get_row_count("SELECT COUNT(*) FROM {$pre}message WHERE ( user_id = '{$_SESSION['user']['id']}' && viewed = '0' )");
 }
 $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
@@ -97,11 +99,11 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="manual.php">Manual</a>
       </div></div>
     </li>
-    <?php if ($global_priv): ?>
+    <?php if ($module_priv): ?>
       <hr class="sidebar-divider">
       <div class="sidebar-heading">Modules</div>
-      <li class="nav-item <?php echo $current_admin_page === 'livechat.php' ? 'active' : '' ?>">
-        <a class="nav-link" href="livechat.php"><i class="fas fa-fw fa-comments"></i><span>Live chat</span></a>
+      <li class="nav-item <?php echo in_array($current_admin_page, array('modules.php', 'livechat.php')) ? 'active' : '' ?>">
+        <a class="nav-link" href="modules.php"><i class="fas fa-fw fa-puzzle-piece"></i><span>Modules</span></a>
       </li>
     <?php endif; ?>
     <hr class="sidebar-divider d-none d-md-block">
