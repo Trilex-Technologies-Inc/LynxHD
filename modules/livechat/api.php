@@ -13,7 +13,12 @@ function lc_conversation($token) {
 }
 function lc_messages($id, $after = 0) {
     global $pre; $items = array(); $id = (int)$id; $after = (int)$after;
-    $res = mysql_query("SELECT id,sender,body,created_at FROM {$pre}livechat_message WHERE conversation_id=$id AND id>$after ORDER BY id ASC LIMIT 200");
+    $res = mysql_query("SELECT m.id,m.sender,m.body,m.created_at,
+        CASE WHEN m.sender='visitor' THEN c.visitor_name ELSE COALESCE(NULLIF(u.name,''),'Support') END sender_name
+        FROM {$pre}livechat_message m
+        INNER JOIN {$pre}livechat_conversation c ON c.id=m.conversation_id
+        LEFT JOIN {$pre}user u ON m.sender='operator' AND u.id=m.sender_id
+        WHERE m.conversation_id=$id AND m.id>$after ORDER BY m.id ASC LIMIT 200");
     while ($res && ($row = mysql_fetch_array($res, MYSQLI_ASSOC))) { $row['id']=(int)$row['id']; $row['created_at']=(int)$row['created_at']; $items[]=$row; }
     return $items;
 }
