@@ -23,8 +23,8 @@ function lc_messages($id, $after = 0) {
     return $items;
 }
 
+if (!livechat_installed()) lc_reply(array('error'=>'Live chat is not installed.'), 503);
 if (!livechat_enabled()) lc_reply(array('error'=>'Live chat is disabled.'), 403);
-livechat_install();
 $data = lc_body(); $action = $data['action'] ?? 'poll';
 $operator_id = (int)($_SESSION['user']['id'] ?? 0);
 $is_operator = (($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_USER)

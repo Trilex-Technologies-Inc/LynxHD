@@ -9,15 +9,26 @@ function livechat_escape($value)
 function livechat_enabled()
 {
     global $pre;
+    if (!livechat_installed()) return false;
     $result = mysql_query("SELECT text FROM {$pre}options WHERE name = 'livechat_enabled' LIMIT 1");
     $row = $result ? mysql_fetch_array($result) : false;
     return $row && $row[0] === '1';
 }
 
+function livechat_installed()
+{
+    global $pre;
+    $conversation = livechat_escape($pre . 'livechat_conversation');
+    $message = livechat_escape($pre . 'livechat_message');
+    $result = mysql_query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('$conversation','$message')");
+    $row = $result ? mysql_fetch_array($result) : false;
+    return $row && (int)$row[0] === 2;
+}
+
 function livechat_install()
 {
     global $pre;
-    mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_conversation (
+    $conversation_created = mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_conversation (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         visitor_token CHAR(64) NOT NULL,
         visitor_name VARCHAR(100) NOT NULL,
@@ -27,7 +38,7 @@ function livechat_install()
         updated_at INT UNSIGNED NOT NULL,
         PRIMARY KEY (id), UNIQUE KEY visitor_token (visitor_token), KEY status_updated (status, updated_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_message (
+    $message_created = mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_message (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         conversation_id INT UNSIGNED NOT NULL,
         sender ENUM('visitor','operator') NOT NULL,
@@ -36,6 +47,22 @@ function livechat_install()
         created_at INT UNSIGNED NOT NULL,
         PRIMARY KEY (id), KEY conversation_messages (conversation_id, id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    if (!$conversation_created || !$message_created) return false;
+    if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) {
+        mysql_query("UPDATE {$pre}options SET text='0' WHERE name='livechat_enabled'");
+    } else {
+        mysql_query("INSERT INTO {$pre}options (name,text) VALUES ('livechat_enabled','0')");
+    }
+    return livechat_installed();
+}
+
+function livechat_uninstall()
+{
+    global $pre;
+    $message_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_message");
+    $conversation_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_conversation");
+    $setting_removed = mysql_query("DELETE FROM {$pre}options WHERE name='livechat_enabled'");
+    return $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
 }
 
 function livechat_render_widget($asset_prefix = '')

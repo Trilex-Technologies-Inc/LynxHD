@@ -84,13 +84,12 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="replies.php">Auto-replies</a>
       </div></div>
     </li>
-    <li class="nav-item <?php echo in_array($current_admin_page, array('general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php', 'livechat.php')) ? 'active' : '' ?>">
+    <li class="nav-item <?php echo in_array($current_admin_page, array('general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php')) ? 'active' : '' ?>">
       <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#siteMenu" aria-expanded="false" aria-controls="siteMenu"><i class="fas fa-fw fa-cogs"></i><span>Site management</span></a>
       <div id="siteMenu" class="collapse" data-parent="#accordionSidebar"><div class="bg-white py-2 collapse-inner rounded">
         <?php if ($global_priv): ?>
           <a class="collapse-item" href="general.php">Help desk settings</a>
           <a class="collapse-item" href="emails.php">Email templates</a>
-          <a class="collapse-item" href="livechat.php">Live chat</a>
           <a class="collapse-item" href="./upload/index.php">Download manager</a>
         <?php endif; ?>
         <a class="collapse-item" href="faqadmin.php">Knowledge base</a>
@@ -98,6 +97,13 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="manual.php">Manual</a>
       </div></div>
     </li>
+    <?php if ($global_priv): ?>
+      <hr class="sidebar-divider">
+      <div class="sidebar-heading">Modules</div>
+      <li class="nav-item <?php echo $current_admin_page === 'livechat.php' ? 'active' : '' ?>">
+        <a class="nav-link" href="livechat.php"><i class="fas fa-fw fa-comments"></i><span>Live chat</span></a>
+      </li>
+    <?php endif; ?>
     <hr class="sidebar-divider d-none d-md-block">
     <div class="text-center d-none d-md-inline"><button class="rounded-circle border-0" id="sidebarToggle" type="button" aria-label="Toggle sidebar"></button></div>
   </ul>
