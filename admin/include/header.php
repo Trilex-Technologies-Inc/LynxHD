@@ -116,6 +116,24 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3" type="button" aria-label="Toggle sidebar"><i class="fa fa-bars"></i></button>
         <div class="d-none d-sm-inline-block text-gray-600 font-weight-bold"><?php echo htmlspecialchars($script_name ?: 'Administration', ENT_QUOTES, 'UTF-8') ?></div>
         <ul class="navbar-nav ml-auto">
+          <?php if ($global_priv): ?>
+          <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="controlCenterDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Control center"><i class="fas fa-sliders-h fa-fw"></i><span class="d-none d-lg-inline ml-2 text-gray-600 small">Control center</span></a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="controlCenterDropdown">
+              <h6 class="dropdown-header">Admin settings</h6>
+              <a class="dropdown-item" href="general.php"><i class="fas fa-cog fa-sm fa-fw mr-2 text-gray-400"></i>Help desk settings</a>
+              <a class="dropdown-item" href="department.php"><i class="fas fa-building fa-sm fa-fw mr-2 text-gray-400"></i>Departments</a>
+              <a class="dropdown-item" href="user.php"><i class="fas fa-users fa-sm fa-fw mr-2 text-gray-400"></i>Users</a>
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header">Modules and tools</h6>
+              <a class="dropdown-item" href="modules.php"><i class="fas fa-puzzle-piece fa-sm fa-fw mr-2 text-gray-400"></i>Manage modules</a>
+              <?php if (function_exists('hd_module_enabled') && hd_module_enabled('livechat')): ?><a class="dropdown-item" href="livechat.php"><i class="fas fa-comments fa-sm fa-fw mr-2 text-gray-400"></i>Live Chat settings</a><?php endif; ?>
+              <a class="dropdown-item" href="emails.php"><i class="fas fa-envelope-open-text fa-sm fa-fw mr-2 text-gray-400"></i>Email templates</a>
+              <a class="dropdown-item" href="backup.php"><i class="fas fa-database fa-sm fa-fw mr-2 text-gray-400"></i>Backup</a>
+            </div>
+          </li>
+          <div class="topbar-divider d-none d-sm-block"></div>
+          <?php endif; ?>
           <li class="nav-item"><a class="nav-link position-relative" href="messages.php" title="Messages"><i class="fas fa-envelope fa-fw"></i><?php if ($new_message_count): ?><span class="badge badge-danger badge-counter"><?php echo $new_message_count > 99 ? '99+' : (int) $new_message_count ?></span><?php endif; ?></a></li>
           <div class="topbar-divider d-none d-sm-block"></div>
           <li class="nav-item dropdown no-arrow">
