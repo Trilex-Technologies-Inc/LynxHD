@@ -86,7 +86,7 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="replies.php">Auto-replies</a>
       </div></div>
     </li>
-    <li class="nav-item <?php echo in_array($current_admin_page, array('controlcenter.php', 'general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php')) ? 'active' : '' ?>">
+    <li class="nav-item <?php echo in_array($current_admin_page, array('controlcenter.php', 'general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php', 'livechatsettings.php')) ? 'active' : '' ?>">
       <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#siteMenu" aria-expanded="false" aria-controls="siteMenu"><i class="fas fa-fw fa-cogs"></i><span>Site management</span></a>
       <div id="siteMenu" class="collapse" data-parent="#accordionSidebar"><div class="bg-white py-2 collapse-inner rounded">
         <?php if ($global_priv): ?>
@@ -130,7 +130,7 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
               <div class="dropdown-divider"></div>
               <h6 class="dropdown-header">Modules and tools</h6>
               <a class="dropdown-item" href="modules.php"><i class="fas fa-puzzle-piece fa-sm fa-fw mr-2 text-gray-400"></i>Manage modules</a>
-              <?php if (function_exists('hd_module_enabled') && hd_module_enabled('livechat')): ?><a class="dropdown-item" href="livechat.php"><i class="fas fa-comments fa-sm fa-fw mr-2 text-gray-400"></i>Live Chat settings</a><?php endif; ?>
+              <?php if (function_exists('hd_module_enabled') && hd_module_enabled('livechat')): ?><a class="dropdown-item" href="livechatsettings.php"><i class="fas fa-comments fa-sm fa-fw mr-2 text-gray-400"></i>Live Chat settings</a><?php endif; ?>
               <a class="dropdown-item" href="emails.php"><i class="fas fa-envelope-open-text fa-sm fa-fw mr-2 text-gray-400"></i>Email templates</a>
               <a class="dropdown-item" href="backup.php"><i class="fas fa-database fa-sm fa-fw mr-2 text-gray-400"></i>Backup</a>
             </div>

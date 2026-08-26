@@ -26,7 +26,7 @@ $control_items = array(
     array('manual.php', 'fa-book', 'secondary', 'Administrator manual', 'Open the built-in administration documentation.')
 );
 if (hd_module_enabled('livechat')) {
-    array_splice($control_items, 6, 0, array(array('livechat.php', 'fa-comments', 'success', 'Live Chat', 'Manage conversations, widget appearance, canned replies, and embed code.')));
+    array_splice($control_items, 6, 0, array(array('livechatsettings.php', 'fa-comments', 'success', 'Live Chat', 'Configure widget appearance, canned replies, and website embed code.')));
 }
 
 $script_name = 'Control Center';
