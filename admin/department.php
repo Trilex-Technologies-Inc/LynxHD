@@ -1,307 +1,59 @@
-<?php 
+<?php
 ////////////////////////////////////////////////////////////////////
-// LynxHD Formely ColdBrew Help Desk  
-// -----------------------------------------------------------------
-//
-// License info can be found in license.txt.
-// You must leave this notice as is.
-//
-// LynxHD Formely ColdBrew Helpdesk has been modified and mantained by:
-//
-//      Old Author: James Paige
-//      New Author: Trilex Labs
-//         Web: http://www.lynxhd.com
-// -----------------------------------------------------------------
+// LynxHD Formely ColdBrew Help Desk
+// License info can be found in license.txt. You must leave this notice as is.
 ////////////////////////////////////////////////////////////////////
 include "../include/settings.php";
 include "../include/include.php";
-
 $HD_CURPAGE = $HD_URL_DEPARTMENT;
-$HD_URL_CURPAGE = $HD_CURPAGE;
+if (($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_INVALID) { Header("Location: {$HD_URL_LOGIN}?redirect=" . urlencode($HD_CURPAGE)); exit; }
 
-if( $_SESSION['login_type'] == $LOGIN_INVALID )
-  Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
+function dept_escape($value) { $db=$GLOBALS['_lynxhd_mysql_connection']??null; return $db?mysqli_real_escape_string($db,(string)$value):addslashes((string)$value); }
+function dept_admin($id) { global $pre; $uid=(int)$_SESSION['user']['id']; $id=(int)$id; return get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE user_id=$uid AND dept_id=$id AND admin=1")>0; }
+$uid=(int)$_SESSION['user']['id'];
+$global_priv=get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE user_id=$uid AND dept_id=0 AND admin=1")>0;
+$csrf=$_SESSION['department_csrf']??''; if($csrf===''){ $csrf=bin2hex(random_bytes(32)); $_SESSION['department_csrf']=$csrf; }
+$cmd=(string)($_POST['cmd']??''); $msg='';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['csrf_token']) || !hash_equals($csrf, (string)$_POST['csrf_token']))) { $msg='<div class="alert alert-danger">The request could not be verified. Please try again.</div>'; $cmd=''; }
 
-$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' && admin = '1' )" );
+if($cmd==='add'&&$global_priv){
+  $name=trim((string)($_POST['name']??'')); $safe=dept_escape($name);
+  if($name==='') $msg='<div class="alert alert-danger">Enter a department name.</div>';
+  elseif(get_row_count("SELECT COUNT(*) FROM {$pre}dept WHERE name='$safe'")) $msg='<div class="alert alert-danger">A department with that name already exists.</div>';
+  else { $r=mysql_fetch_array(mysql_query("SELECT COALESCE(MAX(sortnum),0) FROM {$pre}dept"))?:array(0); mysql_query("INSERT INTO {$pre}dept(name,sortnum) VALUES('$safe',".((int)$r[0]+1).")"); $msg='<div class="alert alert-success">Department created.</div>'; }
+} elseif($cmd==='options'&&$global_priv){
+  $id=(int)($_POST['dept_id']??0); $name=trim((string)($_POST['name']??'')); $safe=dept_escape($name); $desc=dept_escape(trim((string)($_POST['description']??'')));
+  if($name==='') $msg='<div class="alert alert-danger">Enter a department name.</div>';
+  elseif(get_row_count("SELECT COUNT(*) FROM {$pre}dept WHERE name='$safe' AND id!=$id")) $msg='<div class="alert alert-danger">A department with that name already exists.</div>';
+  else { $options=isset($_POST['invisible'])?(int)$HD_DEPARTMENT_INVISIBLE:0; mysql_query("UPDATE {$pre}dept SET name='$safe',description='$desc',options=$options WHERE id=$id"); $msg='<div class="alert alert-success">Department updated.</div>'; }
+} elseif(($cmd==='moveup'||$cmd==='movedown')&&$global_priv){
+  $id=(int)($_POST['dept_id']??0); $cur=mysql_fetch_array(mysql_query("SELECT sortnum FROM {$pre}dept WHERE id=$id"));
+  if($cur){$op=$cmd==='moveup'?'<':'>'; $order=$cmd==='moveup'?'DESC':'ASC'; $other=mysql_fetch_array(mysql_query("SELECT id,sortnum FROM {$pre}dept WHERE sortnum $op ".(int)$cur['sortnum']." ORDER BY sortnum $order LIMIT 1")); if($other){mysql_query("UPDATE {$pre}dept SET sortnum=".(int)$other['sortnum']." WHERE id=$id");mysql_query("UPDATE {$pre}dept SET sortnum=".(int)$cur['sortnum']." WHERE id=".(int)$other['id']);}}
+} elseif($cmd==='delete'&&$global_priv){
+  $id=(int)($_POST['dept_id']??0); if($id){$tickets=mysql_query("SELECT id FROM {$pre}ticket WHERE dept_id=$id");while($tickets&&($t=mysql_fetch_array($tickets))){$tid=(int)$t['id'];if(is_dir("$HD_TICKET_FILES/$tid"))system("rm -rf ".escapeshellarg("$HD_TICKET_FILES/$tid"));mysql_query("DELETE FROM {$pre}post WHERE ticket_id=$tid");mysql_query("DELETE FROM {$pre}message WHERE ticket_id=$tid");}foreach(array('ticket','field','privilege','reply','pop') as $table)mysql_query("DELETE FROM {$pre}$table WHERE dept_id=$id");mysql_query("DELETE FROM {$pre}dept WHERE id=$id");$msg='<div class="alert alert-success">Department deleted.</div>';}
+} elseif($cmd==='adduser'){
+  $id=(int)($_POST['dept_id']??0);$user=(int)($_POST['user']??0);if(($global_priv||dept_admin($id))&&$user&&get_row_count("SELECT COUNT(*) FROM {$pre}user WHERE id=$user")){mysql_query("DELETE FROM {$pre}privilege WHERE user_id=$user AND dept_id=$id");mysql_query("INSERT INTO {$pre}privilege(dept_id,user_id,admin) VALUES($id,$user,".(isset($_POST['admin'])?1:0).")");$msg='<div class="alert alert-success">User assignment saved.</div>';}
+} elseif($cmd==='unassign'){
+  $id=(int)($_POST['dept_id']??0);$user=(int)($_POST['user_id']??0);if(($global_priv||dept_admin($id))&&!get_row_count("SELECT COUNT(*) FROM {$pre}user WHERE id=$user AND admin=1")){mysql_query("DELETE FROM {$pre}privilege WHERE user_id=$user AND dept_id=$id");$msg='<div class="alert alert-success">User unassigned.</div>';}
+} elseif($cmd==='fields'&&$global_priv){
+  $id=(int)($_POST['dept_id']??0);$res=mysql_query("SELECT id FROM {$pre}field WHERE dept_id=$id");while($res&&($f=mysql_fetch_array($res))){$fid=(int)$f['id'];$name=trim((string)($_POST['field'][$fid]??''));if($name!=='')mysql_query("UPDATE {$pre}field SET name='".dept_escape($name)."',required=".(isset($_POST['required'][$fid])?1:0)." WHERE id=$fid AND dept_id=$id");}$new=trim((string)($_POST['newfield']??''));if($new!==''){ $safe=dept_escape($new);if(!get_row_count("SELECT COUNT(*) FROM {$pre}field WHERE name='$safe' AND (dept_id=$id OR dept_id=0)"))mysql_query("INSERT INTO {$pre}field(name,required,dept_id) VALUES('$safe',".(isset($_POST['newrequired'])?1:0).",$id)");}$msg='<div class="alert alert-success">Custom fields updated.</div>';
+} elseif($cmd==='fielddel'&&$global_priv){$id=(int)($_POST['dept_id']??0);$fid=(int)($_POST['field_id']??0);mysql_query("DELETE FROM {$pre}field WHERE id=$fid AND dept_id=$id");$msg='<div class="alert alert-success">Custom field removed.</div>';}
 
-if( $_POST['cmd'] == "add" )
-{
-  if( $global_priv )
-  {
-    if( !get_row_count( "SELECT COUNT(*) FROM {$pre}dept WHERE ( name = '{$_POST['name']}' )" ) )
-    {
-      $res = mysql_query( "SELECT sortnum FROM {$pre}dept ORDER BY sortnum DESC LIMIT 1" );
-      $row = mysql_fetch_array( $res ) ?: array( 0 => 0 );
-      $sortnum = $row[0] + 1;
-      
-      mysql_query( "INSERT INTO {$pre}dept ( name, sortnum ) VALUES ( '{$_POST['name']}', '$sortnum' )" );
-    }
-    else
-      $msg = "<div class=\"errorbox\">A department with that name already exists.</div><br />";
-  }
-}
-else if( $_POST['cmd'] == "adduser" )
-{
-  if( $global_priv )
-  {
-    mysql_query( "DELETE FROM {$pre}privilege WHERE ( user_id = '{$_POST['user']}' && dept_id = '{$_POST['dept_id']}' )" );
-
-    if( ($_POST['admin'] ?? '') == "on" )
-      $admin = 1;
-    else
-      $admin = 0;
-
-    mysql_query( "INSERT INTO {$pre}privilege ( dept_id, user_id, admin ) VALUES ( '{$_POST['dept_id']}', '{$_POST['user']}', '$admin' )" );
-  }
-}   
-else if( $_GET['cmd'] == "moveup" || $_GET['cmd'] == "movedown" )
-{
-  $res = mysql_query( "SELECT sortnum FROM {$pre}dept WHERE ( id = '{$_GET['id']}' )" );
-  $row = mysql_fetch_array( $res );
-  if( $row )
-  {
-    $sortnum = $row[0];
-
-    if( $_GET['cmd'] == "moveup" )
-      $newsortnum = $sortnum - 1;
-    else
-      $newsortnum = $sortnum + 1;
-
-    $res = mysql_query( "SELECT id FROM {$pre}dept WHERE ( sortnum = '$newsortnum' )" );
-    $row = mysql_fetch_array( $res );
-    if( $row )
-    {
-      mysql_query( "UPDATE {$pre}dept SET sortnum = '$newsortnum' WHERE ( id = '{$_GET['id']}' )" );
-      mysql_query( "UPDATE {$pre}dept SET sortnum = '$sortnum' WHERE ( id = '{$row[0]}' )" );
-    }
-  }
-}
-else if( $_GET['cmd'] == "del" && $global_priv && $_GET['id'] != 0 )
-{
-  mysql_query( "DELETE FROM {$pre}dept WHERE ( id = '{$_GET['id']}' )" );
-  mysql_query( "DELETE FROM {$pre}post, {$pre}ticket WHERE ( {$pre}post.ticket_id = {$pre}ticket.id && {$pre}ticket.dept_id = '{$_GET['id']}' )" );
-  mysql_query( "DELETE FROM {$pre}privilege WHERE ( dept_id = '{$_GET['id']}' )" );
-
-  $res = mysql_query( "SELECT id FROM {$pre}ticket WHERE ( dept_id = '{$_GET['id']}' )" );
-  while( $row = mysql_fetch_array( $res ) )
-  {
-    if( is_dir( "{$HD_TICKET_FILES}/{$row['id']}" ) )
-      system( "rm -rf {$HD_TICKET_FILES}/{$row['id']}" );
-  }
-
-  mysql_query( "DELETE FROM {$pre}ticket WHERE ( dept_id = '{$_GET['id']}' )" );
-  mysql_query( "DELETE FROM {$pre}reply WHERE ( dept_id = '{$_GET['id']}' )" );
-  mysql_query( "DELETE FROM {$pre}pop WHERE ( dept_id = '{$_GET['id']}' )" );
-}
-else if( $_GET['cmd'] == "unassign" )
-{
-  $priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '{$_GET['dept_id']}' && admin = '1' )" );
-  if( $priv || $global_priv )
-    mysql_query( "DELETE FROM {$pre}privilege WHERE ( user_id = '{$_GET['id']}' && dept_id = '{$_GET['dept_id']}' )" );
-}
-else if( $_POST['cmd'] == "options" )
-{
-  $options = (($_POST['invisible'] ?? '') == "on");
-  if( get_row_count( "SELECT COUNT(*) FROM {$pre}dept WHERE ( name = '{$_POST['name']}' && id != '{$_POST['dept_id']}' )" ) )
-    $msg = "<div class=\"errorbox\">A department with that name already exists.</div><br />";
-  else if( $global_priv )
-    mysql_query( "UPDATE {$pre}dept SET options = '$options', description = '{$_POST['description']}', name = '{$_POST['name']}' WHERE ( id = '{$_POST['dept_id']}' )" );
-}
-else if( $_POST['cmd'] == "fields" )
-{
-  while( list( $key, $val ) = each( $_POST ) )
-  {
-    if( is_int( $key ) )
-    {
-      $required = (($_POST["{$key}req"] ?? '') == "on");
-      mysql_query( "UPDATE {$pre}field SET name = '{$_POST[$key]}', required = '$required' WHERE ( id = '$key' )" );
-    }
-  }
-
-  if( trim( $_POST['newfield'] ?? '' ) != "" )
-  {
-    if( !get_row_count( "SELECT COUNT(*) FROM {$pre}field WHERE ( name = '{$_POST['newfield']}' && (dept_id = '{$_POST['dept_id']}' || dept_id = '0') )" ) )
-    {
-      $required = (($_POST['required'] ?? '') == "on");
-      mysql_query( "INSERT INTO {$pre}field ( name, required, dept_id ) VALUES ( '{$_POST['newfield']}', '$required', '{$_POST['dept_id']}' )" );
-    }
-  }
-}
-else if( $_GET['cmd'] == "fielddel" )
-  mysql_query( "DELETE FROM {$pre}field WHERE ( id = '{$_GET['id']}' )" );
-
-include "./include/header.php";
-/********************************************************** PHP */?>
-<div class="title"><?php echo $script_name ?> Department Management</div><br /><?php echo $msg ?>
-<?php /************************************************************/
-if( $global_priv )
-{
-/********************************************************** PHP */?>
-<div id="container">
-	<h1>Create New Department</h1>
-<form class="wufoo" action="<?php echo $HD_CURPAGE ?>" method="post">
-<input type="hidden" name="cmd" value="add" />
-<ul>
-  <li>
-	   <label class="desc">Department Name:</label>
-    <div>
-    	<input class="field text medium" type="text" name="name" />
-	</div>
-</li>
-	<div class="buttons">
-    <button type="submit" class="positive">Create</button>
-    </div>
-</form>
-</div>
-<br />
-<?php /************************************************************/
-}
-
-$res = mysql_query( "SELECT * FROM {$pre}dept ORDER BY sortnum" );
-while( $row = mysql_fetch_array( $res ) )
-{
-/********************************************************** PHP */?>
-<div id="container">
-	<h1>
-	<span style="font: 8pt">
-<a href="<?php echo $HD_URL_CURPAGE . "?cmd=moveup&id={$row['id']}" ?>">Move Up</a> |
-<a href="<?php echo $HD_URL_CURPAGE . "?cmd=movedown&id={$row['id']}" ?>">Move Down</a>
-</span>
-<?php /************************************************************/
-  if( $row['id'] == 0 || !$global_priv )
-    echo "<img src=\"./images/nodelete.png\" align=\"absmiddle\" /> " . field( $row['name'] );
-  else
-    echo "<a href=\"javascript:if(confirm('All tickets and subjects associated with this department will be deleted.  Are you sure you want to do this?')) window.location.href = '$HD_CURPAGE?cmd=del&id={$row['id']}'\"><img src=\"./images/ticket-delete.png\" border=\"0\" align=\"absmiddle\" alt=\"Delete\" /></a> " . field( $row['name'] );
-/********************************************************** PHP */?>
-&nbsp;
-</h1>
-<table width="100%" bgcolor="#3c91c7" border="0" cellspacing="1" cellpadding="2">
-<tr><td bgcolor="#FFFFFF">
-<table width="100%" border="0" cellspacing="0" cellpadding="5"><tr><td>
-  <table  width="100%" border="0" cellspacing="0" cellpadding="4">
-  <div class="clean-gray">Department options:</div>
-  <tr><td><img src="./images/blank.gif" height="2" /></td></tr>
-<?php /************************************************************/
-  if( $global_priv )
-  {
-/********************************************************** PHP */?>
-  <form class="wufoo" action="<?php echo $HD_CURPAGE ?>" method="post">
-  <input type="hidden" name="dept_id" value="<?php echo $row['id'] ?>">
-  <input type="hidden" name="cmd" value="options">
-  <tr><td colspan="2">
-    <table border="0" cellspacing="5" cellpadding="0">
-      <tr>
-        <td align="right"><div class="normal"><b>Department Name:</b></td>
-        <td><input type="text" name="name" value="<?php echo field( $row['name'] ) ?>" size="40" /></td>
-      </tr>
-      <tr>
-        <td align="right"><div class="normal"><b>Department Description:</b></td>
-        <td><input type="text" name="description" value="<?php echo field( $row['description'] ) ?>" size="40" /></td>
-      </tr>
-    </table>
-    <div class="normal">
-      <input type="checkbox" name="invisible" <?php if( $row['options'] & $HD_DEPARTMENT_INVISIBLE ) echo "checked" ?>/> Make department invisible to clients (department used by staff only)&nbsp;
-      <input type="submit" value="Update" />
-    </div>
-  </td></tr>
-  </form>
-<?php /************************************************************/
-  }
-/********************************************************** PHP */?>
-  <tr><td><img src="./images/blank.gif" height="2" /></td></tr>
-  <tr><td colspan="2"><div class="clean-gray">Custom fields on the ticket creation form:</div></td></tr>
-  <tr><td><img src="./images/blank.gif" height="2" /></td></tr>
-<?php /************************************************************/
-  if( $global_priv )
-  {
-/********************************************************** PHP */?>
-  <form action="<?php echo $HD_CURPAGE ?>" method="post">
-  <input type="hidden" name="dept_id" value="<?php echo $row['id'] ?>">
-  <input type="hidden" name="cmd" value="fields">
-  <tr><td colspan="2">
-    <table border="0" cellspacing="5" cellpadding="0">
-<?php /************************************************************/
-$res_field = mysql_query( "SELECT * FROM {$pre}field WHERE ( dept_id = '{$row['id']}' )" );
-while( $row_field = mysql_fetch_array( $res_field ) )
-  echo "<tr><td align=\"right\"><div class=\"normal\"><b>Field Name:</b></div></td><td><div class=\"normal\"><input type=\"text\" name=\"{$row_field['id']}\" value=\"" . field( $row_field['name'] ) . "\" size=\"30\" /> <input type=\"checkbox\" name=\"{$row_field['id']}req\"" . ($row_field['required'] ? " checked" : "" ) . " /> Required? - <a href=\"$HD_CURPAGE?cmd=fielddel&id={$row_field['id']}\">Remove</a></div></td></tr>";
-/********************************************************** PHP */?>
-      <tr><td align="right"><div class="normal"><b>New Field Name:</b></div></td><td><div class="normal"><input type="text" name="newfield" size="30" /> <input type="checkbox" name="required" /> Required?&nbsp;
-      <input type="submit" value="Update" /></div></td></tr>
-    </table>
-  </td></tr>
-  </form>
-<?php /************************************************************/
-  }
-/********************************************************** PHP */?>
-  <tr><td><img src="./images/blank.gif" height="2" /></td></tr>
-  <tr><td colspan="2"><div class="clean-gray">Users assigned to this department:</div></td></tr>
-  <tr><td><img src="./images/blank.gif" height="2" /></td></tr>
-<?php /************************************************************/
-  $res_user = mysql_query( "SELECT user.id, user.name, user.admin, priv.admin, priv.id FROM {$pre}user AS user, {$pre}privilege AS priv WHERE ( priv.user_id = user.id && priv.dept_id = '{$row['id']}' )" );
-
-  $dept_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '{$row['id']}' && admin = '1' )" );
-
-  if( mysql_num_rows( $res_user ) )
-  {
-    while( $row_user = mysql_fetch_array( $res_user ) )
-    {
-      if( !$row_user[2] && ($dept_priv || $global_priv) ) // Not an admin
-        echo "<tr><td><a href=\"$HD_CURPAGE?cmd=unassign&id={$row_user[0]}&dept_id={$row['id']}\"><img src=\"./images/ticket-delete.png\" border=\"0\" alt=\"Unassign User\" /></a></td>";
-      else
-        echo "<tr><td><img src=\"./images/nodelete.png\" /></td>";
-
-      echo "<td width=\"100%\"><div class=\"normal\"><a href=\"{$HD_URL_USER}?cmd=view&id={$row_user[0]}\">" . field( $row_user['name'] ) . "</a>&nbsp;&nbsp;";
-      
-      if( $row_user[2] )
-        echo "<span class=\"smallinfo\">[Master Admin]</span>";
-      else if( $row_user[3] )
-        echo "<span class=\"smallinfo\">[Admin]</span>";
-
-      echo "</div></td></tr>";
-    }
-  }
-
-  if( $global_priv || $dept_priv )
-  {
-/********************************************************** PHP */?>
-  <form action="<?php echo $HD_CURPAGE ?>" method="post">
-  <input type="hidden" name="dept_id" value="<?php echo $row['id'] ?>">
-  <input type="hidden" name="cmd" value="adduser">
-  <tr><td colspan="2">
-    <div class="normal">
-      <b>Add another user to this department:</b>&nbsp;
-<?php /************************************************************/
-    echo "<select name=\"user\">\n";
-    echo "<option>Select A User</option>\n";
-    echo "<option>----------------------------</option>\n";
-
-    $res_allusers = mysql_query( "SELECT id, name, admin FROM {$pre}user" );
-    while( $row_allusers = mysql_fetch_array( $res_allusers ) )
-    {
-      if( !$row_allusers['admin'] )
-        echo "<option value=\"{$row_allusers['id']}\">{$row_allusers['name']}</option>\n";
-    }
-
-    echo "</select>";
-/********************************************************** PHP */?>
-      <input type="checkbox" name="admin">Department Administrator&nbsp;
-      <input type="submit" value="Add">
-    </div>
-  </td></tr>
-  </form>
-<?php /************************************************************/
-  }
-/********************************************************** PHP */?>
-  </table>
-</td></tr></table>
-</td></tr>
-</table>
-</div>
-<br />
-<?php /************************************************************/
-}
-
-/********************************************************** PHP */?>
-<?php /************************************************************/
-include "./include/footer.php";
-/********************************************************** PHP */?>
+$departments=mysql_query("SELECT d.*,(SELECT COUNT(*) FROM {$pre}ticket t WHERE t.dept_id=d.id) tickets,(SELECT COUNT(*) FROM {$pre}field f WHERE f.dept_id=d.id) fields,(SELECT COUNT(*) FROM {$pre}privilege p WHERE p.dept_id=d.id) users FROM {$pre}dept d ORDER BY d.sortnum,d.name");
+$all_users=array();$ur=mysql_query("SELECT id,name,admin FROM {$pre}user ORDER BY name");while($ur&&($u=mysql_fetch_array($ur,MYSQLI_ASSOC)))$all_users[]=$u;
+$script_name='Departments'; include "./include/header.php";
+?>
+<div class="d-sm-flex align-items-center justify-content-between mb-4"><div><h1 class="h3 mb-1 text-gray-800">Departments</h1><p class="mb-0 text-muted">Organize support queues, staff access, and ticket fields.</p></div><?php if($global_priv):?><button class="btn btn-primary btn-sm mt-3 mt-sm-0" data-toggle="collapse" data-target="#new-department"><i class="fas fa-plus mr-1"></i>New department</button><?php endif;?></div>
+<?php echo $msg ?>
+<?php if($global_priv):?><div class="collapse <?php echo $cmd==='add'&&$msg?'show':''?>" id="new-department"><div class="card shadow-sm mb-4 border-left-primary"><div class="card-body"><form method="post" class="form-row align-items-end"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="cmd" value="add"><div class="form-group col-md-9 mb-md-0"><label for="new-dept-name">Department name</label><input class="form-control" id="new-dept-name" name="name" maxlength="255" required placeholder="For example, Billing or Technical Support"></div><div class="col-md-3"><button class="btn btn-primary btn-block">Create department</button></div></form></div></div></div><?php endif;?>
+<?php $count=0;while($departments&&($d=mysql_fetch_array($departments,MYSQLI_ASSOC))):$count++;$id=(int)$d['id'];$member_admin=$global_priv||dept_admin($id);?>
+<section class="card shadow-sm mb-4 department-card"><div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="department-icon mr-3"><i class="fas fa-building"></i></span><div><h2 class="h5 mb-1 text-gray-900"><?php echo field($d['name'])?><?php if($d['options']&$HD_DEPARTMENT_INVISIBLE):?><span class="badge badge-secondary ml-1">Staff only</span><?php endif;?></h2><div class="small text-muted"><span class="mr-3"><i class="fas fa-ticket-alt mr-1"></i><?php echo (int)$d['tickets']?> tickets</span><span class="mr-3"><i class="fas fa-users mr-1"></i><?php echo (int)$d['users']?> users</span><span><i class="fas fa-list-alt mr-1"></i><?php echo (int)$d['fields']?> fields</span></div></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" data-toggle="collapse" data-target="#dept-<?php echo $id?>"><i class="fas fa-cog mr-1"></i>Manage</button></div>
+<div class="collapse" id="dept-<?php echo $id?>"><div class="card-body">
+<?php if($global_priv):?><div class="text-right mb-3"><form method="post" class="d-inline"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="dept_id" value="<?php echo $id?>"><button class="btn btn-sm btn-light" name="cmd" value="moveup" title="Move up"><i class="fas fa-arrow-up"></i></button><button class="btn btn-sm btn-light" name="cmd" value="movedown" title="Move down"><i class="fas fa-arrow-down"></i></button></form><?php if($id):?><form method="post" class="d-inline ml-2" onsubmit="return confirm('Delete this department and all of its tickets? This cannot be undone.')"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="dept_id" value="<?php echo $id?>"><button class="btn btn-sm btn-outline-danger" name="cmd" value="delete"><i class="fas fa-trash mr-1"></i>Delete</button></form><?php endif;?></div>
+<form method="post" class="mb-4"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="cmd" value="options"><input type="hidden" name="dept_id" value="<?php echo $id?>"><h3 class="h6 font-weight-bold text-primary">Settings</h3><div class="form-row"><div class="form-group col-md-5"><label>Name</label><input class="form-control" name="name" maxlength="255" required value="<?php echo field($d['name'])?>"></div><div class="form-group col-md-7"><label>Description</label><input class="form-control" name="description" maxlength="255" value="<?php echo field($d['description'])?>" placeholder="What does this department handle?"></div></div><div class="d-flex justify-content-between"><div class="custom-control custom-switch"><input class="custom-control-input" id="hidden-<?php echo $id?>" type="checkbox" name="invisible" <?php echo ($d['options']&$HD_DEPARTMENT_INVISIBLE)?'checked':''?>><label class="custom-control-label" for="hidden-<?php echo $id?>">Hide from customers</label></div><button class="btn btn-sm btn-primary">Save settings</button></div></form>
+<hr><form method="post" class="my-4"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="cmd" value="fields"><input type="hidden" name="dept_id" value="<?php echo $id?>"><h3 class="h6 font-weight-bold text-primary">Ticket custom fields</h3><?php $fr=mysql_query("SELECT * FROM {$pre}field WHERE dept_id=$id ORDER BY id");while($fr&&($f=mysql_fetch_array($fr,MYSQLI_ASSOC))):$fid=(int)$f['id'];?><div class="form-row align-items-center mb-2"><div class="col-md-7"><input class="form-control form-control-sm" name="field[<?php echo $fid?>]" value="<?php echo field($f['name'])?>"></div><div class="col-md-3"><div class="custom-control custom-checkbox"><input class="custom-control-input" id="req-<?php echo $fid?>" type="checkbox" name="required[<?php echo $fid?>]" <?php echo $f['required']?'checked':''?>><label class="custom-control-label" for="req-<?php echo $fid?>">Required</label></div></div><div class="col-md-2 text-right"><button class="btn btn-sm btn-link text-danger" form="delete-field-<?php echo $fid?>">Remove</button></div></div><?php endwhile;?><div class="form-row align-items-center mt-3"><div class="col-md-7"><input class="form-control form-control-sm" name="newfield" maxlength="255" placeholder="Add a new field"></div><div class="col-md-3"><div class="custom-control custom-checkbox"><input class="custom-control-input" id="newreq-<?php echo $id?>" type="checkbox" name="newrequired"><label class="custom-control-label" for="newreq-<?php echo $id?>">Required</label></div></div><div class="col-md-2 text-right"><button class="btn btn-sm btn-primary">Update fields</button></div></div></form><?php $fr=mysql_query("SELECT id FROM {$pre}field WHERE dept_id=$id");while($fr&&($f=mysql_fetch_array($fr))):?><form id="delete-field-<?php echo (int)$f['id']?>" method="post" onsubmit="return confirm('Remove this custom field?')"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="cmd" value="fielddel"><input type="hidden" name="dept_id" value="<?php echo $id?>"><input type="hidden" name="field_id" value="<?php echo (int)$f['id']?>"></form><?php endwhile;?><?php endif;?>
+<hr><div class="mt-4"><h3 class="h6 font-weight-bold text-primary">Assigned users</h3><div class="list-group mb-3"><?php $ar=mysql_query("SELECT u.id,u.name,u.admin master,p.admin deptadmin FROM {$pre}user u JOIN {$pre}privilege p ON p.user_id=u.id WHERE p.dept_id=$id ORDER BY u.name");$ac=0;while($ar&&($a=mysql_fetch_array($ar,MYSQLI_ASSOC))):$ac++;?><div class="list-group-item d-flex justify-content-between align-items-center"><div><a class="font-weight-bold" href="<?php echo $HD_URL_USER?>?cmd=view&amp;id=<?php echo (int)$a['id']?>"><?php echo field($a['name'])?></a><?php if($a['master']):?><span class="badge badge-dark ml-2">Master admin</span><?php elseif($a['deptadmin']):?><span class="badge badge-info ml-2">Department admin</span><?php endif;?></div><?php if($member_admin&&!$a['master']):?><form method="post" onsubmit="return confirm('Unassign this user?')"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="cmd" value="unassign"><input type="hidden" name="dept_id" value="<?php echo $id?>"><input type="hidden" name="user_id" value="<?php echo (int)$a['id']?>"><button class="btn btn-sm btn-link text-danger">Unassign</button></form><?php endif;?></div><?php endwhile;if(!$ac):?><div class="list-group-item text-muted">No users assigned.</div><?php endif;?></div>
+<?php if($member_admin):?><form method="post" class="form-row align-items-end"><input type="hidden" name="csrf_token" value="<?php echo field($csrf)?>"><input type="hidden" name="cmd" value="adduser"><input type="hidden" name="dept_id" value="<?php echo $id?>"><div class="form-group col-md-6 mb-md-0"><label>Add user</label><select class="form-control form-control-sm" name="user" required><option value="">Choose a user</option><?php foreach($all_users as $u):if($u['admin'])continue;?><option value="<?php echo (int)$u['id']?>"><?php echo field($u['name'])?></option><?php endforeach;?></select></div><div class="form-group col-md-3 mb-md-0"><div class="custom-control custom-checkbox"><input class="custom-control-input" id="admin-<?php echo $id?>" type="checkbox" name="admin"><label class="custom-control-label" for="admin-<?php echo $id?>">Department admin</label></div></div><div class="col-md-3"><button class="btn btn-sm btn-outline-primary btn-block">Assign user</button></div></form><?php endif;?></div></div></div></section>
+<?php endwhile;if(!$count):?><div class="card shadow-sm"><div class="card-body text-center py-5 text-muted"><i class="fas fa-building fa-3x mb-3 text-gray-300"></i><h2 class="h5">No departments yet</h2><p class="mb-0">Create one to organize incoming support requests.</p></div></div><?php endif;?>
+<style>.department-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:10px;background:#eef2ff;color:#4e73df}.department-card .card-header{border-bottom:0}.department-card .collapse.show{border-top:1px solid #e3e6f0}</style>
+<?php include "./include/footer.php"; ?>

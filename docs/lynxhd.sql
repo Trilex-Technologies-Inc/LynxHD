@@ -10,6 +10,7 @@ SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS `livechat_message`;
 DROP TABLE IF EXISTS `livechat_conversation`;
 DROP TABLE IF EXISTS `livechat_canned_message`;
+DROP TABLE IF EXISTS `livechat_block`;
 DROP TABLE IF EXISTS `message`;
 DROP TABLE IF EXISTS `post`;
 DROP TABLE IF EXISTS `privilege`;
@@ -33,10 +34,12 @@ CREATE TABLE IF NOT EXISTS `livechat_conversation` (
   `visitor_token` char(64) NOT NULL,
   `visitor_name` varchar(100) NOT NULL,
   `visitor_email` varchar(190) NOT NULL default '',
+  `dept_id` int NOT NULL default '0',
+  `ip_address` varchar(45) NOT NULL default '',
   `status` enum('open','closed') NOT NULL default 'open',
   `created_at` int unsigned NOT NULL,
   `updated_at` int unsigned NOT NULL,
-  PRIMARY KEY (`id`), UNIQUE KEY `visitor_token` (`visitor_token`), KEY `status_updated` (`status`,`updated_at`)
+  PRIMARY KEY (`id`), UNIQUE KEY `visitor_token` (`visitor_token`), KEY `status_updated` (`status`,`updated_at`), KEY `department` (`dept_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `livechat_message` (
@@ -58,6 +61,17 @@ CREATE TABLE IF NOT EXISTS `livechat_canned_message` (
   `created_at` int unsigned NOT NULL,
   `updated_at` int unsigned NOT NULL,
   PRIMARY KEY (`id`), KEY `language_operator` (`language`,`operator_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `livechat_block` (
+  `id` int unsigned NOT NULL auto_increment,
+  `conversation_id` int unsigned NOT NULL default '0',
+  `visitor_token` char(64) NOT NULL default '',
+  `visitor_email` varchar(190) NOT NULL default '',
+  `ip_address` varchar(45) NOT NULL default '',
+  `blocked_by` int NOT NULL default '0',
+  `created_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), KEY `visitor_token` (`visitor_token`), KEY `visitor_email` (`visitor_email`), KEY `ip_address` (`ip_address`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
