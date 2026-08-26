@@ -45,7 +45,7 @@ $is_operator = (($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_USER)
     && $operator_id > 0
     && get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE user_id=$operator_id AND dept_id=0") > 0;
 
-if ($action === 'operator_list' || $action === 'operator_poll' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_block') {
+if ($action === 'operator_list' || $action === 'operator_poll' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_reopen' || $action === 'operator_block') {
     if (!$is_operator) lc_reply(array('error'=>'Authentication required.'), 401);
     if ($action === 'operator_list') {
         $items=array(); $res=mysql_query("SELECT c.*,d.name department_name,(SELECT body FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message FROM {$pre}livechat_conversation c LEFT JOIN {$pre}dept d ON d.id=c.dept_id ORDER BY (c.status='open') DESC,c.updated_at DESC LIMIT 100");
@@ -56,6 +56,11 @@ if ($action === 'operator_list' || $action === 'operator_poll' || $action === 'o
     if (!$conversation) lc_reply(array('error'=>'Conversation not found.'), 404);
     if ($action === 'operator_poll') lc_reply(array('conversation'=>$conversation,'messages'=>lc_messages($id,(int)($data['after']??0))));
     if ($action === 'operator_close') { mysql_query("UPDATE {$pre}livechat_conversation SET status='closed',updated_at=".time()." WHERE id=$id"); lc_reply(array('ok'=>true)); }
+    if ($action === 'operator_reopen') {
+        $visitor_token = livechat_escape($conversation['visitor_token']);
+        if (get_row_count("SELECT COUNT(*) FROM {$pre}livechat_block WHERE visitor_token='$visitor_token'") > 0) lc_reply(array('error'=>'Unblock this visitor before reopening the conversation.'), 409);
+        mysql_query("UPDATE {$pre}livechat_conversation SET status='open',updated_at=".time()." WHERE id=$id"); lc_reply(array('ok'=>true));
+    }
     if ($action === 'operator_block') {
         $token=livechat_escape($conversation['visitor_token']); $email=livechat_escape($conversation['visitor_email']); $ip=livechat_escape((string)($conversation['ip_address'] ?? '')); $uid=(int)$_SESSION['user']['id']; $now=time();
         if (!get_row_count("SELECT COUNT(*) FROM {$pre}livechat_block WHERE visitor_token='$token'")) mysql_query("INSERT INTO {$pre}livechat_block (conversation_id,visitor_token,visitor_email,ip_address,blocked_by,created_at) VALUES ($id,'$token','$email','$ip',$uid,$now)");

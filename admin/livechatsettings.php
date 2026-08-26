@@ -28,7 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['csrf_token']) || !h
     $msg = '<div class="alert alert-success">Live chat setting saved.</div>';
 } elseif (isset($_POST['unblock_visitor']) && livechat_installed() && livechat_ensure_blocks()) {
     $block_id = (int)($_POST['block_id'] ?? 0);
-    if ($block_id > 0) mysql_query("DELETE FROM {$pre}livechat_block WHERE id=$block_id LIMIT 1");
+    if ($block_id > 0) {
+        $block_result = mysql_query("SELECT conversation_id FROM {$pre}livechat_block WHERE id=$block_id LIMIT 1");
+        $block_row = $block_result ? mysql_fetch_array($block_result, MYSQLI_ASSOC) : false;
+        mysql_query("DELETE FROM {$pre}livechat_block WHERE id=$block_id LIMIT 1");
+        if ($block_row && (int)$block_row['conversation_id'] > 0) {
+            $conversation_id = (int)$block_row['conversation_id'];
+            mysql_query("UPDATE {$pre}livechat_conversation SET status='open',updated_at=" . time() . " WHERE id=$conversation_id");
+        }
+    }
     header('Location: livechatsettings.php?visitor_unblocked=1#blocked-visitors'); exit;
 } elseif (isset($_POST['save_canned']) && livechat_installed() && livechat_ensure_canned_messages()) {
     $canned_id = (int)($_POST['canned_id'] ?? 0);
