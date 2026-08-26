@@ -15,6 +15,18 @@ function livechat_enabled()
     return $row && $row[0] === '1';
 }
 
+function livechat_set_enabled($enabled)
+{
+    global $pre;
+    if (!livechat_installed()) return false;
+    $value = $enabled ? '1' : '0';
+    if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) return mysql_query("UPDATE {$pre}options SET text='$value' WHERE name='livechat_enabled'");
+    return mysql_query("INSERT INTO {$pre}options(name,text) VALUES('livechat_enabled','$value')");
+}
+
+function livechat_enable(){ return livechat_set_enabled(true); }
+function livechat_disable(){ return livechat_set_enabled(false); }
+
 function livechat_installed()
 {
     global $pre;

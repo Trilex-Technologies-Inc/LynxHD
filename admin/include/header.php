@@ -102,8 +102,8 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
     <?php if ($module_priv): ?>
       <hr class="sidebar-divider">
       <div class="sidebar-heading">Modules</div>
-      <li class="nav-item <?php echo in_array($current_admin_page, array('modules.php', 'livechat.php')) ? 'active' : '' ?>">
-        <a class="nav-link" href="modules.php"><i class="fas fa-fw fa-puzzle-piece"></i><span>Modules</span></a>
+      <li class="nav-item <?php echo in_array($current_admin_page, array('modules.php', 'livechat.php', 'tasks.php', 'moduleguide.php')) ? 'active' : '' ?>">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#moduleMenu"><i class="fas fa-fw fa-puzzle-piece"></i><span>Modules</span></a><div id="moduleMenu" class="collapse" data-parent="#accordionSidebar"><div class="bg-white py-2 collapse-inner rounded"><a class="collapse-item" href="modules.php">Manage modules</a><?php include_once __DIR__.'/../../modules/system.php'; if(hd_module_enabled('livechat')):?><a class="collapse-item" href="livechat.php">Live Chat</a><?php endif;if(hd_module_enabled('tasks')):?><a class="collapse-item" href="tasks.php">Task Manager</a><?php endif;?></div></div>
       </li>
     <?php endif; ?>
     <hr class="sidebar-divider d-none d-md-block">

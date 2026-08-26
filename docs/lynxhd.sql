@@ -11,6 +11,8 @@ DROP TABLE IF EXISTS `livechat_message`;
 DROP TABLE IF EXISTS `livechat_conversation`;
 DROP TABLE IF EXISTS `livechat_canned_message`;
 DROP TABLE IF EXISTS `livechat_block`;
+DROP TABLE IF EXISTS `task`;
+DROP TABLE IF EXISTS `module`;
 DROP TABLE IF EXISTS `message`;
 DROP TABLE IF EXISTS `post`;
 DROP TABLE IF EXISTS `privilege`;
@@ -72,6 +74,22 @@ CREATE TABLE IF NOT EXISTS `livechat_block` (
   `blocked_by` int NOT NULL default '0',
   `created_at` int unsigned NOT NULL,
   PRIMARY KEY (`id`), KEY `visitor_token` (`visitor_token`), KEY `visitor_email` (`visitor_email`), KEY `ip_address` (`ip_address`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `module` (
+  `id` int unsigned NOT NULL auto_increment, `module_dir` varchar(80) NOT NULL, `module_name` varchar(150) NOT NULL,
+  `version` varchar(30) NOT NULL default '', `author` varchar(150) NOT NULL default '', `description` text,
+  `installed` tinyint(1) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', `updated_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), UNIQUE KEY `module_dir` (`module_dir`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `task` (
+  `id` int unsigned NOT NULL auto_increment, `title` varchar(255) NOT NULL, `description` text,
+  `priority` enum('low','normal','high') NOT NULL default 'normal', `due_date` date default NULL,
+  `assigned_to` int NOT NULL default '0', `is_complete` tinyint(1) NOT NULL default '0',
+  `created_by` int NOT NULL default '0', `completed_by` int NOT NULL default '0',
+  `created_at` int unsigned NOT NULL, `updated_at` int unsigned NOT NULL, `completed_at` int unsigned NOT NULL default '0',
+  PRIMARY KEY (`id`), KEY `assigned_to` (`assigned_to`), KEY `due_date` (`due_date`), KEY `is_complete` (`is_complete`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------

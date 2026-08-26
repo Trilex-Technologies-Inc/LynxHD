@@ -2,6 +2,7 @@
 include '../include/settings.php';
 include '../include/include.php';
 include '../modules/livechat/bootstrap.php';
+include '../modules/system.php';
 $HD_CURPAGE = 'livechat.php';
 if (($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_INVALID) { header('Location: index.php?redirect=livechat.php'); exit; }
 $global_priv = get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE user_id='" . (int)$_SESSION['user']['id'] . "' AND dept_id='0'");
@@ -18,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['csrf_token']) || !h
     $enabled = isset($_POST['livechat_enabled']) ? '1' : '0';
     if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) mysql_query("UPDATE {$pre}options SET text='$enabled' WHERE name='livechat_enabled'");
     else mysql_query("INSERT INTO {$pre}options (name,text) VALUES ('livechat_enabled','$enabled')");
+    hd_module_sync('livechat', true, $enabled === '1');
     $msg = '<div class="alert alert-success">Live chat setting saved.</div>';
 } elseif (isset($_POST['save_canned']) && livechat_installed() && livechat_ensure_canned_messages()) {
     $canned_id = (int)($_POST['canned_id'] ?? 0);
@@ -61,7 +63,7 @@ $operator_options = array(); while ($operators && ($operator_row = mysql_fetch_a
 $script_name = 'Live Chat';
 include './include/header.php';
 ?>
-<div class="d-sm-flex align-items-center justify-content-between mb-4"><div><h1 class="h3 mb-1 text-gray-800">Live chat</h1><p class="mb-0 text-muted">Talk to visitors from the support site in real time.</p></div></div>
+<div class="d-sm-flex align-items-center justify-content-between mb-4"><div><h1 class="h3 mb-1 text-gray-800">Live chat</h1><p class="mb-0 text-muted">Talk to visitors from the support site in real time.</p></div><a class="btn btn-sm btn-outline-secondary mt-3 mt-sm-0" href="moduleguide.php?module=livechat"><i class="fas fa-question-circle mr-1"></i>Guide</a></div>
 <?php echo $msg ?>
 <?php if (!$installed): ?>
 <div class="alert alert-info shadow-sm"><i class="fas fa-info-circle mr-1"></i> Live Chat is not installed. <a class="alert-link" href="modules.php">Install it from the Modules page</a>.</div>
