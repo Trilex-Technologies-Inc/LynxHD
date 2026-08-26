@@ -53,8 +53,24 @@ body {
 }
 
 .general-settings-form .card-header {
-  border-bottom: 1px solid #e3e6f0;
+  border-bottom: 0;
   background: #fff;
+}
+
+.general-settings-card .collapse.show {
+  border-top: 1px solid #e3e6f0;
+}
+
+.general-settings-icon {
+  display: inline-flex;
+  flex: 0 0 2.625rem;
+  align-items: center;
+  justify-content: center;
+  width: 2.625rem;
+  height: 2.625rem;
+  border-radius: 0.625rem;
+  background: rgba(78, 115, 223, 0.1);
+  color: #4e73df;
 }
 
 .general-settings-form label {
@@ -86,8 +102,12 @@ body {
 }
 
 .email-templates-form .card-header {
-  border-bottom: 1px solid #e3e6f0;
+  border-bottom: 0;
   background: #fff;
+}
+
+.email-template-card .collapse.show {
+  border-top: 1px solid #e3e6f0;
 }
 
 .email-templates-form label {
@@ -100,9 +120,9 @@ body {
   flex: 0 0 2.25rem;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
+  width: 2.625rem;
+  height: 2.625rem;
+  border-radius: 0.625rem;
   background: rgba(78, 115, 223, 0.1);
   color: #4e73df;
 }

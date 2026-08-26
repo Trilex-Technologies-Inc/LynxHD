@@ -75,22 +75,22 @@ $template_groups = array(
 <form action="<?php echo field($HD_CURPAGE) ?>" method="post" class="email-templates-form">
   <input type="hidden" name="cmd" value="add">
 
-  <section class="card shadow-sm mb-4">
-    <div class="card-header py-3"><h2 class="h6 m-0 font-weight-bold text-primary"><i class="fas fa-layer-group mr-2"></i>Shared email content</h2></div>
-    <div class="card-body"><p class="text-muted">This content is added before and after most outgoing email messages.</p><div class="row"><div class="col-12 mb-4"><label for="emailheader">Global header</label><textarea class="form-control" id="emailheader" name="emailheader" rows="6"><?php echo field($_POST['emailheader']) ?></textarea></div><div class="col-12"><label for="emailfooter">Global footer</label><textarea class="form-control" id="emailfooter" name="emailfooter" rows="6"><?php echo field($_POST['emailfooter']) ?></textarea></div></div></div>
+  <section class="card shadow-sm mb-4 email-template-card">
+    <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="email-template-icon mr-3"><i class="fas fa-layer-group"></i></span><div><h2 class="h5 mb-1 text-gray-900">Shared email content</h2><p class="small text-muted mb-0">Content added before and after most outgoing messages.</p></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#shared-email-content" aria-expanded="false" aria-controls="shared-email-content"><i class="fas fa-cog mr-1"></i>Manage</button></div>
+    <div class="collapse" id="shared-email-content"><div class="card-body"><div class="row"><div class="col-12 mb-4"><label for="emailheader">Global header</label><textarea class="form-control" id="emailheader" name="emailheader" rows="6"><?php echo field($_POST['emailheader']) ?></textarea></div><div class="col-12"><label for="emailfooter">Global footer</label><textarea class="form-control" id="emailfooter" name="emailfooter" rows="6"><?php echo field($_POST['emailfooter']) ?></textarea></div></div></div></div>
   </section>
 
-  <?php foreach($template_groups as $group_name => $templates): ?>
+  <?php $template_index = 0; foreach($template_groups as $group_name => $templates): ?>
     <div class="email-template-section-heading d-flex align-items-center mb-3 mt-4"><h2 class="h5 mb-0 text-gray-800"><?php echo field($group_name) ?></h2><span class="badge badge-light border ml-2"><?php echo count($templates) ?></span></div>
     <div class="row">
-      <?php foreach($templates as $template): $body_name = $template[0]; $subject_name = $body_name . '_subject'; ?>
+      <?php foreach($templates as $template): $template_index++; $body_name = $template[0]; $subject_name = $body_name . '_subject'; $collapse_id = 'email-template-' . $template_index; ?>
         <div class="col-12 mb-4">
           <section class="card shadow-sm email-template-card">
-            <div class="card-header py-3 d-flex align-items-center"><span class="email-template-icon mr-3"><i class="fas <?php echo field($template[3]) ?>"></i></span><div><h3 class="h6 font-weight-bold text-gray-800 mb-1"><?php echo field($template[1]) ?></h3><p class="small text-muted mb-0"><?php echo field($template[2]) ?></p></div></div>
-            <div class="card-body">
+            <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="email-template-icon mr-3"><i class="fas <?php echo field($template[3]) ?>"></i></span><div><h3 class="h5 mb-1 text-gray-900"><?php echo field($template[1]) ?></h3><p class="small text-muted mb-0"><?php echo field($template[2]) ?></p></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#<?php echo $collapse_id ?>" aria-expanded="false" aria-controls="<?php echo $collapse_id ?>"><i class="fas fa-cog mr-1"></i>Manage</button></div>
+            <div class="collapse" id="<?php echo $collapse_id ?>"><div class="card-body">
               <div class="form-group"><label for="<?php echo field($subject_name) ?>">Subject line</label><input class="form-control" id="<?php echo field($subject_name) ?>" type="text" name="<?php echo field($subject_name) ?>" value="<?php echo field($_POST[$subject_name]) ?>"></div>
               <div class="form-group mb-0"><label for="<?php echo field($body_name) ?>">Message</label><textarea class="form-control" id="<?php echo field($body_name) ?>" name="<?php echo field($body_name) ?>" rows="7"><?php echo field($_POST[$body_name]) ?></textarea></div>
-            </div>
+            </div></div>
           </section>
         </div>
       <?php endforeach; ?>
