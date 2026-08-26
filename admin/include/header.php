@@ -86,10 +86,11 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="replies.php">Auto-replies</a>
       </div></div>
     </li>
-    <li class="nav-item <?php echo in_array($current_admin_page, array('general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php')) ? 'active' : '' ?>">
+    <li class="nav-item <?php echo in_array($current_admin_page, array('controlcenter.php', 'general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php')) ? 'active' : '' ?>">
       <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#siteMenu" aria-expanded="false" aria-controls="siteMenu"><i class="fas fa-fw fa-cogs"></i><span>Site management</span></a>
       <div id="siteMenu" class="collapse" data-parent="#accordionSidebar"><div class="bg-white py-2 collapse-inner rounded">
         <?php if ($global_priv): ?>
+          <a class="collapse-item" href="controlcenter.php">Control center</a>
           <a class="collapse-item" href="general.php">Help desk settings</a>
           <a class="collapse-item" href="emails.php">Email templates</a>
           <a class="collapse-item" href="./upload/index.php">Download manager</a>
@@ -121,6 +122,8 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
             <a class="nav-link dropdown-toggle" href="#" id="controlCenterDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Control center"><i class="fas fa-sliders-h fa-fw"></i><span class="d-none d-lg-inline ml-2 text-gray-600 small">Control center</span></a>
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="controlCenterDropdown">
               <h6 class="dropdown-header">Admin settings</h6>
+              <a class="dropdown-item font-weight-bold" href="controlcenter.php"><i class="fas fa-th-large fa-sm fa-fw mr-2 text-primary"></i>Open Control Center</a>
+              <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="general.php"><i class="fas fa-cog fa-sm fa-fw mr-2 text-gray-400"></i>Help desk settings</a>
               <a class="dropdown-item" href="department.php"><i class="fas fa-building fa-sm fa-fw mr-2 text-gray-400"></i>Departments</a>
               <a class="dropdown-item" href="user.php"><i class="fas fa-users fa-sm fa-fw mr-2 text-gray-400"></i>Users</a>
