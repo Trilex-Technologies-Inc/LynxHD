@@ -9,6 +9,7 @@
 SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS `livechat_message`;
 DROP TABLE IF EXISTS `livechat_conversation`;
+DROP TABLE IF EXISTS `livechat_canned_message`;
 DROP TABLE IF EXISTS `message`;
 DROP TABLE IF EXISTS `post`;
 DROP TABLE IF EXISTS `privilege`;
@@ -46,6 +47,17 @@ CREATE TABLE IF NOT EXISTS `livechat_message` (
   `body` text NOT NULL,
   `created_at` int unsigned NOT NULL,
   PRIMARY KEY (`id`), KEY `conversation_messages` (`conversation_id`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `livechat_canned_message` (
+  `id` int unsigned NOT NULL auto_increment,
+  `title` varchar(120) NOT NULL,
+  `body` text NOT NULL,
+  `language` varchar(40) NOT NULL default 'English',
+  `operator_id` int NOT NULL default '0',
+  `created_at` int unsigned NOT NULL,
+  `updated_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), KEY `language_operator` (`language`,`operator_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------

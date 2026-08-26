@@ -25,6 +25,21 @@ function livechat_installed()
     return $row && (int)$row[0] === 2;
 }
 
+function livechat_ensure_canned_messages()
+{
+    global $pre;
+    return mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_canned_message (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        title VARCHAR(120) NOT NULL,
+        body TEXT NOT NULL,
+        language VARCHAR(40) NOT NULL DEFAULT 'English',
+        operator_id INT NOT NULL DEFAULT 0,
+        created_at INT UNSIGNED NOT NULL,
+        updated_at INT UNSIGNED NOT NULL,
+        PRIMARY KEY (id), KEY language_operator (language, operator_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
 function livechat_install()
 {
     global $pre;
@@ -47,7 +62,8 @@ function livechat_install()
         created_at INT UNSIGNED NOT NULL,
         PRIMARY KEY (id), KEY conversation_messages (conversation_id, id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    if (!$conversation_created || !$message_created) return false;
+    $canned_created = livechat_ensure_canned_messages();
+    if (!$conversation_created || !$message_created || !$canned_created) return false;
     if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) {
         mysql_query("UPDATE {$pre}options SET text='0' WHERE name='livechat_enabled'");
     } else {
@@ -59,10 +75,11 @@ function livechat_install()
 function livechat_uninstall()
 {
     global $pre;
+    $canned_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_canned_message");
     $message_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_message");
     $conversation_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_conversation");
     $setting_removed = mysql_query("DELETE FROM {$pre}options WHERE name='livechat_enabled'");
-    return $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
+    return $canned_removed && $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
 }
 
 function livechat_render_widget($asset_prefix = '')
