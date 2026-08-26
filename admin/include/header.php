@@ -3,10 +3,15 @@ $admin_logged_in = $INSTALLED && (($_SESSION['login_type'] ?? $LOGIN_INVALID) !=
 $global_priv = 0;
 $module_priv = 0;
 $new_message_count = 0;
+$livechat_nav_enabled = false;
 if ($admin_logged_in) {
   $global_priv = get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' && admin = '1' )");
   $module_priv = get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' )");
   $new_message_count = get_row_count("SELECT COUNT(*) FROM {$pre}message WHERE ( user_id = '{$_SESSION['user']['id']}' && viewed = '0' )");
+  if ($module_priv) {
+    include_once __DIR__ . '/../../modules/system.php';
+    $livechat_nav_enabled = hd_module_enabled('livechat');
+  }
 }
 $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
 ?>
@@ -69,6 +74,11 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
     <li class="nav-item <?php echo $current_admin_page === 'messages.php' ? 'active' : '' ?>">
       <a class="nav-link" href="messages.php"><i class="fas fa-fw fa-envelope"></i><span>Message center</span></a>
     </li>
+    <?php if ($livechat_nav_enabled): ?>
+    <li class="nav-item <?php echo $current_admin_page === 'livechat.php' ? 'active' : '' ?>">
+      <a class="nav-link" href="livechat.php"><i class="fas fa-fw fa-comments"></i><span>Live Chat</span></a>
+    </li>
+    <?php endif; ?>
     <hr class="sidebar-divider">
     <div class="sidebar-heading">Management</div>
     <li class="nav-item <?php echo in_array($current_admin_page, array('user.php', 'profile.php')) ? 'active' : '' ?>">
