@@ -19,10 +19,21 @@ include "../include/include.php";
 $HD_CURPAGE = $HD_URL_BROWSE;
 $msg = "";
 
-if( $_SESSION['login_type'] == $LOGIN_INVALID )
+if( ($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_INVALID )
+{
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
+  exit;
+}
 
-$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' )" );
+$current_user_id = (int)($_SESSION['user']['id'] ?? 0);
+if( $current_user_id <= 0 )
+{
+  $_SESSION['login_type'] = $LOGIN_INVALID;
+  Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
+  exit;
+}
+
+$global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '$current_user_id' && dept_id = '0' )" );
 
 if( ( $_POST['cmd'] ?? "" ) == "action" )
 {
@@ -158,7 +169,7 @@ else if( $_GET['closed'] != "on" )
   $query .= " && ticket.status != '$HD_STATUS_CLOSED'";
 
 if( $_GET['mine'] == "on" )
-  $query .= " && post.user_id = '{$_SESSION['user']['id']}'";
+  $query .= " && post.user_id = '$current_user_id'";
 
 if( $_GET['replies'] == "on" )
   $query .= " && ticket.lastpost = '-1'";
@@ -183,9 +194,9 @@ else if( $_GET['order'] == "priorityrev" )
 else
   $order .= "ticket.lastactivity DESC";
 
-$rows_query = "SELECT COUNT( DISTINCT( ticket.id ) ) FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && priv.user_id = '{$_SESSION['user']['id']}' && (ticket.dept_id = '0' || ticket.dept_id = priv.dept_id || priv.dept_id = '0') " . $query . " ) ORDER BY " . $order;
+$rows_query = "SELECT COUNT( DISTINCT( ticket.id ) ) FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && priv.user_id = '$current_user_id' && (ticket.dept_id = '0' || ticket.dept_id = priv.dept_id || priv.dept_id = '0') " . $query . " ) ORDER BY " . $order;
 
-$query = "SELECT DISTINCT( ticket.id ), ticket.* FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && priv.user_id = '{$_SESSION['user']['id']}' && (ticket.dept_id = '0' || ticket.dept_id = priv.dept_id || priv.dept_id = '0') " . $query . " ) ORDER BY " . $order;
+$query = "SELECT DISTINCT( ticket.id ), ticket.* FROM {$pre}ticket AS ticket, {$pre}post AS post, {$pre}privilege AS priv WHERE ( ticket.ticket_id NOT LIKE 'M%' && post.ticket_id = ticket.id && priv.user_id = '$current_user_id' && (ticket.dept_id = '0' || ticket.dept_id = priv.dept_id || priv.dept_id = '0') " . $query . " ) ORDER BY " . $order;
 
 $results = get_row_count( $rows_query );
 
@@ -219,7 +230,7 @@ include "./include/header.php";
         </select></div>
         <div class="form-group col-lg-2 col-md-4"><label for="ticket-priority">Priority</label><select id="ticket-priority" class="form-control" name="priority"><option value="any" <?php echo ($_GET['priority'] == "any") ? "selected" : "" ?>>Any priority</option><option value="low" <?php echo ($_GET['priority'] == "low") ? "selected" : "" ?>>Low</option><option value="medium" <?php echo ($_GET['priority'] == "medium") ? "selected" : "" ?>>Medium</option><option value="high" <?php echo ($_GET['priority'] == "high") ? "selected" : "" ?>>High</option></select></div>
         <div class="form-group col-lg-2 col-md-4"><label for="ticket-department">Department</label><select id="ticket-department" class="form-control" name="department">
-          <?php if( $global_priv ) $res_dept = mysql_query( "SELECT name, id FROM {$pre}dept ORDER BY sortnum" ); else $res_dept = mysql_query( "SELECT dept.name, dept.id FROM {$pre}privilege AS priv, {$pre}dept AS dept WHERE ( priv.user_id = '{$_SESSION['user']['id']}' && priv.dept_id = dept.id )" ); while( $row_dept = mysql_fetch_array( $res_dept ) ) echo "<option value=\"" . (int)$row_dept['id'] . "\" " . (($row_dept['id'] == $_GET['department']) ? "selected" : "") . ">" . field($row_dept['name']) . "</option>\n"; ?>
+          <?php if( $global_priv ) $res_dept = mysql_query( "SELECT name, id FROM {$pre}dept ORDER BY sortnum" ); else $res_dept = mysql_query( "SELECT dept.name, dept.id FROM {$pre}privilege AS priv, {$pre}dept AS dept WHERE ( priv.user_id = '$current_user_id' && priv.dept_id = dept.id )" ); while( $row_dept = mysql_fetch_array( $res_dept ) ) echo "<option value=\"" . (int)$row_dept['id'] . "\" " . (($row_dept['id'] == $_GET['department']) ? "selected" : "") . ">" . field($row_dept['name']) . "</option>\n"; ?>
         </select></div>
         <div class="form-group col-lg-2 col-md-4"><label for="ticket-results">Per page</label><input id="ticket-results" class="form-control" type="number" name="results" min="1" max="1000" value="<?php echo (int)$_GET['results'] ?>"></div>
       </div>
@@ -255,7 +266,7 @@ while( $row = mysql_fetch_array( $res ) )
     $res_staff_user = mysql_query( "SELECT name FROM {$pre}user WHERE ( id = '{$row_post_user['user_id']}' )" );
     $row_staff_user = mysql_fetch_array( $res_staff_user ) ?: array( 'name' => 'Unknown user' );
 
-    if( $row_post_user['user_id'] == $_SESSION['user']['id'] )
+    if( $row_post_user['user_id'] == $current_user_id )
       $user_info = "<b>" . $row_staff_user['name'] . "</b>";
     else
       $user_info = $row_staff_user['name'];
@@ -280,7 +291,7 @@ while( $row = mysql_fetch_array( $res ) )
   echo "<td><input class=\"ticket-checkbox\" type=\"checkbox\" name=\"{$row['id']}\" aria-label=\"Select ticket " . field($row['ticket_id']) . "\"></td>";
   echo "<td><a class=\"font-weight-bold text-nowrap\" href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field($row['ticket_id']) . "</a></td>";
   echo "<td><a href=\"mailto:" . field($row['email']) . "\">" . field($row['name']) . "</a></td>";
-  echo "<td class=\"ticket-subject\">" . (($row['flag'] == 0 || $row['flag'] == $_SESSION['user']['id']) ? "<img src=\"./images/mail-flag.png\" alt=\"Flagged\" title=\"Flagged\"> " : "") . "<img src=\"{$image}\" alt=\"\"> <a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field( $row['subject'] ) . "</a></td>";
+  echo "<td class=\"ticket-subject\">" . (($row['flag'] == 0 || $row['flag'] == $current_user_id) ? "<img src=\"./images/mail-flag.png\" alt=\"Flagged\" title=\"Flagged\"> " : "") . "<img src=\"{$image}\" alt=\"\"> <a href=\"{$HD_URL_ADMINVIEW}?cmd=view&id={$row['ticket_id']}\">" . field( $row['subject'] ) . "</a></td>";
 
   $res_dept = mysql_query( "SELECT name FROM {$pre}dept WHERE ( id = '{$row['dept_id']}' )" );
   $row_dept = mysql_fetch_array( $res_dept ) ?: array( 0 => 'Unknown department' );
