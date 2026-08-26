@@ -24,6 +24,25 @@ function livechat_set_enabled($enabled)
     return mysql_query("INSERT INTO {$pre}options(name,text) VALUES('livechat_enabled','$value')");
 }
 
+function livechat_color()
+{
+    global $pre;
+    if (!livechat_installed()) return '#4f46e5';
+    $result = mysql_query("SELECT text FROM {$pre}options WHERE name='livechat_color' LIMIT 1");
+    $row = $result ? mysql_fetch_array($result) : false;
+    $color = $row ? trim((string)$row[0]) : '';
+    return preg_match('/^#[0-9a-fA-F]{6}$/', $color) ? strtolower($color) : '#4f46e5';
+}
+
+function livechat_color_variant($color, $amount)
+{
+    $color = ltrim($color, '#');
+    $channels = array(hexdec(substr($color, 0, 2)), hexdec(substr($color, 2, 2)), hexdec(substr($color, 4, 2)));
+    foreach ($channels as &$channel) $channel = max(0, min(255, $channel + $amount));
+    unset($channel);
+    return sprintf('#%02x%02x%02x', $channels[0], $channels[1], $channels[2]);
+}
+
 function livechat_enable(){ return livechat_set_enabled(true); }
 function livechat_disable(){ return livechat_set_enabled(false); }
 
@@ -113,6 +132,9 @@ function livechat_install()
     } else {
         mysql_query("INSERT INTO {$pre}options (name,text) VALUES ('livechat_enabled','0')");
     }
+    if (!get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_color'")) {
+        mysql_query("INSERT INTO {$pre}options (name,text) VALUES ('livechat_color','#4f46e5')");
+    }
     return livechat_installed();
 }
 
@@ -123,7 +145,7 @@ function livechat_uninstall()
     $canned_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_canned_message");
     $message_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_message");
     $conversation_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_conversation");
-    $setting_removed = mysql_query("DELETE FROM {$pre}options WHERE name='livechat_enabled'");
+    $setting_removed = mysql_query("DELETE FROM {$pre}options WHERE name IN ('livechat_enabled','livechat_color')");
     return $blocks_removed && $canned_removed && $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
 }
 
@@ -132,13 +154,17 @@ function livechat_render_widget($asset_prefix = '')
     global $pre;
     if (!livechat_enabled()) return;
     $base = htmlspecialchars($asset_prefix . 'modules/livechat/', ENT_QUOTES, 'UTF-8');
+    $color = livechat_color();
+    $color_dark = livechat_color_variant($color, -24);
+    $color_accent = livechat_color_variant($color, 24);
+    $color_rgb = implode(',', array(hexdec(substr($color, 1, 2)), hexdec(substr($color, 3, 2)), hexdec(substr($color, 5, 2))));
     $department_options = '';
     $departments = mysql_query("SELECT id,name FROM {$pre}dept WHERE id != 0 ORDER BY sortnum,name");
     while ($departments && ($department = mysql_fetch_array($departments, MYSQLI_ASSOC))) {
         $department_options .= '<option value="' . (int)$department['id'] . '">' . htmlspecialchars($department['name'], ENT_QUOTES, 'UTF-8') . '</option>';
     }
     echo '<link rel="stylesheet" href="' . $base . 'widget.css">';
-    echo '<div id="lynx-livechat" data-api="' . $base . 'api.php">
+    echo '<div id="lynx-livechat" style="--lc-primary:' . $color . ';--lc-primary-dark:' . $color_dark . ';--lc-accent:' . $color_accent . ';--lc-primary-rgb:' . $color_rgb . '" data-api="' . $base . 'api.php">
       <button class="lc-launch" type="button" aria-expanded="false" aria-label="Open live support chat">
         <span class="lc-launch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 15a4 4 0 0 1-4 4H8l-5 3 1.7-5.1A7 7 0 0 1 3 12V8a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v7Z"/></svg><span class="lc-online-dot"></span></span>
         <span class="lc-launch-copy"><strong>Chat with us</strong><small>We are online</small></span>

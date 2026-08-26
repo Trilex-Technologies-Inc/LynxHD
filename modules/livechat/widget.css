@@ -1,7 +1,7 @@
-#lynx-livechat{--lc-primary:#4f46e5;--lc-primary-dark:#4338ca;--lc-text:#172033;--lc-muted:#697386;--lc-border:#e5e9f2;position:fixed;right:24px;bottom:24px;z-index:1055;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--lc-text);box-sizing:border-box}
+#lynx-livechat{--lc-primary:#4f46e5;--lc-primary-dark:#3730cd;--lc-accent:#6760fd;--lc-primary-rgb:79,70,229;--lc-text:#172033;--lc-muted:#697386;--lc-border:#e5e9f2;position:fixed;right:24px;bottom:24px;z-index:1055;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--lc-text);box-sizing:border-box}
 #lynx-livechat *,#lynx-livechat *:before,#lynx-livechat *:after{box-sizing:border-box}
-.lc-launch{display:flex;align-items:center;gap:12px;border:0;border-radius:18px;background:linear-gradient(135deg,var(--lc-primary),#6366f1);color:#fff;padding:11px 18px 11px 11px;box-shadow:0 12px 32px rgba(67,56,202,.3);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;font:inherit;text-align:left}
-.lc-launch:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(67,56,202,.38)}.lc-launch:focus-visible,.lc-close:focus-visible,.lc-begin:focus-visible,.lc-compose button:focus-visible{outline:3px solid rgba(99,102,241,.3);outline-offset:3px}
+.lc-launch{display:flex;align-items:center;gap:12px;border:0;border-radius:18px;background:linear-gradient(135deg,var(--lc-primary),var(--lc-accent));color:#fff;padding:11px 18px 11px 11px;box-shadow:0 12px 32px rgba(var(--lc-primary-rgb),.3);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;font:inherit;text-align:left}
+.lc-launch:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(var(--lc-primary-rgb),.38)}.lc-launch:focus-visible,.lc-close:focus-visible,.lc-begin:focus-visible,.lc-compose button:focus-visible{outline:3px solid rgba(var(--lc-primary-rgb),.3);outline-offset:3px}
 .lc-launch-icon{position:relative;display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.16)}.lc-launch-icon svg,.lc-agent-avatar svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.lc-online-dot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border:2px solid #5854e9;border-radius:50%;background:#34d399}.lc-launch-copy{display:flex;flex-direction:column}.lc-launch-copy strong{font-size:14px;line-height:1.25}.lc-launch-copy small{margin-top:2px;color:rgba(255,255,255,.76);font-size:11px}
 .lc-panel{display:flex;flex-direction:column;width:min(390px,calc(100vw - 24px));height:min(580px,calc(100vh - 48px));background:#fff;border:1px solid rgba(226,232,240,.9);border-radius:22px;box-shadow:0 24px 70px rgba(15,23,42,.22);overflow:hidden;animation:lc-open .22s ease-out;transform-origin:bottom right}
 @keyframes lc-open{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
@@ -13,3 +13,9 @@
 @media(max-width:520px){#lynx-livechat{right:12px;bottom:12px}.lc-panel{width:calc(100vw - 24px);height:min(620px,calc(100vh - 24px));border-radius:18px}.lc-launch-copy{display:none}.lc-launch{padding:10px;border-radius:17px}.lc-launch-icon{width:44px;height:44px}.lc-start{padding:22px 20px 18px}}
 @media(prefers-reduced-motion:reduce){.lc-panel{animation:none}.lc-launch,.lc-begin,.lc-compose button{transition:none}}
 .lc-begin{font:inherit;font-weight:600}
+/* Theme overrides use the color selected in Live Chat settings. */
+.lc-header{background:linear-gradient(135deg,var(--lc-primary-dark) 0%,var(--lc-primary) 62%,var(--lc-accent) 100%)}
+.lc-begin,.lc-message.visitor{background:linear-gradient(135deg,var(--lc-primary),var(--lc-accent))}
+.lc-begin{box-shadow:0 8px 18px rgba(var(--lc-primary-rgb),.2)}
+.lc-begin:hover{box-shadow:0 11px 22px rgba(var(--lc-primary-rgb),.28)}
+.lc-message.visitor{box-shadow:0 5px 14px rgba(var(--lc-primary-rgb),.16)}

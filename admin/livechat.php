@@ -17,8 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['csrf_token']) || !h
     $msg = '<div class="alert alert-danger">The request could not be verified. Please try again.</div>';
 } elseif (isset($_POST['save_livechat']) && livechat_installed()) {
     $enabled = isset($_POST['livechat_enabled']) ? '1' : '0';
+    $color = trim((string)($_POST['livechat_color'] ?? ''));
+    if (!preg_match('/^#[0-9a-fA-F]{6}$/', $color)) $color = '#4f46e5';
+    $color = strtolower($color);
     if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) mysql_query("UPDATE {$pre}options SET text='$enabled' WHERE name='livechat_enabled'");
     else mysql_query("INSERT INTO {$pre}options (name,text) VALUES ('livechat_enabled','$enabled')");
+    if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_color'")) mysql_query("UPDATE {$pre}options SET text='$color' WHERE name='livechat_color'");
+    else mysql_query("INSERT INTO {$pre}options (name,text) VALUES ('livechat_color','$color')");
     hd_module_sync('livechat', true, $enabled === '1');
     $msg = '<div class="alert alert-success">Live chat setting saved.</div>';
 } elseif (isset($_POST['save_canned']) && livechat_installed() && livechat_ensure_canned_messages()) {
@@ -44,6 +49,7 @@ $installed = livechat_installed();
 $department_ready = $installed && livechat_ensure_department();
 $canned_ready = $installed && livechat_ensure_canned_messages();
 $enabled = $installed && livechat_enabled();
+$livechat_color = $installed ? livechat_color() : '#4f46e5';
 $canned_edit = false;
 if ($canned_ready && isset($_GET['edit_canned'])) {
     $edit_id = (int)$_GET['edit_canned'];
@@ -68,7 +74,7 @@ include './include/header.php';
 <?php if (!$installed): ?>
 <div class="alert alert-info shadow-sm"><i class="fas fa-info-circle mr-1"></i> Live Chat is not installed. <a class="alert-link" href="modules.php">Install it from the Modules page</a>.</div>
 <?php else: ?>
-<div class="card shadow-sm mb-4"><div class="card-body"><form method="post" class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($livechat_settings_csrf, ENT_QUOTES, 'UTF-8') ?>"><div class="custom-control custom-switch mb-3 mb-sm-0"><input class="custom-control-input" id="livechat-enabled" type="checkbox" name="livechat_enabled" value="1" <?php echo $enabled?'checked':'' ?>><label class="custom-control-label font-weight-bold" for="livechat-enabled">Enable customer chat box</label><small class="d-block text-muted">When disabled, the widget is removed from every public page.</small></div><button class="btn btn-primary" type="submit" name="save_livechat" value="1"><i class="fas fa-save mr-1"></i>Save</button></form></div></div>
+<div class="card shadow-sm mb-4"><div class="card-body"><form method="post" class="d-flex flex-column flex-md-row align-items-md-center justify-content-between"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($livechat_settings_csrf, ENT_QUOTES, 'UTF-8') ?>"><div class="custom-control custom-switch mb-3 mb-md-0"><input class="custom-control-input" id="livechat-enabled" type="checkbox" name="livechat_enabled" value="1" <?php echo $enabled?'checked':'' ?>><label class="custom-control-label font-weight-bold" for="livechat-enabled">Enable customer chat box</label><small class="d-block text-muted">When disabled, the widget is removed from every public page.</small></div><div class="form-group d-flex align-items-center mb-3 mb-md-0 mx-md-4"><label class="font-weight-bold mb-0 mr-2" for="livechat-color">Chat box color</label><input class="form-control p-1" id="livechat-color" type="color" name="livechat_color" value="<?php echo htmlspecialchars($livechat_color, ENT_QUOTES, 'UTF-8') ?>" style="width:56px;height:40px" aria-describedby="livechat-color-help"><small class="text-muted ml-2" id="livechat-color-help">Buttons and header</small></div><button class="btn btn-primary" type="submit" name="save_livechat" value="1"><i class="fas fa-save mr-1"></i>Save</button></form></div></div>
 <?php endif; ?>
 <?php if ($installed && $enabled): ?>
 <div class="row" id="chat-console" data-api="../modules/livechat/api.php"><div class="col-lg-4 mb-4"><div class="card shadow-sm"><div class="card-header font-weight-bold">Conversations</div><div class="list-group list-group-flush" id="chat-list"><div class="p-3 text-muted">Loading…</div></div></div></div><div class="col-lg-8"><div class="card shadow-sm"><div class="card-header d-flex justify-content-between"><strong id="chat-title">Select a conversation</strong><div><button id="chat-block" class="btn btn-sm btn-outline-danger mr-2" hidden><i class="fas fa-ban mr-1"></i>Block user</button><button id="chat-close" class="btn btn-sm btn-outline-secondary" hidden>Close chat</button></div></div><div id="chat-messages" class="p-3 bg-light" style="height:420px;overflow:auto"></div><form id="chat-reply" class="card-footer" hidden><div class="input-group"><div class="input-group-prepend"><button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-comment-dots mr-1"></i>Canned</button><div class="dropdown-menu" id="chat-canned-menu"><?php $quick_result = mysql_query("SELECT title,body FROM {$pre}livechat_canned_message WHERE operator_id=0 OR operator_id=" . (int)$_SESSION['user']['id'] . " ORDER BY title"); while ($quick_result && ($quick = mysql_fetch_array($quick_result, MYSQLI_ASSOC))): ?><button class="dropdown-item chat-canned-choice" type="button" data-message="<?php echo htmlspecialchars($quick['body'], ENT_QUOTES, 'UTF-8') ?>"><?php echo htmlspecialchars($quick['title'], ENT_QUOTES, 'UTF-8') ?></button><?php endwhile; ?></div></div><input id="chat-text" class="form-control" maxlength="2000" required placeholder="Type a reply"><div class="input-group-append"><button class="btn btn-primary">Send</button></div></div></form></div></div></div>
