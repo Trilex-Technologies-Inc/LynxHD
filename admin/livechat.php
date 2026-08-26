@@ -63,7 +63,7 @@ $operator_options = array(); while ($operators && ($operator_row = mysql_fetch_a
 $script_name = 'Live Chat';
 include './include/header.php';
 ?>
-<div class="d-sm-flex align-items-center justify-content-between mb-4"><div><h1 class="h3 mb-1 text-gray-800">Live chat</h1><p class="mb-0 text-muted">Talk to visitors from the support site in real time.</p></div><a class="btn btn-sm btn-outline-secondary mt-3 mt-sm-0" href="moduleguide.php?module=livechat"><i class="fas fa-question-circle mr-1"></i>Guide</a></div>
+<div class="d-sm-flex align-items-center justify-content-between mb-4"><div><h1 class="h3 mb-1 text-gray-800">Live chat</h1><p class="mb-0 text-muted">Talk to visitors from the support site in real time.</p></div></div>
 <?php echo $msg ?>
 <?php if (!$installed): ?>
 <div class="alert alert-info shadow-sm"><i class="fas fa-info-circle mr-1"></i> Live Chat is not installed. <a class="alert-link" href="modules.php">Install it from the Modules page</a>.</div>
