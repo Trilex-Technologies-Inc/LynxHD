@@ -6,6 +6,14 @@ function livechat_escape($value)
     return $connection ? mysqli_real_escape_string($connection, (string)$value) : addslashes((string)$value);
 }
 
+function livechat_canned_plain_text($value)
+{
+    $value = preg_replace('/<\s*br\s*\/?>/i', "\n", (string)$value);
+    $value = preg_replace('/<\s*\/(p|div|li)\s*>/i', "\n", $value);
+    $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    return trim(preg_replace("/\r\n?|\n{3,}/", "\n", $value));
+}
+
 function livechat_enabled()
 {
     global $pre;
