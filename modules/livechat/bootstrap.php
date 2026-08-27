@@ -127,6 +127,25 @@ function livechat_ensure_visitors()
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
+function livechat_ensure_invitations()
+{
+    global $pre;
+    return mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_invitation (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        visitor_id INT UNSIGNED NOT NULL,
+        visitor_key CHAR(64) NOT NULL,
+        operator_id INT NOT NULL,
+        conversation_id INT UNSIGNED NOT NULL DEFAULT 0,
+        message VARCHAR(500) NOT NULL,
+        status ENUM('pending','accepted','declined','expired') NOT NULL DEFAULT 'pending',
+        created_at INT UNSIGNED NOT NULL,
+        responded_at INT UNSIGNED NOT NULL DEFAULT 0,
+        expires_at INT UNSIGNED NOT NULL,
+        PRIMARY KEY (id), KEY visitor_status (visitor_key,status),
+        KEY operator_created (operator_id,created_at), KEY expires (status,expires_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
 function livechat_install()
 {
     global $pre;
@@ -155,7 +174,8 @@ function livechat_install()
     $department_ready = livechat_ensure_department();
     $blocks_created = livechat_ensure_blocks();
     $visitors_created = livechat_ensure_visitors();
-    if (!$conversation_created || !$message_created || !$canned_created || !$department_ready || !$blocks_created || !$visitors_created) return false;
+    $invitations_created = livechat_ensure_invitations();
+    if (!$conversation_created || !$message_created || !$canned_created || !$department_ready || !$blocks_created || !$visitors_created || !$invitations_created) return false;
     if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) {
         mysql_query("UPDATE {$pre}options SET text='0' WHERE name='livechat_enabled'");
     } else {
@@ -170,13 +190,14 @@ function livechat_install()
 function livechat_uninstall()
 {
     global $pre;
+    $invitations_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_invitation");
     $visitors_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_visitor");
     $blocks_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_block");
     $canned_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_canned_message");
     $message_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_message");
     $conversation_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_conversation");
     $setting_removed = mysql_query("DELETE FROM {$pre}options WHERE name IN ('livechat_enabled','livechat_color')");
-    return $visitors_removed && $blocks_removed && $canned_removed && $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
+    return $invitations_removed && $visitors_removed && $blocks_removed && $canned_removed && $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
 }
 
 function livechat_render_widget($asset_prefix = '')
@@ -195,6 +216,7 @@ function livechat_render_widget($asset_prefix = '')
     }
     echo '<link rel="stylesheet" href="' . $base . 'widget.css">';
     echo '<div id="lynx-livechat" style="--lc-primary:' . $color . ';--lc-primary-dark:' . $color_dark . ';--lc-accent:' . $color_accent . ';--lc-primary-rgb:' . $color_rgb . '" data-api="' . $base . 'api.php">
+      <aside class="lc-invitation" hidden role="dialog" aria-live="polite" aria-label="Chat invitation"><button class="lc-invite-close" type="button" aria-label="Decline invitation">&times;</button><span class="lc-invite-avatar"><svg viewBox="0 0 24 24"><path d="M20 15a4 4 0 0 1-4 4H8l-5 3 1.7-5.1A7 7 0 0 1 3 12V8a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v7Z"/></svg></span><div class="lc-invite-copy"><strong><span class="lc-invite-operator">Support</span> invited you to chat</strong><p class="lc-invite-message">Hello! Would you like to chat with us?</p><div><button class="lc-invite-decline" type="button">Not now</button><button class="lc-invite-accept" type="button">Start chat</button></div></div></aside>
       <button class="lc-launch" type="button" aria-expanded="false" aria-label="Open live support chat">
         <span class="lc-launch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 15a4 4 0 0 1-4 4H8l-5 3 1.7-5.1A7 7 0 0 1 3 12V8a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v7Z"/></svg><span class="lc-online-dot"></span></span>
         <span class="lc-launch-copy"><strong>Chat with us</strong><small>We are online</small></span>
