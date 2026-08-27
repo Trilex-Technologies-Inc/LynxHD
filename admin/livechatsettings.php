@@ -95,6 +95,7 @@ $blocked_visitors = $blocks_ready ? mysql_query("SELECT b.*,c.visitor_name,u.nam
     ORDER BY b.created_at DESC,b.id DESC") : false;
 $history_search = trim((string)($_GET['history_search'] ?? ''));
 $history_page = max(1, (int)($_GET['history_page'] ?? 1));
+$history_panel_open = $history_search !== '' || $history_page > 1;
 $history_limit = 25; $history_offset = ($history_page - 1) * $history_limit;
 $history_where = "c.status='closed'";
 if ($history_search !== '') {
@@ -117,7 +118,7 @@ include './include/header.php';
 <?php if (!$installed): ?>
 <div class="alert alert-info shadow-sm"><i class="fas fa-info-circle mr-1"></i> Live Chat is not installed. <a class="alert-link" href="modules.php">Install it from the Modules page</a>.</div>
 <?php else: ?>
-<?php if ($enabled): ?>
+<?php if (false && $enabled): // Visitor monitoring lives on livechat.php. ?>
 <section class="card shadow-sm mb-4 livechat-card" id="visitors-on-site">
   <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between">
     <div class="d-flex align-items-center"><span class="livechat-icon mr-3"><i class="fas fa-users"></i></span><div><h2 class="h5 mb-1 text-gray-900">Visitors on site</h2><small class="text-muted">Visitors who have opened a live-chat conversation.</small></div></div>
@@ -144,7 +145,8 @@ refresh();setInterval(refresh,3000)})();
 <?php endif; ?>
 <?php if ($installed): ?>
 <section class="card shadow-sm mb-4 livechat-card" id="chat-history">
-  <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="livechat-icon mr-3"><i class="fas fa-history"></i></span><div><h2 class="h5 mb-1 text-gray-900">Chat history <span class="badge badge-light border ml-1"><?php echo (int)$history_total ?></span></h2><small class="text-muted">Search and review closed visitor conversations.</small></div></div></div>
+  <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="livechat-icon mr-3"><i class="fas fa-history"></i></span><div><h2 class="h5 mb-1 text-gray-900">Chat history <span class="badge badge-light border ml-1"><?php echo (int)$history_total ?></span></h2><small class="text-muted">Search and review closed visitor conversations.</small></div></div><button class="btn btn-sm btn-outline-primary livechat-manage mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#history-settings" aria-controls="history-settings" aria-expanded="<?php echo $history_panel_open?'true':'false' ?>"><i class="fas fa-cog mr-1"></i>Manage<i class="fas fa-chevron-down ml-2 livechat-chevron"></i></button></div>
+  <div class="collapse <?php echo $history_panel_open?'show':'' ?>" id="history-settings">
   <div class="card-body border-top"><form method="get" action="livechatsettings.php#chat-history" class="form-row align-items-end"><div class="form-group col-md-8 col-lg-6 mb-md-0"><label for="history-search">Visitor name, email, address, or message</label><input class="form-control" id="history-search" type="search" name="history_search" value="<?php echo htmlspecialchars($history_search,ENT_QUOTES,'UTF-8') ?>" placeholder="Search chat history"></div><div class="form-group col-md-4 col-lg-2 mb-md-0"><button class="btn btn-primary btn-block"><i class="fas fa-search mr-1"></i>Search</button></div><?php if ($history_search !== ''): ?><div class="form-group col-md-4 col-lg-2 mb-0"><a class="btn btn-light btn-block" href="livechatsettings.php#chat-history">Clear</a></div><?php endif; ?></form></div>
   <div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Visitor</th><th>Address</th><th>Department</th><th>Operator</th><th>Visitor messages</th><th>Time in chat</th><th>Closed</th><th class="text-right">Log</th></tr></thead><tbody>
   <?php $history_count=0; while ($history_rows && ($history=mysql_fetch_array($history_rows,MYSQLI_ASSOC))): $history_count++; $history_duration=max(0,(int)$history['updated_at']-(int)$history['created_at']); ?>
@@ -152,6 +154,7 @@ refresh();setInterval(refresh,3000)})();
   <?php endwhile; if (!$history_count): ?><tr><td colspan="8" class="text-center text-muted py-4">No closed conversations found.</td></tr><?php endif; ?>
   </tbody></table></div>
   <?php if ($history_pages > 1): ?><div class="card-footer bg-white d-flex justify-content-between align-items-center"><span class="small text-muted">Page <?php echo $history_page ?> of <?php echo $history_pages ?></span><div><?php $history_query=$history_search!==''?'&history_search='.urlencode($history_search):''; if ($history_page>1): ?><a class="btn btn-sm btn-outline-primary mr-1" href="?history_page=<?php echo $history_page-1,$history_query ?>#chat-history">Previous</a><?php endif; if ($history_page<$history_pages): ?><a class="btn btn-sm btn-outline-primary" href="?history_page=<?php echo $history_page+1,$history_query ?>#chat-history">Next</a><?php endif; ?></div></div><?php endif; ?>
+  </div>
 </section>
 <script>Array.prototype.forEach.call(document.querySelectorAll('.history-open'),function(button){button.onclick=function(){var id=button.dataset.conversation,popup=window.open('livechatwindow.php?conversation='+id+'&history=1','lynx_history_'+id,'popup=yes,width=520,height=700,resizable=yes,scrollbars=no');if(popup)popup.focus()}});</script>
 <?php endif; ?>
