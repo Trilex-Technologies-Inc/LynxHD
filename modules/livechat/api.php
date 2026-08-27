@@ -40,6 +40,7 @@ if (!livechat_ensure_department()) lc_reply(array('error'=>'Live chat could not 
 if (!livechat_ensure_blocks()) lc_reply(array('error'=>'Live chat could not prepare user blocking.'), 503);
 if (!livechat_ensure_visitors()) lc_reply(array('error'=>'Live chat could not prepare visitor monitoring.'), 503);
 if (!livechat_ensure_invitations()) lc_reply(array('error'=>'Live chat could not prepare chat invitations.'), 503);
+if (!livechat_ensure_reads()) lc_reply(array('error'=>'Live chat could not prepare unread tracking.'), 503);
 if (!livechat_enabled()) lc_reply(array('error'=>'Live chat is disabled.'), 403);
 $data = lc_body(); $action = $data['action'] ?? 'poll';
 $operator_id = (int)($_SESSION['user']['id'] ?? 0);
@@ -47,13 +48,15 @@ $is_operator = (($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_USER)
     && $operator_id > 0
     && get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE user_id=$operator_id AND dept_id=0") > 0;
 
-if ($action === 'operator_list' || $action === 'operator_visitors' || $action === 'operator_invite' || $action === 'operator_poll' || $action === 'operator_typing' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_reopen' || $action === 'operator_block') {
+if ($action === 'operator_list' || $action === 'operator_visitors' || $action === 'operator_invite' || $action === 'operator_poll' || $action === 'operator_read' || $action === 'operator_typing' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_reopen' || $action === 'operator_block') {
     if (!$is_operator) lc_reply(array('error'=>'Authentication required.'), 401);
     if ($action === 'operator_list') {
         $items=array(); $res=mysql_query("SELECT c.*,d.name department_name,
             (SELECT body FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message,
             (SELECT id FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message_id,
-            (SELECT sender FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_sender
+            (SELECT sender FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_sender,
+            (SELECT created_at FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message_at,
+            (SELECT COUNT(*) FROM {$pre}livechat_message m WHERE m.conversation_id=c.id AND m.sender='visitor' AND m.id>COALESCE((SELECT r.last_message_id FROM {$pre}livechat_read r WHERE r.operator_id=$operator_id AND r.conversation_id=c.id),0)) unread_count
             FROM {$pre}livechat_conversation c LEFT JOIN {$pre}dept d ON d.id=c.dept_id ORDER BY (c.status='open') DESC,c.updated_at DESC LIMIT 100");
         while ($res && ($row=mysql_fetch_array($res, MYSQLI_ASSOC))) $items[]=$row;
         lc_reply(array('conversations'=>$items));
@@ -95,6 +98,7 @@ if ($action === 'operator_list' || $action === 'operator_visitors' || $action ==
     $id=(int)($data['conversation_id'] ?? 0); $res=mysql_query("SELECT * FROM {$pre}livechat_conversation WHERE id=$id LIMIT 1"); $conversation=$res?mysql_fetch_array($res, MYSQLI_ASSOC):false;
     if (!$conversation) lc_reply(array('error'=>'Conversation not found.'), 404);
     if ($action === 'operator_poll') lc_reply(array('conversation'=>$conversation,'visitor_typing'=>(int)$conversation['visitor_typing_at']>=time()-5,'messages'=>lc_messages($id,(int)($data['after']??0))));
+    if ($action === 'operator_read') { $last_id=(int)($data['last_message_id']??0); if (!$last_id) { $read_res=mysql_query("SELECT MAX(id) FROM {$pre}livechat_message WHERE conversation_id=$id"); $read_row=$read_res?mysql_fetch_array($read_res):false; $last_id=(int)($read_row[0]??0); } $now=time(); mysql_query("INSERT INTO {$pre}livechat_read (operator_id,conversation_id,last_message_id,read_at) VALUES ($operator_id,$id,$last_id,$now) ON DUPLICATE KEY UPDATE last_message_id=GREATEST(last_message_id,$last_id),read_at=$now"); lc_reply(array('ok'=>true)); }
     if ($action === 'operator_typing') { $typing=!empty($data['typing']); $value=$typing?time():0; mysql_query("UPDATE {$pre}livechat_conversation SET operator_typing_at=$value WHERE id=$id"); lc_reply(array('ok'=>true)); }
     if ($action === 'operator_close') { mysql_query("UPDATE {$pre}livechat_conversation SET status='closed',updated_at=".time()." WHERE id=$id"); lc_reply(array('ok'=>true)); }
     if ($action === 'operator_reopen') {
