@@ -20,3 +20,4 @@
 .lc-begin{box-shadow:0 8px 18px rgba(var(--lc-primary-rgb),.2)}
 .lc-begin:hover{box-shadow:0 11px 22px rgba(var(--lc-primary-rgb),.28)}
 .lc-message.visitor{box-shadow:0 5px 14px rgba(var(--lc-primary-rgb),.16)}
+.lc-typing{padding:2px 17px 9px;color:var(--lc-muted);font-size:11.5px}.lc-typing[hidden]{display:none!important}.lc-typing span{display:inline-block;width:5px;height:5px;margin-right:2px;border-radius:50%;background:var(--lc-primary);animation:lc-typing 1s infinite ease-in-out}.lc-typing span:nth-child(2){animation-delay:.14s}.lc-typing span:nth-child(3){animation-delay:.28s;margin-right:6px}@keyframes lc-typing{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-3px);opacity:1}}

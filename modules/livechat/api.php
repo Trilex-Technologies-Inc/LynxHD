@@ -47,10 +47,14 @@ $is_operator = (($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_USER)
     && $operator_id > 0
     && get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE user_id=$operator_id AND dept_id=0") > 0;
 
-if ($action === 'operator_list' || $action === 'operator_visitors' || $action === 'operator_invite' || $action === 'operator_poll' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_reopen' || $action === 'operator_block') {
+if ($action === 'operator_list' || $action === 'operator_visitors' || $action === 'operator_invite' || $action === 'operator_poll' || $action === 'operator_typing' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_reopen' || $action === 'operator_block') {
     if (!$is_operator) lc_reply(array('error'=>'Authentication required.'), 401);
     if ($action === 'operator_list') {
-        $items=array(); $res=mysql_query("SELECT c.*,d.name department_name,(SELECT body FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message FROM {$pre}livechat_conversation c LEFT JOIN {$pre}dept d ON d.id=c.dept_id ORDER BY (c.status='open') DESC,c.updated_at DESC LIMIT 100");
+        $items=array(); $res=mysql_query("SELECT c.*,d.name department_name,
+            (SELECT body FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message,
+            (SELECT id FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message_id,
+            (SELECT sender FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_sender
+            FROM {$pre}livechat_conversation c LEFT JOIN {$pre}dept d ON d.id=c.dept_id ORDER BY (c.status='open') DESC,c.updated_at DESC LIMIT 100");
         while ($res && ($row=mysql_fetch_array($res, MYSQLI_ASSOC))) $items[]=$row;
         lc_reply(array('conversations'=>$items));
     }
@@ -90,7 +94,8 @@ if ($action === 'operator_list' || $action === 'operator_visitors' || $action ==
     }
     $id=(int)($data['conversation_id'] ?? 0); $res=mysql_query("SELECT * FROM {$pre}livechat_conversation WHERE id=$id LIMIT 1"); $conversation=$res?mysql_fetch_array($res, MYSQLI_ASSOC):false;
     if (!$conversation) lc_reply(array('error'=>'Conversation not found.'), 404);
-    if ($action === 'operator_poll') lc_reply(array('conversation'=>$conversation,'messages'=>lc_messages($id,(int)($data['after']??0))));
+    if ($action === 'operator_poll') lc_reply(array('conversation'=>$conversation,'visitor_typing'=>(int)$conversation['visitor_typing_at']>=time()-5,'messages'=>lc_messages($id,(int)($data['after']??0))));
+    if ($action === 'operator_typing') { $typing=!empty($data['typing']); $value=$typing?time():0; mysql_query("UPDATE {$pre}livechat_conversation SET operator_typing_at=$value WHERE id=$id"); lc_reply(array('ok'=>true)); }
     if ($action === 'operator_close') { mysql_query("UPDATE {$pre}livechat_conversation SET status='closed',updated_at=".time()." WHERE id=$id"); lc_reply(array('ok'=>true)); }
     if ($action === 'operator_reopen') {
         $visitor_token = livechat_escape($conversation['visitor_token']);
@@ -161,7 +166,8 @@ if ($action === 'start') {
 if (!preg_match('/^[a-f0-9]{64}$/',$token) || !($conversation=lc_conversation($token))) lc_reply(array('error'=>'Chat session not found.'),404);
 $id=(int)$conversation['id'];
 if (lc_is_blocked($token, $conversation['visitor_email'])) lc_reply(array('error'=>'You are not permitted to use chat.'),403);
-if ($action === 'poll') lc_reply(array('status'=>$conversation['status'],'messages'=>lc_messages($id,(int)($data['after']??0))));
+if ($action === 'poll') lc_reply(array('status'=>$conversation['status'],'operator_typing'=>(int)$conversation['operator_typing_at']>=time()-5,'messages'=>lc_messages($id,(int)($data['after']??0))));
+if ($action === 'typing') { $typing=!empty($data['typing']); $value=$typing?time():0; mysql_query("UPDATE {$pre}livechat_conversation SET visitor_typing_at=$value WHERE id=$id"); lc_reply(array('ok'=>true)); }
 if ($action === 'send') {
     if ($conversation['status'] !== 'open') lc_reply(array('error'=>'This chat is closed.'),409);
     $body=trim((string)($data['body']??'')); if ($body==='' || strlen($body)>2000) lc_reply(array('error'=>'Enter a message up to 2000 characters.'),422);

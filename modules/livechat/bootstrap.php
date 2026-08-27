@@ -89,7 +89,13 @@ function livechat_ensure_department()
     $result = mysql_query("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='$table' AND column_name='ip_address'");
     $row = $result ? mysql_fetch_array($result) : false;
     $ip_ready = ($row && (int)$row[0] > 0) || mysql_query("ALTER TABLE {$pre}livechat_conversation ADD ip_address VARCHAR(45) NOT NULL DEFAULT '' AFTER dept_id");
-    return $department_ready && $ip_ready;
+    $result = mysql_query("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='$table' AND column_name='visitor_typing_at'");
+    $row = $result ? mysql_fetch_array($result) : false;
+    $visitor_typing_ready = ($row && (int)$row[0] > 0) || mysql_query("ALTER TABLE {$pre}livechat_conversation ADD visitor_typing_at INT UNSIGNED NOT NULL DEFAULT 0 AFTER updated_at");
+    $result = mysql_query("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='$table' AND column_name='operator_typing_at'");
+    $row = $result ? mysql_fetch_array($result) : false;
+    $operator_typing_ready = ($row && (int)$row[0] > 0) || mysql_query("ALTER TABLE {$pre}livechat_conversation ADD operator_typing_at INT UNSIGNED NOT NULL DEFAULT 0 AFTER visitor_typing_at");
+    return $department_ready && $ip_ready && $visitor_typing_ready && $operator_typing_ready;
 }
 
 function livechat_ensure_blocks()
@@ -159,6 +165,8 @@ function livechat_install()
         status ENUM('open','closed') NOT NULL DEFAULT 'open',
         created_at INT UNSIGNED NOT NULL,
         updated_at INT UNSIGNED NOT NULL,
+        visitor_typing_at INT UNSIGNED NOT NULL DEFAULT 0,
+        operator_typing_at INT UNSIGNED NOT NULL DEFAULT 0,
         PRIMARY KEY (id), UNIQUE KEY visitor_token (visitor_token), KEY status_updated (status, updated_at), KEY department (dept_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $message_created = mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_message (
@@ -224,7 +232,7 @@ function livechat_render_widget($asset_prefix = '')
       <section class="lc-panel" hidden aria-label="Live support chat">
         <header class="lc-header"><div class="lc-agent-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 15a4 4 0 0 1-4 4H8l-5 3 1.7-5.1A7 7 0 0 1 3 12V8a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v7Z"/></svg></div><div class="lc-header-copy"><strong>Live support</strong><span><i></i>Online and ready to help</span></div><button class="lc-close" type="button" aria-label="Close chat">&times;</button></header>
         <form class="lc-start"><div class="lc-welcome"><span class="lc-wave" aria-hidden="true">&#128075;</span><h2>How can we help?</h2><p>Share your details to start a conversation with our support team.</p></div><label for="lc-visitor-name">Your name</label><input class="lc-name" id="lc-visitor-name" maxlength="100" placeholder="Enter your name" autocomplete="name" required><label for="lc-visitor-email">Email address <span>Optional</span></label><input class="lc-email" id="lc-visitor-email" maxlength="190" type="email" placeholder="you@example.com" autocomplete="email"><label for="lc-visitor-department">Department</label><select class="lc-department" id="lc-visitor-department" required><option value="">Choose a department</option>' . $department_options . '</select><button class="lc-begin" type="submit"><span>Start conversation</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><small class="lc-powered">Powered by <strong>LynxHD</strong></small><small class="lc-privacy">Your details are used only to assist with this conversation.</small></form>
-        <div class="lc-room" hidden><div class="lc-messages" aria-live="polite" aria-label="Chat messages"></div><form class="lc-compose"><input class="lc-text" maxlength="2000" placeholder="Write a message…" aria-label="Message" autocomplete="off"><button type="submit" aria-label="Send message"><svg viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></form></div><div class="lc-error" role="alert"></div>
+        <div class="lc-room" hidden><div class="lc-messages" aria-live="polite" aria-label="Chat messages"></div><div class="lc-typing" hidden><span></span><span></span><span></span> Support is typing</div><form class="lc-compose"><input class="lc-text" maxlength="2000" placeholder="Write a message…" aria-label="Message" autocomplete="off"><button type="submit" aria-label="Send message"><svg viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></form></div><div class="lc-error" role="alert"></div>
       </section>
     </div>';
     echo '<script src="' . $base . 'widget.js" defer></script>';
