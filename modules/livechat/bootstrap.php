@@ -164,6 +164,16 @@ function livechat_ensure_reads()
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
+function livechat_ensure_system_messages()
+{
+    global $pre;
+    $table = livechat_escape($pre . 'livechat_message');
+    $result = mysql_query("SELECT COLUMN_TYPE FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='$table' AND column_name='sender' LIMIT 1");
+    $row = $result ? mysql_fetch_array($result) : false;
+    if ($row && strpos((string)$row[0], "'system'") !== false) return true;
+    return mysql_query("ALTER TABLE {$pre}livechat_message MODIFY sender ENUM('visitor','operator','system') NOT NULL");
+}
+
 function livechat_install()
 {
     global $pre;
@@ -184,7 +194,7 @@ function livechat_install()
     $message_created = mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_message (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         conversation_id INT UNSIGNED NOT NULL,
-        sender ENUM('visitor','operator') NOT NULL,
+        sender ENUM('visitor','operator','system') NOT NULL,
         sender_id INT NOT NULL DEFAULT 0,
         body TEXT NOT NULL,
         created_at INT UNSIGNED NOT NULL,
@@ -196,7 +206,8 @@ function livechat_install()
     $visitors_created = livechat_ensure_visitors();
     $invitations_created = livechat_ensure_invitations();
     $reads_created = livechat_ensure_reads();
-    if (!$conversation_created || !$message_created || !$canned_created || !$department_ready || !$blocks_created || !$visitors_created || !$invitations_created || !$reads_created) return false;
+    $system_messages_ready = livechat_ensure_system_messages();
+    if (!$conversation_created || !$message_created || !$canned_created || !$department_ready || !$blocks_created || !$visitors_created || !$invitations_created || !$reads_created || !$system_messages_ready) return false;
     if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) {
         mysql_query("UPDATE {$pre}options SET text='0' WHERE name='livechat_enabled'");
     } else {

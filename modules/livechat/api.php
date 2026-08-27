@@ -14,7 +14,7 @@ function lc_conversation($token) {
 function lc_messages($id, $after = 0) {
     global $pre; $items = array(); $id = (int)$id; $after = (int)$after;
     $res = mysql_query("SELECT m.id,m.sender,m.body,m.created_at,
-        CASE WHEN m.sender='visitor' THEN c.visitor_name ELSE COALESCE(NULLIF(u.name,''),'Support') END sender_name
+        CASE WHEN m.sender='visitor' THEN c.visitor_name WHEN m.sender='system' THEN 'System' ELSE COALESCE(NULLIF(u.name,''),'Support') END sender_name
         FROM {$pre}livechat_message m
         INNER JOIN {$pre}livechat_conversation c ON c.id=m.conversation_id
         LEFT JOIN {$pre}user u ON m.sender='operator' AND u.id=m.sender_id
@@ -41,6 +41,7 @@ if (!livechat_ensure_blocks()) lc_reply(array('error'=>'Live chat could not prep
 if (!livechat_ensure_visitors()) lc_reply(array('error'=>'Live chat could not prepare visitor monitoring.'), 503);
 if (!livechat_ensure_invitations()) lc_reply(array('error'=>'Live chat could not prepare chat invitations.'), 503);
 if (!livechat_ensure_reads()) lc_reply(array('error'=>'Live chat could not prepare unread tracking.'), 503);
+if (!livechat_ensure_system_messages()) lc_reply(array('error'=>'Live chat could not prepare conversation events.'), 503);
 if (!livechat_enabled()) lc_reply(array('error'=>'Live chat is disabled.'), 403);
 $data = lc_body(); $action = $data['action'] ?? 'poll';
 $operator_id = (int)($_SESSION['user']['id'] ?? 0);
@@ -57,7 +58,7 @@ if ($action === 'operator_list' || $action === 'operator_visitors' || $action ==
             (SELECT sender FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_sender,
             (SELECT created_at FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message_at,
             (SELECT COUNT(*) FROM {$pre}livechat_message m WHERE m.conversation_id=c.id AND m.sender='visitor' AND m.id>COALESCE((SELECT r.last_message_id FROM {$pre}livechat_read r WHERE r.operator_id=$operator_id AND r.conversation_id=c.id),0)) unread_count
-            FROM {$pre}livechat_conversation c LEFT JOIN {$pre}dept d ON d.id=c.dept_id ORDER BY (c.status='open') DESC,c.updated_at DESC LIMIT 100");
+            FROM {$pre}livechat_conversation c LEFT JOIN {$pre}dept d ON d.id=c.dept_id WHERE c.status='open' ORDER BY c.updated_at DESC LIMIT 100");
         while ($res && ($row=mysql_fetch_array($res, MYSQLI_ASSOC))) $items[]=$row;
         lc_reply(array('conversations'=>$items));
     }
@@ -172,7 +173,7 @@ $id=(int)$conversation['id'];
 if (lc_is_blocked($token, $conversation['visitor_email'])) lc_reply(array('error'=>'You are not permitted to use chat.'),403);
 if ($action === 'poll') lc_reply(array('status'=>$conversation['status'],'operator_typing'=>(int)$conversation['operator_typing_at']>=time()-5,'messages'=>lc_messages($id,(int)($data['after']??0))));
 if ($action === 'typing') { $typing=!empty($data['typing']); $value=$typing?time():0; mysql_query("UPDATE {$pre}livechat_conversation SET visitor_typing_at=$value WHERE id=$id"); lc_reply(array('ok'=>true)); }
-if ($action === 'close') { $now=time(); mysql_query("UPDATE {$pre}livechat_conversation SET status='closed',visitor_typing_at=0,updated_at=$now WHERE id=$id"); lc_reply(array('ok'=>true)); }
+if ($action === 'close') { $now=time(); if ($conversation['status']==='open') { $event=livechat_escape(($conversation['visitor_name']?:'Visitor').' left the chat.'); mysql_query("INSERT INTO {$pre}livechat_message (conversation_id,sender,body,created_at) VALUES ($id,'system','$event',$now)"); } mysql_query("UPDATE {$pre}livechat_conversation SET status='closed',visitor_typing_at=0,updated_at=$now WHERE id=$id"); lc_reply(array('ok'=>true)); }
 if ($action === 'send') {
     if ($conversation['status'] !== 'open') lc_reply(array('error'=>'This chat is closed.'),409);
     $body=trim((string)($data['body']??'')); if ($body==='' || strlen($body)>2000) lc_reply(array('error'=>'Enter a message up to 2000 characters.'),422);
