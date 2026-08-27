@@ -172,6 +172,7 @@ $id=(int)$conversation['id'];
 if (lc_is_blocked($token, $conversation['visitor_email'])) lc_reply(array('error'=>'You are not permitted to use chat.'),403);
 if ($action === 'poll') lc_reply(array('status'=>$conversation['status'],'operator_typing'=>(int)$conversation['operator_typing_at']>=time()-5,'messages'=>lc_messages($id,(int)($data['after']??0))));
 if ($action === 'typing') { $typing=!empty($data['typing']); $value=$typing?time():0; mysql_query("UPDATE {$pre}livechat_conversation SET visitor_typing_at=$value WHERE id=$id"); lc_reply(array('ok'=>true)); }
+if ($action === 'close') { $now=time(); mysql_query("UPDATE {$pre}livechat_conversation SET status='closed',visitor_typing_at=0,updated_at=$now WHERE id=$id"); lc_reply(array('ok'=>true)); }
 if ($action === 'send') {
     if ($conversation['status'] !== 'open') lc_reply(array('error'=>'This chat is closed.'),409);
     $body=trim((string)($data['body']??'')); if ($body==='' || strlen($body)>2000) lc_reply(array('error'=>'Enter a message up to 2000 characters.'),422);
