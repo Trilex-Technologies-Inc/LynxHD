@@ -15,6 +15,8 @@
 ////////////////////////////////////////////////////////////////////
 include "../include/settings.php";
 include "../include/include.php";
+include_once "../modules/system.php";
+include_once "../modules/livechat/bootstrap.php";
 
 $HD_CURPAGE = $HD_URL_BROWSE;
 $msg = "";
@@ -34,6 +36,7 @@ if( $current_user_id <= 0 )
 }
 
 $global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '$current_user_id' && dept_id = '0' )" );
+$dashboard_livechat_enabled = $global_priv && hd_module_enabled('livechat') && livechat_installed() && livechat_enabled();
 
 if( ( $_POST['cmd'] ?? "" ) == "action" )
 {
@@ -217,6 +220,15 @@ include "./include/header.php";
   <a class="btn btn-primary btn-sm shadow-sm mt-3 mt-sm-0" href="adminticket.php"><i class="fas fa-plus fa-sm mr-1"></i> New ticket</a>
 </div>
 <?php echo $msg ?>
+
+<?php if ($dashboard_livechat_enabled): ?>
+<section class="card shadow-sm mb-4 border-0" id="dashboard-chat-waiting" data-api="../modules/livechat/api.php">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center"><div><h2 class="h5 mb-1 text-gray-900"><i class="fas fa-hourglass-half text-warning mr-2"></i>Visitors waiting <span class="badge badge-warning ml-1" id="dashboard-waiting-count">0</span></h2><small class="text-muted">Visitors waiting for an operator to answer.</small></div><a class="btn btn-sm btn-outline-primary" href="livechat.php"><i class="fas fa-users mr-1"></i>Live chat</a></div>
+  <div class="table-responsive"><table class="table table-hover mb-0 dashboard-waiting-table"><thead><tr><th>Name</th><th>Action</th><th>Address</th><th>State</th><th>Department</th><th>Total time</th><th>Waiting time</th><th>Browser</th></tr></thead><tbody id="dashboard-waiting-body"><tr><td colspan="8" class="text-center text-muted py-3">Loading…</td></tr></tbody></table></div>
+</section>
+<style>.dashboard-waiting-table{font-size:.82rem}.dashboard-waiting-table thead th{white-space:nowrap;border-top:0;background:#f8f9fc;color:#5a5c69;font-size:.72rem;text-transform:uppercase}.dashboard-waiting-table td{vertical-align:middle}</style>
+<script>(function(){var root=document.getElementById('dashboard-chat-waiting'),body=document.getElementById('dashboard-waiting-body'),serverTime=Math.floor(Date.now()/1000);function cell(row,text,className){var td=document.createElement('td');td.textContent=text;if(className)td.className=className;row.appendChild(td);return td}function elapsed(value){var seconds=Math.max(0,serverTime-Number(value||serverTime)),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60);return(hours?hours+'h ':'')+minutes+'m '+seconds%60+'s'}function browser(agent){var match=(agent||'').match(/(Edg|Chrome|Firefox|Safari)\/([\d.]+)/);return match?(match[1]==='Edg'?'Edge':match[1])+' '+match[2]:'Unknown'}function openChat(id){var popup=window.open('livechatwindow.php?conversation='+id,'lynx_chat_'+id,'popup=yes,width=520,height=700,resizable=yes,scrollbars=no');if(popup)popup.focus()}function render(result){serverTime=+result.server_time||serverTime;var items=result.waiting||[];document.getElementById('dashboard-waiting-count').textContent=items.length;body.innerHTML='';if(!items.length){var empty=document.createElement('tr'),td=cell(empty,'The list of visitors waiting is empty.','text-center text-muted py-3');td.colSpan=8;body.appendChild(empty);return}items.forEach(function(v){var row=document.createElement('tr'),name=cell(row,'');var link=document.createElement('a');link.href='livechatwindow.php?conversation='+v.conversation_id;link.textContent=v.visitor_name||'Guest';link.onclick=function(e){e.preventDefault();openChat(v.conversation_id)};name.appendChild(link);var action=cell(row,''),button=document.createElement('button');button.type='button';button.className='btn btn-sm btn-outline-primary';button.title='Open chat';button.innerHTML='<i class="fas fa-comment-dots"></i>';button.onclick=function(){openChat(v.conversation_id)};action.appendChild(button);cell(row,v.ip_address||'—');cell(row,'Waiting','text-warning font-weight-bold');cell(row,v.department_name||'—');cell(row,elapsed(v.first_seen));cell(row,elapsed(v.conversation_created));cell(row,browser(v.user_agent));body.appendChild(row)})}function refresh(){fetch(root.dataset.api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'operator_visitors'})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw Error(j.error||'Unable to load waiting visitors.');return j})}).then(render).catch(function(e){body.innerHTML='<tr><td colspan="8" class="text-center text-danger py-3"></td></tr>';body.querySelector('td').textContent=e.message})}refresh();setInterval(refresh,3000);setInterval(function(){serverTime++},1000)})();</script>
+<?php endif; ?>
 
 <div class="card shadow-sm mb-4 browse-filters">
   <div class="card-header py-3 d-flex align-items-center"><i class="fas fa-filter text-primary mr-2"></i><h2 class="h6 m-0 font-weight-bold text-primary">Filter tickets</h2></div>
