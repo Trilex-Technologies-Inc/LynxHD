@@ -94,3 +94,14 @@ Add module-owned table definitions to docs/lynxhd.sql if they should exist in a 
 - Test direct management-page access while disabled and logged out.
 
 The Modules page discovers a valid module automatically. You do not need to edit admin/modules.php.
+
+8. ZIP distribution
+
+Package the complete module directory as a ZIP, keeping the directory as the archive's top-level folder:
+
+  example.zip
+    example/
+      module.json
+      bootstrap.php
+
+Add a lowercase `slug` field to module.json when possible. Administrators can upload the ZIP from the Modules page; LynxHD validates its paths and manifest, places it under modules/<slug>, and runs the normal install and enable lifecycle automatically. Uploads are limited to 10 MB and cannot replace an existing module directory.
