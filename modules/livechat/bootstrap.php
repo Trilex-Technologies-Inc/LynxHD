@@ -107,6 +107,26 @@ function livechat_ensure_blocks()
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
+function livechat_ensure_visitors()
+{
+    global $pre;
+    return mysql_query("CREATE TABLE IF NOT EXISTS {$pre}livechat_visitor (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        visitor_key CHAR(64) NOT NULL,
+        conversation_id INT UNSIGNED NOT NULL DEFAULT 0,
+        visitor_name VARCHAR(100) NOT NULL DEFAULT 'Guest',
+        ip_address VARCHAR(45) NOT NULL DEFAULT '',
+        user_agent VARCHAR(255) NOT NULL DEFAULT '',
+        page_url VARCHAR(1000) NOT NULL DEFAULT '',
+        referrer VARCHAR(1000) NOT NULL DEFAULT '',
+        first_seen INT UNSIGNED NOT NULL,
+        last_seen INT UNSIGNED NOT NULL,
+        chats_started INT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY (id), UNIQUE KEY visitor_key (visitor_key),
+        KEY active_visitors (last_seen), KEY conversation (conversation_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
 function livechat_install()
 {
     global $pre;
@@ -134,7 +154,8 @@ function livechat_install()
     $canned_created = livechat_ensure_canned_messages();
     $department_ready = livechat_ensure_department();
     $blocks_created = livechat_ensure_blocks();
-    if (!$conversation_created || !$message_created || !$canned_created || !$department_ready || !$blocks_created) return false;
+    $visitors_created = livechat_ensure_visitors();
+    if (!$conversation_created || !$message_created || !$canned_created || !$department_ready || !$blocks_created || !$visitors_created) return false;
     if (get_row_count("SELECT COUNT(*) FROM {$pre}options WHERE name='livechat_enabled'")) {
         mysql_query("UPDATE {$pre}options SET text='0' WHERE name='livechat_enabled'");
     } else {
@@ -149,12 +170,13 @@ function livechat_install()
 function livechat_uninstall()
 {
     global $pre;
+    $visitors_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_visitor");
     $blocks_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_block");
     $canned_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_canned_message");
     $message_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_message");
     $conversation_removed = mysql_query("DROP TABLE IF EXISTS {$pre}livechat_conversation");
     $setting_removed = mysql_query("DELETE FROM {$pre}options WHERE name IN ('livechat_enabled','livechat_color')");
-    return $blocks_removed && $canned_removed && $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
+    return $visitors_removed && $blocks_removed && $canned_removed && $message_removed && $conversation_removed && $setting_removed && !livechat_installed();
 }
 
 function livechat_render_widget($asset_prefix = '')

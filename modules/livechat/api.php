@@ -38,6 +38,7 @@ function lc_is_blocked($token = '', $email = '') {
 if (!livechat_installed()) lc_reply(array('error'=>'Live chat is not installed.'), 503);
 if (!livechat_ensure_department()) lc_reply(array('error'=>'Live chat could not prepare department selection.'), 503);
 if (!livechat_ensure_blocks()) lc_reply(array('error'=>'Live chat could not prepare user blocking.'), 503);
+if (!livechat_ensure_visitors()) lc_reply(array('error'=>'Live chat could not prepare visitor monitoring.'), 503);
 if (!livechat_enabled()) lc_reply(array('error'=>'Live chat is disabled.'), 403);
 $data = lc_body(); $action = $data['action'] ?? 'poll';
 $operator_id = (int)($_SESSION['user']['id'] ?? 0);
@@ -45,12 +46,27 @@ $is_operator = (($_SESSION['login_type'] ?? $LOGIN_INVALID) == $LOGIN_USER)
     && $operator_id > 0
     && get_row_count("SELECT COUNT(*) FROM {$pre}privilege WHERE user_id=$operator_id AND dept_id=0") > 0;
 
-if ($action === 'operator_list' || $action === 'operator_poll' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_reopen' || $action === 'operator_block') {
+if ($action === 'operator_list' || $action === 'operator_visitors' || $action === 'operator_poll' || $action === 'operator_send' || $action === 'operator_close' || $action === 'operator_reopen' || $action === 'operator_block') {
     if (!$is_operator) lc_reply(array('error'=>'Authentication required.'), 401);
     if ($action === 'operator_list') {
         $items=array(); $res=mysql_query("SELECT c.*,d.name department_name,(SELECT body FROM {$pre}livechat_message m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message FROM {$pre}livechat_conversation c LEFT JOIN {$pre}dept d ON d.id=c.dept_id ORDER BY (c.status='open') DESC,c.updated_at DESC LIMIT 100");
         while ($res && ($row=mysql_fetch_array($res, MYSQLI_ASSOC))) $items[]=$row;
         lc_reply(array('conversations'=>$items));
+    }
+    if ($action === 'operator_visitors') {
+        $now=time(); $active_after=$now-30; $visitors=array(); $waiting=array();
+        $res=mysql_query("SELECT v.*,c.status,c.created_at conversation_created,d.name department_name,
+            EXISTS(SELECT 1 FROM {$pre}livechat_message m WHERE m.conversation_id=c.id AND m.sender='operator' AND m.sender_id>0) answered
+            FROM {$pre}livechat_visitor v
+            LEFT JOIN {$pre}livechat_conversation c ON c.id=v.conversation_id
+            LEFT JOIN {$pre}dept d ON d.id=c.dept_id
+            WHERE v.last_seen >= $active_after ORDER BY v.first_seen ASC LIMIT 200");
+        while ($res && ($row=mysql_fetch_array($res, MYSQLI_ASSOC))) {
+            foreach (array('id','conversation_id','first_seen','last_seen','chats_started','conversation_created','answered') as $field) $row[$field]=(int)$row[$field];
+            $visitors[]=$row;
+            if ($row['conversation_id'] && $row['status']==='open' && !$row['answered']) $waiting[]=$row;
+        }
+        lc_reply(array('server_time'=>$now,'waiting'=>$waiting,'visitors'=>$visitors));
     }
     $id=(int)($data['conversation_id'] ?? 0); $res=mysql_query("SELECT * FROM {$pre}livechat_conversation WHERE id=$id LIMIT 1"); $conversation=$res?mysql_fetch_array($res, MYSQLI_ASSOC):false;
     if (!$conversation) lc_reply(array('error'=>'Conversation not found.'), 404);
@@ -71,6 +87,18 @@ if ($action === 'operator_list' || $action === 'operator_poll' || $action === 'o
 }
 
 $token=(string)($data['token']??'');
+if ($action === 'presence') {
+    $visitor_key=trim((string)($data['visitor_key']??''));
+    if (!preg_match('/^[a-f0-9]{64}$/',$visitor_key)) lc_reply(array('error'=>'Invalid visitor identifier.'),422);
+    $safe_key=livechat_escape($visitor_key); $now=time(); $ip=livechat_escape(lc_ip_address());
+    $agent=livechat_escape(substr((string)($_SERVER['HTTP_USER_AGENT']??''),0,255));
+    $page=livechat_escape(substr(trim((string)($data['page_url']??'')),0,1000));
+    $referrer=livechat_escape(substr(trim((string)($data['referrer']??'')),0,1000));
+    mysql_query("INSERT INTO {$pre}livechat_visitor (visitor_key,ip_address,user_agent,page_url,referrer,first_seen,last_seen)
+        VALUES ('$safe_key','$ip','$agent','$page','$referrer',$now,$now)
+        ON DUPLICATE KEY UPDATE ip_address='$ip',user_agent='$agent',page_url='$page',referrer='$referrer',last_seen=$now");
+    lc_reply(array('ok'=>true,'server_time'=>$now));
+}
 if ($action === 'start') {
     $name=trim((string)($data['name']??'')); $email=trim((string)($data['email']??'')); $department_id=(int)($data['department_id']??0);
     $department_exists=$department_id>0 && get_row_count("SELECT COUNT(*) FROM {$pre}dept WHERE id=$department_id")>0;
@@ -79,6 +107,11 @@ if ($action === 'start') {
     $token=bin2hex(random_bytes(32)); $safeToken=livechat_escape($token); $name=livechat_escape($name); $email=livechat_escape($email); $ip=livechat_escape(lc_ip_address()); $now=time();
     mysql_query("INSERT INTO {$pre}livechat_conversation (visitor_token,visitor_name,visitor_email,dept_id,ip_address,created_at,updated_at) VALUES ('$safeToken','$name','$email',$department_id,'$ip',$now,$now)");
     $conversation_id=(int)mysql_insert_id();
+    $visitor_key=trim((string)($data['visitor_key']??''));
+    if (preg_match('/^[a-f0-9]{64}$/',$visitor_key)) {
+        $safe_key=livechat_escape($visitor_key);
+        mysql_query("UPDATE {$pre}livechat_visitor SET conversation_id=$conversation_id,visitor_name='$name',chats_started=chats_started+1,last_seen=$now WHERE visitor_key='$safe_key'");
+    }
     $welcome=livechat_escape('Thank you for contacting us. We will be in touch shortly.');
     mysql_query("INSERT INTO {$pre}livechat_message (conversation_id,sender,body,created_at) VALUES ($conversation_id,'operator','$welcome',$now)");
     lc_reply(array('token'=>$token,'conversation_id'=>$conversation_id,'messages'=>lc_messages($conversation_id)));
