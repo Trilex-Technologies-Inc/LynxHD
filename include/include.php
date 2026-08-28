@@ -243,6 +243,12 @@ else // Otherwise, setup sessions and help desk path
   get_helpdesk_path( );
 }
 
+// Load the multilingual layer after the database and session are available.
+// English remains the fallback when no additional languages have been added.
+require_once __DIR__ . '/i18n.php';
+if( $INSTALLED )
+  hd_i18n_boot();
+
 function get_helpdesk_path( )
 {
   global $pre, $PATH_TO_HELPDESK; 

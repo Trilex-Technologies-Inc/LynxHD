@@ -4,7 +4,7 @@ $install_available = file_exists(__DIR__ . '/../install/open-db.php');
 $asset_prefix = isset($asset_prefix) ? $asset_prefix : '';
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="<?php echo field($GLOBALS['HD_LOCALE'] ?? 'en') ?>" dir="<?php echo field($GLOBALS['HD_DIRECTION'] ?? 'ltr') ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -46,7 +46,10 @@ $asset_prefix = isset($asset_prefix) ? $asset_prefix : '';
         <a class="navbar-brand d-flex align-items-center" href="<?php echo $asset_prefix ?>index.php">
           <img src="<?php echo $asset_prefix ?>images/logo.jpg" alt="LynxHD" class="brand-logo" style="max-height:48px;width:auto">
         </a>
-        <a class="btn btn-sm btn-outline-primary" href="<?php echo $asset_prefix ?>index.php">Support home</a>
+        <div class="d-flex align-items-center gap-2">
+          <?php if( count($GLOBALS['HD_LANGUAGES'] ?? array()) > 1 ): ?><form method="get" class="mb-0"><?php foreach( $_GET as $query_name => $query_value ): if( $query_name !== 'lang' && is_scalar($query_value) ): ?><input type="hidden" name="<?php echo field($query_name) ?>" value="<?php echo field($query_value) ?>"><?php endif; endforeach; ?><label class="visually-hidden" for="public-language">Language</label><select class="form-select form-select-sm" id="public-language" name="lang" onchange="this.form.submit()" aria-label="Language"><?php foreach( $GLOBALS['HD_LANGUAGES'] as $code => $language ): ?><option value="<?php echo field($code) ?>" <?php echo ($GLOBALS['HD_LOCALE'] ?? 'en') === $code ? 'selected' : '' ?>><?php echo field($language['name']) ?></option><?php endforeach; ?></select></form><?php endif; ?>
+          <a class="btn btn-sm btn-outline-primary" href="<?php echo $asset_prefix ?>index.php">Support home</a>
+        </div>
       </div>
     </nav>
   </header>

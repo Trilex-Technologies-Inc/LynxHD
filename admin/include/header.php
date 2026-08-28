@@ -16,7 +16,7 @@ if ($admin_logged_in) {
 $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="<?php echo field($GLOBALS['HD_LOCALE'] ?? 'en') ?>" dir="<?php echo field($GLOBALS['HD_DIRECTION'] ?? 'ltr') ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -96,12 +96,13 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="replies.php">Auto-replies</a>
       </div></div>
     </li>
-    <li class="nav-item <?php echo in_array($current_admin_page, array('controlcenter.php', 'general.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php', 'livechatsettings.php')) ? 'active' : '' ?>">
+    <li class="nav-item <?php echo in_array($current_admin_page, array('controlcenter.php', 'general.php', 'languages.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php', 'livechatsettings.php')) ? 'active' : '' ?>">
       <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#siteMenu" aria-expanded="false" aria-controls="siteMenu"><i class="fas fa-fw fa-cogs"></i><span>Site management</span></a>
       <div id="siteMenu" class="collapse" data-parent="#accordionSidebar"><div class="bg-white py-2 collapse-inner rounded">
         <?php if ($global_priv): ?>
           <a class="collapse-item" href="controlcenter.php">Control center</a>
           <a class="collapse-item" href="general.php">Help desk settings</a>
+          <a class="collapse-item" href="languages.php">Languages</a>
           <a class="collapse-item" href="emails.php">Email templates</a>
           <a class="collapse-item" href="./upload/index.php">Download manager</a>
         <?php endif; ?>
@@ -127,6 +128,7 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3" type="button" aria-label="Toggle sidebar"><i class="fa fa-bars"></i></button>
         <div class="d-none d-sm-inline-block text-gray-600 font-weight-bold"><?php echo htmlspecialchars($script_name ?: 'Administration', ENT_QUOTES, 'UTF-8') ?></div>
         <ul class="navbar-nav ml-auto">
+          <?php if( count($GLOBALS['HD_LANGUAGES'] ?? array()) > 1 ): ?><li class="nav-item dropdown no-arrow"><a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Language"><i class="fas fa-language fa-fw"></i></a><div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="languageDropdown"><?php foreach( $GLOBALS['HD_LANGUAGES'] as $code => $language ): ?><a class="dropdown-item <?php echo ($GLOBALS['HD_LOCALE'] ?? 'en') === $code ? 'font-weight-bold' : '' ?>" href="<?php echo field(hd_i18n_url($code)) ?>"><?php echo field($language['name']) ?></a><?php endforeach; ?></div></li><div class="topbar-divider d-none d-sm-block"></div><?php endif; ?>
           <?php if ($global_priv): ?>
           <li class="nav-item dropdown no-arrow">
             <a class="nav-link dropdown-toggle" href="#" id="controlCenterDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Control center"><i class="fas fa-sliders-h fa-fw"></i><span class="d-none d-lg-inline ml-2 text-gray-600 small">Control center</span></a>

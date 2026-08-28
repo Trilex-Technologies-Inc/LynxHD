@@ -17,6 +17,7 @@ if (!$global_priv) {
 
 $control_items = array(
     array('general.php', 'fa-cogs', 'primary', 'Help desk settings', 'Site identity, URLs, uploads, security, email delivery, and automation.'),
+    array('languages.php', 'fa-language', 'primary', 'Languages', 'Add languages, configure text direction, and translate interface labels.'),
     array('department.php', 'fa-building', 'info', 'Departments', 'Configure support departments and assign staff members.'),
     array('user.php', 'fa-users-cog', 'success', 'Users and permissions', 'Manage administrator accounts, operators, and access.'),
     array('emails.php', 'fa-envelope-open-text', 'warning', 'Email templates', 'Customize the messages sent by the help desk.'),
