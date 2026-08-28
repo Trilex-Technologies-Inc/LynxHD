@@ -171,7 +171,24 @@ foreach( $_COOKIE as $key => $val )
   $_COOKIE[$key] = is_array( $val ) ? $val : addslashes( $val );
 // If trying to connect...
 if( !mysql_connect( $db_host, $db_user, $db_password ) )
-  die( "Could not connect to MySQL.  Please check the database settings in settings.php" );
+{
+  // Work out the application's URL from the currently executing script so this
+  // also works when LynxHD is installed in a subdirectory or an admin page fails.
+  $application_root = dirname( __DIR__ );
+  $executing_file = realpath( $_SERVER['SCRIPT_FILENAME'] ?? '' );
+  $script_url = str_replace( '\\', '/', $_SERVER['SCRIPT_NAME'] ?? '' );
+  $application_url = '';
+
+  if( $executing_file && str_starts_with( $executing_file, $application_root . DIRECTORY_SEPARATOR ) )
+  {
+    $relative_file = str_replace( '\\', '/', substr( $executing_file, strlen( $application_root ) + 1 ) );
+    if( str_ends_with( $script_url, $relative_file ) )
+      $application_url = substr( $script_url, 0, -strlen( $relative_file ) );
+  }
+
+  header( 'Location: ' . $application_url . 'install/?step=1&error=db_connection', true, 302 );
+  exit;
+}
 
 mysql_select_db( $db_name );
 

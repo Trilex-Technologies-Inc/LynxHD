@@ -75,6 +75,9 @@ if (!is_writable($include_directory)) {
           <span class="badge text-bg-primary mb-3">Step 2 of 4</span>
           <h1 class="h2 mb-3">Database connection</h1>
           <p class="text-secondary mb-4">Enter the credentials supplied by your hosting provider.</p>
+          <?php if (($_GET['error'] ?? '') === 'db_connection'): ?>
+            <div class="alert alert-danger" role="alert">LynxHD could not connect to MySQL. Check that MySQL is running, then verify the database host, username, and password below.</div>
+          <?php endif; ?>
           <form method="post" action="?step=2" class="row g-4">
             <div class="col-md-6">
               <label class="form-label" for="dbname">Database name</label>
