@@ -1,9 +1,0 @@
-{
-  "name": "Live Chat",
-  "slug": "livechat",
-  "version": "1.9.1",
-  "author": "LynxHD",
-  "description": "Real-time visitor conversations, canned replies, departments, and visitor blocking.",
-  "icon": "fa-comments",
-  "manage_url": "livechat.php"
-}

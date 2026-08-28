@@ -1,9 +1,0 @@
-{
-  "name": "Task Manager",
-  "slug": "tasks",
-  "version": "1.0.0",
-  "author": "LynxHD",
-  "description": "Assign staff tasks, priorities, due dates, and track completion.",
-  "icon": "fa-tasks",
-  "manage_url": "tasks.php"
-}
