@@ -31,48 +31,68 @@ $options = array(
   "smtp_host", "smtp_port", "smtp_encryption", "smtp_username", "smtp_password"
 );
 
-if( isset( $_POST['helpdeskurl'] ) )
+if( $_SERVER['REQUEST_METHOD'] === 'POST' )
 {
-  $saved_smtp = get_options(array('smtp_password'));
-  foreach( $options as $option )
+  $command = (string)($_POST['cmd'] ?? 'add');
+  $section_options = array(
+    'save_identity' => array('helpdeskurl', 'url', 'title', 'uploads'),
+    'save_email' => array('email', 'smtp_enabled', 'smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_password'),
+    'test_smtp' => array('email', 'smtp_enabled', 'smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_password'),
+    'save_lifecycle' => array('autoclose', 'autodelete'),
+    'save_access' => array('banned_emails', 'banned_ips', 'floodcontrol'),
+    'save_features' => array('tags', 'cc')
+  );
+  $options_to_save = $section_options[$command] ?? $options;
+
+  foreach( $options_to_save as $option )
     if( !isset($_POST[$option]) )
       $_POST[$option] = '';
-  if( $_POST['smtp_password'] === '' )
-    $_POST['smtp_password'] = $saved_smtp['smtp_password'];
 
-  for( $i = 0; $i < count( $options ); $i++ )
+  if( in_array('smtp_password', $options_to_save, true) && $_POST['smtp_password'] === '' )
   {
-    $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}options WHERE ( name = '{$options[$i]}' )" );
-    if( $exists )
-      mysql_query( "UPDATE {$pre}options SET text = '" . $_POST[$options[$i]] . "' WHERE ( name = '{$options[$i]}' )" );
-    else
-      mysql_query( "INSERT INTO {$pre}options ( name, text ) VALUES ( '{$options[$i]}', '" . $_POST[$options[$i]] . "' )" );
+    $saved_smtp = get_options(array('smtp_password'));
+    $_POST['smtp_password'] = $saved_smtp['smtp_password'];
   }
 
-  if( ($_POST['cmd'] ?? '') === 'test_smtp' )
+  $save_error = '';
+  if( $command === 'save_identity' && (!filter_var(trim($_POST['helpdeskurl']), FILTER_VALIDATE_URL) || trim($_POST['title']) === '') )
+    $save_error = 'Enter a valid help desk URL and help desk name.';
+  else if( in_array($command, array('save_email', 'test_smtp'), true) && !filter_var(hd_email_address($_POST['email']), FILTER_VALIDATE_EMAIL) )
+    $save_error = 'Enter a valid sender email address.';
+
+  if( $save_error === '' )
+  {
+    foreach( $options_to_save as $option )
+    {
+      $exists = get_row_count( "SELECT COUNT(*) FROM {$pre}options WHERE ( name = '$option' )" );
+      if( $exists )
+        mysql_query( "UPDATE {$pre}options SET text = '" . $_POST[$option] . "' WHERE ( name = '$option' )" );
+      else
+        mysql_query( "INSERT INTO {$pre}options ( name, text ) VALUES ( '$option', '" . $_POST[$option] . "' )" );
+    }
+
+    $section_names = array('save_identity' => 'Help desk identity', 'save_email' => 'Email delivery', 'save_lifecycle' => 'Ticket lifecycle', 'save_access' => 'Access and spam controls', 'save_features' => 'Customer features');
+    $msg = '<div class="alert alert-success">' . ($section_names[$command] ?? 'Settings') . ' saved successfully.</div>';
+  }
+  else
+    $msg = '<div class="alert alert-danger">' . field($save_error) . '</div>';
+
+  if( $save_error === '' && $command === 'test_smtp' )
   {
     $test_email = trim($_POST['smtp_test_email'] ?? '');
     if( empty($_POST['smtp_enabled']) )
-      $msg = '<div class="errorbox">Enable SMTP before running the SMTP test.</div><br />';
+      $msg = '<div class="alert alert-danger">Enable SMTP before running the SMTP test.</div>';
     else if( !filter_var($test_email, FILTER_VALIDATE_EMAIL) )
-      $msg = '<div class="errorbox">Enter a valid recipient address for the SMTP test.</div><br />';
+      $msg = '<div class="alert alert-danger">Enter a valid recipient address for the SMTP test.</div>';
     else
     {
       $smtp_error = '';
-      $sent = hd_mail(
-        $test_email,
-        'LynxHD SMTP test',
-        "This test message confirms that SMTP is configured correctly.\n\nSent: " . date(DATE_RFC2822),
-        "From: {$_POST['email']}",
-        $smtp_error
-      );
+      $sent = hd_mail($test_email, 'LynxHD SMTP test', "This test message confirms that SMTP is configured correctly.\n\nSent: " . date(DATE_RFC2822), "From: {$_POST['email']}", $smtp_error);
       $msg = $sent
-        ? '<div class="successbox">SMTP test sent successfully to ' . field($test_email) . '.</div><br />'
-        : '<div class="errorbox">SMTP test failed: ' . field($smtp_error ?: 'Unknown mail error') . '</div><br />';
+        ? '<div class="alert alert-success">Email delivery settings saved and an SMTP test was sent successfully to ' . field($test_email) . '.</div>'
+        : '<div class="alert alert-danger">Email delivery settings were saved, but the SMTP test failed: ' . field($smtp_error ?: 'Unknown mail error') . '</div>';
     }
   }
-  else
-    $msg = '<div class="successbox">Settings updated successfully.</div><br />';
 }
 
 $_POST = get_options( $options );
@@ -91,17 +111,18 @@ include "./include/header.php";
     <div class="col-xl-7">
       <section class="card shadow-sm mb-4 general-settings-card">
         <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="general-settings-icon mr-3"><i class="fas fa-globe"></i></span><div><h2 class="h5 mb-1 text-gray-900">Help desk identity</h2><p class="small text-muted mb-0">Public URLs, branding, and ticket attachments.</p></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#identity-settings"><i class="fas fa-cog mr-1"></i>Manage</button></div>
-        <div class="collapse" id="identity-settings"><div class="card-body">
+        <div class="collapse <?php if(($command ?? '') === 'save_identity') echo 'show' ?>" id="identity-settings"><div class="card-body">
           <div class="form-group"><label for="helpdeskurl">Help desk URL</label><input class="form-control" id="helpdeskurl" type="url" name="helpdeskurl" required value="<?php echo field($_POST['helpdeskurl']) ?>" placeholder="https://support.example.com/"><small class="form-text text-muted">Full public URL, including the trailing slash.</small></div>
           <div class="form-group"><label for="site-url">Website URL</label><input class="form-control" id="site-url" type="url" name="url" value="<?php echo field($_POST['url']) ?>" placeholder="https://www.example.com/"><small class="form-text text-muted">Used for links in outgoing emails.</small></div>
           <div class="form-group"><label for="helpdesk-title">Help desk name</label><input class="form-control" id="helpdesk-title" type="text" name="title" required value="<?php echo field($_POST['title']) ?>"></div>
           <div class="custom-control custom-switch"><input class="custom-control-input" id="uploads" type="checkbox" name="uploads" value="1" <?php if($_POST['uploads']) echo 'checked' ?>><label class="custom-control-label" for="uploads">Allow file attachments</label><small class="d-block text-muted">Customers and staff can attach files to tickets.</small></div>
+          <div class="text-right mt-4"><button class="btn btn-primary" type="submit" name="cmd" value="save_identity" formnovalidate><i class="fas fa-save mr-1"></i>Save identity</button></div>
         </div></div>
       </section>
 
       <section class="card shadow-sm mb-4 general-settings-card">
         <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="general-settings-icon mr-3"><i class="fas fa-envelope"></i></span><div><h2 class="h5 mb-1 text-gray-900">Email delivery</h2><p class="small text-muted mb-0">Sender address and SMTP server configuration.</p></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#email-delivery-settings"><i class="fas fa-cog mr-1"></i>Manage</button></div>
-        <div class="collapse" id="email-delivery-settings"><div class="card-body">
+        <div class="collapse <?php if(in_array(($command ?? ''), array('save_email', 'test_smtp'), true)) echo 'show' ?>" id="email-delivery-settings"><div class="card-body">
           <div class="form-group"><label for="helpdesk-email">Sender address</label><input class="form-control" id="helpdesk-email" type="text" name="email" required value="<?php echo field($_POST['email']) ?>" placeholder="Support Team &lt;support@example.com&gt;"><small class="form-text text-muted">The From address used for help desk email.</small></div>
           <hr>
           <div class="custom-control custom-switch mb-3"><input class="custom-control-input" id="smtp-enabled" type="checkbox" name="smtp_enabled" value="1" <?php if($_POST['smtp_enabled']) echo 'checked' ?>><label class="custom-control-label font-weight-bold" for="smtp-enabled">Send through SMTP</label><small class="d-block text-muted">When off, LynxHD uses the server's PHP mail service.</small></div>
@@ -109,7 +130,8 @@ include "./include/header.php";
             <div class="form-row"><div class="form-group col-md-8"><label for="smtp-host">SMTP host</label><input class="form-control" id="smtp-host" type="text" name="smtp_host" value="<?php echo field($_POST['smtp_host']) ?>" placeholder="smtp.example.com"></div><div class="form-group col-md-4"><label for="smtp-port">Port</label><input class="form-control" id="smtp-port" type="number" min="1" max="65535" name="smtp_port" value="<?php echo field($_POST['smtp_port'] ?: '587') ?>"></div></div>
             <div class="form-group"><label for="smtp-encryption">Encryption</label><select class="form-control" id="smtp-encryption" name="smtp_encryption"><option value="starttls" <?php if($_POST['smtp_encryption'] === 'starttls' || $_POST['smtp_encryption'] === '') echo 'selected' ?>>STARTTLS (recommended)</option><option value="ssl" <?php if($_POST['smtp_encryption'] === 'ssl') echo 'selected' ?>>TLS/SSL</option><option value="none" <?php if($_POST['smtp_encryption'] === 'none') echo 'selected' ?>>None</option></select></div>
             <div class="form-row"><div class="form-group col-md-6"><label for="smtp-username">Username</label><input class="form-control" id="smtp-username" type="text" name="smtp_username" value="<?php echo field($_POST['smtp_username']) ?>" autocomplete="username"></div><div class="form-group col-md-6"><label for="smtp-password">Password</label><input class="form-control" id="smtp-password" type="password" name="smtp_password" autocomplete="new-password" placeholder="Keep saved password"><small class="form-text text-muted">Leave blank to keep it unchanged.</small></div></div>
-            <div class="form-group mb-0"><label for="smtp-test-email">Test recipient</label><div class="input-group"><input class="form-control" id="smtp-test-email" type="email" name="smtp_test_email" value="<?php echo field($_SESSION['user']['email'] ?? '') ?>"><div class="input-group-append"><button class="btn btn-outline-primary" type="submit" name="cmd" value="test_smtp"><i class="fas fa-paper-plane mr-1"></i>Save &amp; test</button></div></div></div>
+            <div class="form-group mb-0"><label for="smtp-test-email">Test recipient</label><div class="input-group"><input class="form-control" id="smtp-test-email" type="email" name="smtp_test_email" value="<?php echo field($_SESSION['user']['email'] ?? '') ?>"><div class="input-group-append"><button class="btn btn-outline-primary" type="submit" name="cmd" value="test_smtp" formnovalidate><i class="fas fa-paper-plane mr-1"></i>Save &amp; test</button></div></div></div>
+            <div class="text-right mt-3"><button class="btn btn-primary" type="submit" name="cmd" value="save_email" formnovalidate><i class="fas fa-save mr-1"></i>Save email settings</button></div>
           </div>
         </div></div>
       </section>
@@ -118,17 +140,17 @@ include "./include/header.php";
     <div class="col-xl-5">
       <section class="card shadow-sm mb-4 general-settings-card">
         <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="general-settings-icon mr-3"><i class="fas fa-clock"></i></span><div><h2 class="h5 mb-1 text-gray-900">Ticket lifecycle</h2><p class="small text-muted mb-0">Automatic closing and deletion schedules.</p></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#ticket-lifecycle-settings"><i class="fas fa-cog mr-1"></i>Manage</button></div>
-        <div class="collapse" id="ticket-lifecycle-settings"><div class="card-body"><p class="text-muted small">Use 0 to disable either automatic action.</p><div class="form-group"><label for="autoclose">Close inactive tickets after</label><div class="input-group"><input class="form-control" id="autoclose" type="number" min="0" name="autoclose" value="<?php echo field($_POST['autoclose']) ?>"><div class="input-group-append"><span class="input-group-text">days</span></div></div></div><div class="form-group mb-0"><label for="autodelete">Delete closed tickets after</label><div class="input-group"><input class="form-control" id="autodelete" type="number" min="0" name="autodelete" value="<?php echo field($_POST['autodelete']) ?>"><div class="input-group-append"><span class="input-group-text">days</span></div></div></div></div></div>
+        <div class="collapse <?php if(($command ?? '') === 'save_lifecycle') echo 'show' ?>" id="ticket-lifecycle-settings"><div class="card-body"><p class="text-muted small">Use 0 to disable either automatic action.</p><div class="form-group"><label for="autoclose">Close inactive tickets after</label><div class="input-group"><input class="form-control" id="autoclose" type="number" min="0" name="autoclose" value="<?php echo field($_POST['autoclose']) ?>"><div class="input-group-append"><span class="input-group-text">days</span></div></div></div><div class="form-group mb-0"><label for="autodelete">Delete closed tickets after</label><div class="input-group"><input class="form-control" id="autodelete" type="number" min="0" name="autodelete" value="<?php echo field($_POST['autodelete']) ?>"><div class="input-group-append"><span class="input-group-text">days</span></div></div></div><div class="text-right mt-4"><button class="btn btn-primary" type="submit" name="cmd" value="save_lifecycle" formnovalidate><i class="fas fa-save mr-1"></i>Save lifecycle</button></div></div></div>
       </section>
 
       <section class="card shadow-sm mb-4 general-settings-card">
         <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="general-settings-icon mr-3"><i class="fas fa-shield-alt"></i></span><div><h2 class="h5 mb-1 text-gray-900">Access and spam controls</h2><p class="small text-muted mb-0">Block unwanted visitors and duplicate submissions.</p></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#access-settings"><i class="fas fa-cog mr-1"></i>Manage</button></div>
-        <div class="collapse" id="access-settings"><div class="card-body"><div class="form-group"><label for="banned-ips">Banned IP addresses</label><textarea class="form-control no-tinymce" id="banned-ips" name="banned_ips" rows="4" placeholder="One entry per line"><?php echo field($_POST['banned_ips']) ?></textarea></div><div class="form-group"><label for="banned-emails">Banned email addresses</label><textarea class="form-control no-tinymce" id="banned-emails" name="banned_emails" rows="4" placeholder="One entry per line"><?php echo field($_POST['banned_emails']) ?></textarea></div><div class="custom-control custom-switch"><input class="custom-control-input" id="floodcontrol" type="checkbox" name="floodcontrol" value="1" <?php if($_POST['floodcontrol']) echo 'checked' ?>><label class="custom-control-label" for="floodcontrol">Prevent duplicate ticket submissions</label></div></div></div>
+        <div class="collapse <?php if(($command ?? '') === 'save_access') echo 'show' ?>" id="access-settings"><div class="card-body"><div class="form-group"><label for="banned-ips">Banned IP addresses</label><textarea class="form-control no-tinymce" id="banned-ips" name="banned_ips" rows="4" placeholder="One entry per line"><?php echo field($_POST['banned_ips']) ?></textarea></div><div class="form-group"><label for="banned-emails">Banned email addresses</label><textarea class="form-control no-tinymce" id="banned-emails" name="banned_emails" rows="4" placeholder="One entry per line"><?php echo field($_POST['banned_emails']) ?></textarea></div><div class="custom-control custom-switch"><input class="custom-control-input" id="floodcontrol" type="checkbox" name="floodcontrol" value="1" <?php if($_POST['floodcontrol']) echo 'checked' ?>><label class="custom-control-label" for="floodcontrol">Prevent duplicate ticket submissions</label></div><div class="text-right mt-4"><button class="btn btn-primary" type="submit" name="cmd" value="save_access" formnovalidate><i class="fas fa-save mr-1"></i>Save access controls</button></div></div></div>
       </section>
 
       <section class="card shadow-sm mb-4 general-settings-card">
         <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between"><div class="d-flex align-items-center"><span class="general-settings-icon mr-3"><i class="fas fa-sliders-h"></i></span><div><h2 class="h5 mb-1 text-gray-900">Customer features</h2><p class="small text-muted mb-0">Ticket formatting and carbon-copy options.</p></div></div><button class="btn btn-sm btn-outline-primary mt-2 mt-sm-0" type="button" data-toggle="collapse" data-target="#customer-feature-settings"><i class="fas fa-cog mr-1"></i>Manage</button></div>
-        <div class="collapse" id="customer-feature-settings"><div class="card-body"><div class="custom-control custom-switch mb-4"><input class="custom-control-input" id="tags" type="checkbox" name="tags" value="1" <?php if($_POST['tags']) echo 'checked' ?>><label class="custom-control-label" for="tags">Enable message tags</label><small class="d-block text-muted">Allow formatting tags in ticket posts. <a href="<?php echo field($HD_URL_TICKET_TAGS) ?>" target="_blank" rel="noopener">View supported tags</a>.</small></div><div class="custom-control custom-switch"><input class="custom-control-input" id="cc" type="checkbox" name="cc" value="1" <?php if($_POST['cc']) echo 'checked' ?>><label class="custom-control-label" for="cc">Allow customer carbon copies</label><small class="d-block text-muted">Customers can add other recipients to ticket updates.</small></div></div></div>
+        <div class="collapse <?php if(($command ?? '') === 'save_features') echo 'show' ?>" id="customer-feature-settings"><div class="card-body"><div class="custom-control custom-switch mb-4"><input class="custom-control-input" id="tags" type="checkbox" name="tags" value="1" <?php if($_POST['tags']) echo 'checked' ?>><label class="custom-control-label" for="tags">Enable message tags</label><small class="d-block text-muted">Allow formatting tags in ticket posts. <a href="<?php echo field($HD_URL_TICKET_TAGS) ?>" target="_blank" rel="noopener">View supported tags</a>.</small></div><div class="custom-control custom-switch"><input class="custom-control-input" id="cc" type="checkbox" name="cc" value="1" <?php if($_POST['cc']) echo 'checked' ?>><label class="custom-control-label" for="cc">Allow customer carbon copies</label><small class="d-block text-muted">Customers can add other recipients to ticket updates.</small></div><div class="text-right mt-4"><button class="btn btn-primary" type="submit" name="cmd" value="save_features" formnovalidate><i class="fas fa-save mr-1"></i>Save customer features</button></div></div></div>
       </section>
     </div>
   </div>
