@@ -134,7 +134,7 @@ include './include/header.php';
       </form>
     </div></section>
 
-    <section class="card shadow-sm"><div class="card-header bg-white py-3"><h2 class="h6 font-weight-bold text-primary mb-0">Add a language</h2></div><div class="card-body"><form method="post"><input type="hidden" name="csrf_token" value="<?php echo field($csrf) ?>"><input type="hidden" name="action" value="add_language"><div class="form-group"><label for="language-name">Language name</label><input class="form-control" id="language-name" name="name" required placeholder="Persian"></div><div class="form-row"><div class="form-group col-6"><label for="language-code">Code</label><input class="form-control" id="language-code" name="code" required maxlength="6" pattern="[A-Za-z]{2,3}(-[A-Za-z]{2})?" placeholder="fa"></div><div class="form-group col-6"><label for="language-direction">Direction</label><select class="form-control" id="language-direction" name="direction"><option value="ltr">Left to right</option><option value="rtl">Right to left</option></select></div></div><button class="btn btn-primary" type="submit"><i class="fas fa-plus mr-1"></i>Add language</button></form></div></section>
+    <section class="card shadow-sm"><div class="card-header bg-white py-3"><h2 class="h6 font-weight-bold text-primary mb-0">Add a language</h2></div><div class="card-body"><form method="post"><input type="hidden" name="csrf_token" value="<?php echo field($csrf) ?>"><input type="hidden" name="action" value="add_language"><div class="form-group"><label for="language-name">Language name</label><input class="form-control" id="language-name" name="name" required placeholder="For example, French"></div><div class="form-row"><div class="form-group col-6"><label for="language-code">Code</label><input class="form-control" id="language-code" name="code" required maxlength="6" pattern="[A-Za-z]{2,3}(-[A-Za-z]{2})?" placeholder="For example, fr"></div><div class="form-group col-6"><label for="language-direction">Direction</label><select class="form-control" id="language-direction" name="direction"><option value="ltr">Left to right</option><option value="rtl">Right to left</option></select></div></div><button class="btn btn-primary" type="submit"><i class="fas fa-plus mr-1"></i>Add language</button></form></div></section>
   </div>
 
   <div class="col-xl-7 mb-4">
@@ -144,4 +144,15 @@ include './include/header.php';
     </section>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var codeInput = document.getElementById('language-code');
+  var directionInput = document.getElementById('language-direction');
+  if (!codeInput || !directionInput) return;
+  codeInput.addEventListener('input', function () {
+    var code = this.value.toLowerCase().split('-')[0];
+    directionInput.value = ['ar', 'fa', 'he', 'ur', 'ps', 'sd', 'dv', 'ku', 'yi'].indexOf(code) !== -1 ? 'rtl' : 'ltr';
+  });
+});
+</script>
 <?php include './include/footer.php'; ?>
