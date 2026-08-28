@@ -22,6 +22,7 @@ $control_items = array(
     array('user.php', 'fa-users-cog', 'success', 'Users and permissions', 'Manage administrator accounts, operators, and access.'),
     array('emails.php', 'fa-envelope-open-text', 'warning', 'Email templates', 'Customize the messages sent by the help desk.'),
     array('email.php', 'fa-mail-bulk', 'info', 'Email processing', 'Configure incoming support email and ticket creation.'),
+    array('reporting.php', 'fa-chart-bar', 'success', 'Reporting', 'Run ticket and Live Chat reports by date, department, and status.'),
     array('modules.php', 'fa-puzzle-piece', 'primary', 'Modules', 'Install, enable, disable, and configure optional features.'),
     array('backup.php', 'fa-database', 'danger', 'Backup', 'Create and manage help-desk database backups.'),
     array('manual.php', 'fa-book', 'secondary', 'Administrator manual', 'Open the built-in administration documentation.')

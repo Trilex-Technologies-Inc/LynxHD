@@ -96,11 +96,12 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
         <a class="collapse-item" href="replies.php">Auto-replies</a>
       </div></div>
     </li>
-    <li class="nav-item <?php echo in_array($current_admin_page, array('controlcenter.php', 'general.php', 'languages.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php', 'livechatsettings.php')) ? 'active' : '' ?>">
+    <li class="nav-item <?php echo in_array($current_admin_page, array('controlcenter.php', 'reporting.php', 'general.php', 'languages.php', 'emails.php', 'faqadmin.php', 'backup.php', 'manual.php', 'livechatsettings.php')) ? 'active' : '' ?>">
       <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#siteMenu" aria-expanded="false" aria-controls="siteMenu"><i class="fas fa-fw fa-cogs"></i><span>Site management</span></a>
       <div id="siteMenu" class="collapse" data-parent="#accordionSidebar"><div class="bg-white py-2 collapse-inner rounded">
         <?php if ($global_priv): ?>
           <a class="collapse-item" href="controlcenter.php">Control center</a>
+          <a class="collapse-item" href="reporting.php">Reporting</a>
           <a class="collapse-item" href="general.php">Help desk settings</a>
           <a class="collapse-item" href="languages.php">Languages</a>
           <a class="collapse-item" href="emails.php">Email templates</a>
@@ -139,6 +140,7 @@ $current_admin_page = basename($_SERVER['PHP_SELF'] ?? 'index.php');
               <a class="dropdown-item" href="general.php"><i class="fas fa-cog fa-sm fa-fw mr-2 text-gray-400"></i>Help desk settings</a>
               <a class="dropdown-item" href="department.php"><i class="fas fa-building fa-sm fa-fw mr-2 text-gray-400"></i>Departments</a>
               <a class="dropdown-item" href="user.php"><i class="fas fa-users fa-sm fa-fw mr-2 text-gray-400"></i>Users</a>
+              <a class="dropdown-item" href="reporting.php"><i class="fas fa-chart-bar fa-sm fa-fw mr-2 text-gray-400"></i>Reporting</a>
               <div class="dropdown-divider"></div>
               <h6 class="dropdown-header">Modules and tools</h6>
               <a class="dropdown-item" href="modules.php"><i class="fas fa-puzzle-piece fa-sm fa-fw mr-2 text-gray-400"></i>Manage modules</a>
