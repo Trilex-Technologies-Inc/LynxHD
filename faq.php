@@ -23,6 +23,12 @@ $data = get_options( $options );
 
 $success = 0;
 
+$faq_has_schedule = false;
+$faq_columns_result = mysql_query("SHOW COLUMNS FROM {$pre}faq");
+while ($faq_columns_result && ($faq_column = mysql_fetch_array($faq_columns_result, MYSQLI_ASSOC)))
+  if ($faq_column['Field'] === 'publish_date') $faq_has_schedule = true;
+$faq_visible_sql = $faq_has_schedule ? " AND (publish_date IS NULL OR publish_date <= CURDATE()) AND (expiry_date IS NULL OR expiry_date >= CURDATE())" : '';
+
 if( !isset( $_POST['parent'] ) )
 {
   if( isset( $_GET['parent'] ) )
@@ -108,11 +114,11 @@ if( ($_POST['cmd'] ?? '') == '' )
     echo '</div>';
   }
 
-  $res = mysql_query( "SELECT id, description FROM {$pre}faq WHERE ( category = '{$_POST['parent']}' ) ORDER BY description" );
+  $res = mysql_query( "SELECT id, description FROM {$pre}faq WHERE ( category = '{$_POST['parent']}' $faq_visible_sql ) ORDER BY description" );
   if( mysql_num_rows( $res ) )
   {
     echo '<div class="list-group shadow-sm mb-3">';
-    $res = mysql_query( "SELECT id, description FROM {$pre}faq WHERE ( category = '{$_POST['parent']}' ) ORDER BY description" );
+    $res = mysql_query( "SELECT id, description FROM {$pre}faq WHERE ( category = '{$_POST['parent']}' $faq_visible_sql ) ORDER BY description" );
 
     while( $row = mysql_fetch_array( $res ) )
     {
@@ -124,13 +130,15 @@ if( ($_POST['cmd'] ?? '') == '' )
 else if( $_POST['cmd'] == "view" )
 {
   $faq_id = $_GET['id'] ?? '';
-  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '$faq_id' ) ORDER BY description" );
+  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( id = '$faq_id' AND parent = '-1' $faq_visible_sql ) ORDER BY description" );
   $row = mysql_fetch_array( $res ) ?: array(
     'category' => 0, 'description' => 'Article not found', 'symptoms' => '', 'solution' => ''
   );
 
   echo '<nav aria-label="Article breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="' . $HD_CURPAGE . '">' . $LANG['faq_main_category'] . '</a></li><li class="breadcrumb-item"><a href="' . $HD_CURPAGE . '?parent=' . (int) $row['category'] . '">' . $LANG['faq_parent_category'] . '</a></li><li class="breadcrumb-item active" aria-current="page">' . field($row['description']) . '</li></ol></nav>';
-  echo '<article class="faq-article"><h3 class="h2 mb-4">' . field($row['description']) . '</h3>';
+  echo '<article class="faq-article"><div class="d-flex flex-wrap justify-content-between align-items-center mb-4"><h3 class="h2 mb-0">' . field($row['description']) . '</h3>';
+  if (!empty($row['kb_number'])) echo '<span class="badge text-bg-primary">' . field($row['kb_number']) . '</span>';
+  echo '</div>';
   echo '<section class="mb-4"><h4 class="h5 border-bottom pb-2 mb-3">' . $LANG['faq_symptoms'] . '</h4><div class="faq-copy">';
 
   if( trim( $row['symptoms'] ) == "" )
@@ -144,13 +152,28 @@ else if( $_POST['cmd'] == "view" )
     echo "{$LANG['faq_no_solution']}";
   else
     echo render_editor_content( $row['solution'] );
-  echo '</div></section></article>';
+  echo '</div></section>';
+  $article_files = array();
+  $article_directory = "{$HD_KB_FILES}/" . (int)($row['id'] ?? 0);
+  if ($directory = @opendir($article_directory)) {
+    while (($file = readdir($directory)) !== false)
+      if ($file !== '.' && $file !== '..' && is_file($article_directory . '/' . $file)) $article_files[] = $file;
+    closedir($directory);
+    sort($article_files, SORT_NATURAL | SORT_FLAG_CASE);
+  }
+  if ($article_files) {
+    echo '<section class="mt-4"><h4 class="h5 border-bottom pb-2 mb-3">Attachments</h4><div class="list-group">';
+    foreach ($article_files as $article_file)
+      echo '<a class="list-group-item list-group-item-action" href="kbattachment.php?id=' . (int)$row['id'] . '&amp;file=' . urlencode($article_file) . '">' . field($article_file) . '</a>';
+    echo '</div></section>';
+  }
+  echo '</article>';
 }
 else if( $_POST['cmd'] == "search" )
 {
   $_GET['search'] = $_GET['search'] ?? '';
   echo '<div class="d-flex justify-content-between align-items-center gap-3 mb-3"><h3 class="h5 mb-0">Search results</h3><a class="btn btn-sm btn-outline-secondary" href="' . $HD_CURPAGE . '">' . $LANG['faq_categories'] . '</a></div>';
-  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( parent = '-1' && (description LIKE '%{$_GET['search']}%' || symptoms LIKE '%{$_GET['search']}%' || solution LIKE '%{$_GET['search']}%') ) ORDER BY description" );
+  $res = mysql_query( "SELECT * FROM {$pre}faq WHERE ( parent = '-1' AND (description LIKE '%{$_GET['search']}%' OR symptoms LIKE '%{$_GET['search']}%' OR solution LIKE '%{$_GET['search']}%') $faq_visible_sql ) ORDER BY description" );
   if( !mysql_num_rows( $res ) )
     echo '<div class="alert alert-light border" role="status">' . $LANG['faq_no_results'] . '</div>';
   else

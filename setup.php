@@ -214,7 +214,7 @@ if( !mysql_query( "SELECT COUNT(*) FROM {$pre}pop" ) )
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}faq" ) )
 {
-  mysql_query( "CREATE TABLE {$pre}faq ( id int(11) NOT NULL auto_increment, description text NOT NULL, symptoms text NOT NULL, solution text NOT NULL, category int(11) NOT NULL default '0', parent int(11) NOT NULL default '0', date int(11) NOT NULL default '0', PRIMARY KEY  (id)) ENGINE=MyISAM;" );
+  mysql_query( "CREATE TABLE {$pre}faq ( id int(11) NOT NULL auto_increment, kb_number varchar(16) NOT NULL default '', description text NOT NULL, symptoms text NOT NULL, solution text NOT NULL, category int(11) NOT NULL default '0', parent int(11) NOT NULL default '0', date int(11) NOT NULL default '0', publish_date date default NULL, expiry_date date default NULL, PRIMARY KEY (id), KEY kb_number (kb_number)) ENGINE=MyISAM;" );
 }
 if( !mysql_query( "SELECT COUNT(*) FROM {$pre}survey" ) )
 {

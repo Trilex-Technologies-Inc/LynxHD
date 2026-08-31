@@ -45,6 +45,7 @@ $HD_NOTIFY_SAVELOGIN = 4;
 $HD_DEPARTMENT_INVISIBLE = 1;
 
 $HD_TICKET_FILES = "files";
+$HD_KB_FILES = "kb-files";
 
 $HD_URL_LOGIN = "index.php";
 $HD_URL_USER = "user.php";

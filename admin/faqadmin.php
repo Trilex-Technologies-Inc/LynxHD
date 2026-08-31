@@ -23,6 +23,66 @@ if( $_SESSION['login_type'] == $LOGIN_INVALID )
 
 $global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '{$_SESSION['user']['id']}' && dept_id = '0' && admin = '1' )" );
 
+// Keep existing installations compatible with the article metadata feature.
+$faq_columns = array();
+$faq_column_result = mysql_query("SHOW COLUMNS FROM {$pre}faq");
+while ($faq_column_result && ($faq_column = mysql_fetch_array($faq_column_result, MYSQLI_ASSOC)))
+  $faq_columns[$faq_column['Field']] = true;
+if (!isset($faq_columns['kb_number']))
+  mysql_query("ALTER TABLE {$pre}faq ADD kb_number varchar(16) NOT NULL default '' AFTER id");
+if (!isset($faq_columns['publish_date']))
+  mysql_query("ALTER TABLE {$pre}faq ADD publish_date date default NULL AFTER date");
+if (!isset($faq_columns['expiry_date']))
+  mysql_query("ALTER TABLE {$pre}faq ADD expiry_date date default NULL AFTER publish_date");
+mysql_query("UPDATE {$pre}faq SET kb_number = CONCAT('KB', LPAD(id, 7, '0')) WHERE parent = '-1' AND kb_number = ''");
+mysql_query("UPDATE {$pre}faq SET publish_date = FROM_UNIXTIME(date, '%Y-%m-%d') WHERE parent = '-1' AND publish_date IS NULL AND date > 0");
+
+$faq_csrf = $_SESSION['faq_csrf'] ?? '';
+if ($faq_csrf === '') {
+  $faq_csrf = bin2hex(random_bytes(24));
+  $_SESSION['faq_csrf'] = $faq_csrf;
+}
+
+function faq_date_value($value)
+{
+  $value = trim((string)$value);
+  $date = DateTime::createFromFormat('Y-m-d', $value);
+  return $date && $date->format('Y-m-d') === $value ? $value : '';
+}
+
+function faq_store_attachment($article_id, $upload, &$message)
+{
+  global $HD_KB_FILES;
+  if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE)
+    return true;
+  if (($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file($upload['tmp_name'])) {
+    $message = '<div class="alert alert-warning">The attachment could not be uploaded.</div>';
+    return false;
+  }
+  if (($upload['size'] ?? 0) > 10 * 1024 * 1024) {
+    $message = '<div class="alert alert-warning">Attachments must be 10 MB or smaller.</div>';
+    return false;
+  }
+  $name = preg_replace('/[^A-Za-z0-9._ -]/', '_', basename($upload['name']));
+  if ($name === '' || $name === '.' || $name === '..') $name = 'attachment';
+  $directory = "../{$HD_KB_FILES}/" . (int)$article_id;
+  if (!is_dir($directory) && !mkdir($directory, 0775, true)) {
+    $message = '<div class="alert alert-warning">The attachment directory could not be created.</div>';
+    return false;
+  }
+  $path_info = pathinfo($name);
+  $base = $path_info['filename'];
+  $extension = isset($path_info['extension']) ? '.' . $path_info['extension'] : '';
+  $candidate = $name;
+  for ($suffix = 2; file_exists($directory . '/' . $candidate); $suffix++)
+    $candidate = $base . '-' . $suffix . $extension;
+  if (!move_uploaded_file($upload['tmp_name'], $directory . '/' . $candidate)) {
+    $message = '<div class="alert alert-warning">The attachment could not be saved.</div>';
+    return false;
+  }
+  return true;
+}
+
 if( $_POST['cmd'] == "newcategory" )
 {
   if( $global_priv )
@@ -58,8 +118,16 @@ else if( $_GET['cmd'] == "deletecat" )
 }
 else if( $_GET['cmd'] == "deleteentry" )
 {
-  if( $global_priv )
-    mysql_query( "DELETE FROM {$pre}faq WHERE ( id = '{$_GET['id']}' && parent = '-1' )" );
+  if( $global_priv ) {
+    $delete_id = (int)($_GET['id'] ?? 0);
+    mysql_query( "DELETE FROM {$pre}faq WHERE ( id = '$delete_id' && parent = '-1' )" );
+    $delete_directory = "../{$HD_KB_FILES}/{$delete_id}";
+    if (is_dir($delete_directory)) {
+      foreach (glob($delete_directory . '/*') ?: array() as $delete_file)
+        if (is_file($delete_file)) unlink($delete_file);
+      rmdir($delete_directory);
+    }
+  }
 
   unset( $_GET['cmd'] );
 }
@@ -67,12 +135,36 @@ else if( $_POST['cmd'] == "edit" )
 {
   if( $global_priv )
   {
-    if( trim( $_POST['description'] ?? '' ) != "" )
+    if (!hash_equals($faq_csrf, (string)($_POST['csrf_token'] ?? ''))) {
+      $msg = '<div class="alert alert-danger">The request could not be verified.</div>';
+    }
+    else if( trim( $_POST['description'] ?? '' ) != "" )
     {
-      if( isset( $_POST['id'] ) )
-        mysql_query( "UPDATE {$pre}faq SET description = '{$_POST['description']}', symptoms = '" . ($_POST['symptoms'] ?? '') . "', solution = '" . ($_POST['solution'] ?? '') . "' WHERE ( id = '{$_POST['id']}' )" );
-      else
-        mysql_query( "INSERT INTO {$pre}faq ( description, symptoms, solution, date, category, parent ) VALUES ( '{$_POST['description']}', '" . ($_POST['symptoms'] ?? '') . "', '" . ($_POST['solution'] ?? '') . "', '" . time( ) . "', '{$_POST['parent']}', '-1' )" );
+      $editing_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+      $existing = $editing_id ? mysql_fetch_array(mysql_query("SELECT category FROM {$pre}faq WHERE id = '$editing_id'")) : false;
+      $is_article_edit = !$existing || (int)$existing['category'] !== -1;
+      $publish_date = faq_date_value($_POST['publish_date'] ?? '');
+      $expiry_date = faq_date_value($_POST['expiry_date'] ?? '');
+      if ($is_article_edit && $publish_date === '') $publish_date = date('Y-m-d');
+      if ($is_article_edit && $expiry_date !== '' && $expiry_date < $publish_date) {
+        $msg = '<div class="alert alert-warning">Expiry date cannot be earlier than publish date.</div>';
+      } else {
+        $publish_sql = $is_article_edit ? "'{$publish_date}'" : 'NULL';
+        $expiry_sql = $is_article_edit && $expiry_date !== '' ? "'{$expiry_date}'" : 'NULL';
+        if( $editing_id ) {
+          mysql_query( "UPDATE {$pre}faq SET description = '{$_POST['description']}', symptoms = '" . ($_POST['symptoms'] ?? '') . "', solution = '" . ($_POST['solution'] ?? '') . "', publish_date = $publish_sql, expiry_date = $expiry_sql WHERE ( id = '$editing_id' )" );
+          $article_id = $editing_id;
+        } else {
+          mysql_query( "INSERT INTO {$pre}faq ( description, symptoms, solution, date, category, parent, publish_date, expiry_date ) VALUES ( '{$_POST['description']}', '" . ($_POST['symptoms'] ?? '') . "', '" . ($_POST['solution'] ?? '') . "', '" . time( ) . "', '{$_POST['parent']}', '-1', $publish_sql, $expiry_sql )" );
+          $article_id = mysql_insert_id();
+          mysql_query("UPDATE {$pre}faq SET kb_number = CONCAT('KB', LPAD(id, 7, '0')) WHERE id = '" . (int)$article_id . "'");
+        }
+        if ($is_article_edit) faq_store_attachment($article_id, $_FILES['attachment'] ?? null, $msg);
+        if (!isset($msg) || $msg === '') {
+          Header("Location: {$HD_CURPAGE}?parent=" . (int)($_POST['parent'] ?? 0) . "&cmd=view&id=" . (int)$article_id . "&saved=1");
+          exit;
+        }
+      }
     }
   }
 
@@ -143,8 +235,10 @@ if( $faq_cmd == '' || $faq_cmd == 'deletecat' || $faq_cmd == 'newcategory' ):
   $row = mysql_fetch_array($res) ?: array('id'=>0,'category'=>0,'description'=>'Article not found','symptoms'=>'','solution'=>'');
 ?>
   <a class="btn btn-sm btn-light mb-3" href="<?php echo field($HD_CURPAGE) ?>?parent=<?php echo (int)$row['category'] ?>">&larr; Back to category</a>
+  <?php if(($_GET['saved'] ?? '') === '1'): ?><div class="alert alert-success"><i class="fas fa-check-circle mr-2"></i>Article saved successfully.</div><?php endif; ?>
   <?php if($global_priv && $row['id']): ?><div class="mb-3"><a class="btn btn-sm btn-outline-primary mr-2" href="<?php echo field($HD_CURPAGE) ?>?cmd=edit&amp;parent=<?php echo (int)$row['category'] ?>&amp;id=<?php echo (int)$row['id'] ?>">Edit article</a><a class="btn btn-sm btn-outline-danger" href="<?php echo field($HD_CURPAGE) ?>?cmd=deleteentry&amp;parent=<?php echo (int)$row['category'] ?>&amp;id=<?php echo (int)$row['id'] ?>" onclick="return confirm('Delete this article?')">Delete article</a></div><?php endif; ?>
-  <article class="card shadow-sm"><div class="card-header"><h2 class="h5 mb-0"><?php echo field($row['description']) ?></h2></div><div class="card-body"><section class="mb-4"><h3 class="h6 text-uppercase text-muted">Symptoms</h3><div><?php echo trim($row['symptoms']) === '' ? '<p class="text-muted">No symptoms.</p>' : render_editor_content($row['symptoms']) ?></div></section><section><h3 class="h6 text-uppercase text-muted">Solution</h3><div><?php echo trim($row['solution']) === '' ? '<p class="text-muted">No solution available.</p>' : render_editor_content($row['solution']) ?></div></section></div></article>
+  <?php $article_files = array(); $article_dir = "../{$HD_KB_FILES}/" . (int)$row['id']; if($dir = @opendir($article_dir)) { while(($file = readdir($dir)) !== false) if($file !== '.' && $file !== '..' && is_file($article_dir . '/' . $file)) $article_files[] = $file; closedir($dir); sort($article_files, SORT_NATURAL | SORT_FLAG_CASE); } ?>
+  <article class="card shadow-sm"><div class="card-header d-flex flex-wrap justify-content-between align-items-center"><h2 class="h5 mb-0"><?php echo field($row['description']) ?></h2><?php if(!empty($row['kb_number'])): ?><span class="badge badge-primary"><?php echo field($row['kb_number']) ?></span><?php endif; ?></div><div class="card-body"><dl class="row small mb-4"><dt class="col-sm-2">Publish date</dt><dd class="col-sm-4"><?php echo field($row['publish_date'] ?: 'Not set') ?></dd><dt class="col-sm-2">Expiry date</dt><dd class="col-sm-4"><?php echo field($row['expiry_date'] ?: 'No expiry') ?></dd></dl><section class="mb-4"><h3 class="h6 text-uppercase text-muted">Symptoms</h3><div><?php echo trim($row['symptoms']) === '' ? '<p class="text-muted">No symptoms.</p>' : render_editor_content($row['symptoms']) ?></div></section><section class="mb-4"><h3 class="h6 text-uppercase text-muted">Solution</h3><div><?php echo trim($row['solution']) === '' ? '<p class="text-muted">No solution available.</p>' : render_editor_content($row['solution']) ?></div></section><?php if($article_files): ?><section><h3 class="h6 text-uppercase text-muted">Attachments</h3><div class="list-group list-group-flush"><?php foreach($article_files as $article_file): ?><a class="list-group-item list-group-item-action px-0" href="../kbattachment.php?id=<?php echo (int)$row['id'] ?>&amp;file=<?php echo urlencode($article_file) ?>" target="_blank"><i class="fas fa-paperclip mr-2"></i><?php echo field($article_file) ?></a><?php endforeach; ?></div></section><?php endif; ?></div></article>
 <?php elseif($faq_cmd == 'edit'):
   $row = array('id'=>0,'category'=>$_POST['parent'] ?? 0,'description'=>'','symptoms'=>'','solution'=>'');
   if(isset($_GET['id'])) { $fetched = mysql_fetch_array(mysql_query("SELECT * FROM {$pre}faq WHERE ( id = '{$_GET['id']}' )")); if(is_array($fetched)) $row = array_merge($row, $fetched); }
@@ -152,7 +246,7 @@ if( $faq_cmd == '' || $faq_cmd == 'deletecat' || $faq_cmd == 'newcategory' ):
   $back_id = $is_entry ? $row['category'] : $row['parent'];
 ?>
   <a class="btn btn-sm btn-light mb-3" href="<?php echo field($HD_CURPAGE) ?>?parent=<?php echo (int)$back_id ?>">&larr; Back to category</a>
-  <?php if($global_priv): ?><section class="card shadow-sm faq-editor"><div class="card-header py-3"><h2 class="h6 font-weight-bold text-primary mb-0"><?php echo $row['id'] ? 'Edit' : 'Create' ?> <?php echo $is_entry ? 'article' : 'category' ?></h2></div><div class="card-body"><form action="<?php echo field($HD_CURPAGE) ?>" method="post"><?php if(isset($_GET['id'])): ?><input type="hidden" name="id" value="<?php echo (int)$_GET['id'] ?>"><?php endif; ?><input type="hidden" name="cmd" value="edit"><input type="hidden" name="parent" value="<?php echo (int)($_POST['parent'] ?? 0) ?>"><div class="form-group"><label for="faq-description"><?php echo $is_entry ? 'Article title' : 'Category name' ?> <span class="text-danger">*</span></label><input class="form-control" id="faq-description" type="text" name="description" value="<?php echo field($row['description']) ?>" required><?php if($is_entry): ?><small class="form-text text-muted">Use the question or issue a customer is likely to recognize.</small><?php endif; ?></div><?php if($is_entry): ?><div class="form-group"><label for="faq-symptoms">Problem or symptoms</label><small class="form-text text-muted mb-2">Describe when this article applies and what the customer may observe.</small><textarea class="form-control" id="faq-symptoms" name="symptoms" rows="6"><?php echo field($row['symptoms']) ?></textarea></div><div class="form-group"><div class="d-flex justify-content-between"><label for="faq-solution">Resolution</label><a class="small" href="tickettags.php" target="_blank" rel="noopener">Message tags <i class="fas fa-external-link-alt fa-xs"></i></a></div><small class="form-text text-muted mb-2">Provide clear steps that solve the issue.</small><textarea class="form-control" id="faq-solution" name="solution" rows="8"><?php echo field($row['solution']) ?></textarea></div><?php else: ?><div class="form-group"><label for="faq-symptoms">Short description</label><input class="form-control" id="faq-symptoms" type="text" name="symptoms" value="<?php echo field($row['symptoms']) ?>" placeholder="What content belongs in this category?"></div><?php endif; ?><div class="text-right"><a class="btn btn-light mr-2" href="<?php echo field($HD_CURPAGE) ?>?parent=<?php echo (int)$back_id ?>">Cancel</a><button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save <?php echo $is_entry ? 'article' : 'category' ?></button></div></form></div></section><?php endif; ?>
+  <?php if($global_priv): ?><section class="card shadow-sm faq-editor"><div class="card-header py-3"><h2 class="h6 font-weight-bold text-primary mb-0"><?php echo $row['id'] ? 'Edit' : 'Create' ?> <?php echo $is_entry ? 'article' : 'category' ?></h2></div><div class="card-body"><form action="<?php echo field($HD_CURPAGE) ?>" method="post" enctype="multipart/form-data"><?php if(isset($_GET['id'])): ?><input type="hidden" name="id" value="<?php echo (int)$_GET['id'] ?>"><?php endif; ?><input type="hidden" name="csrf_token" value="<?php echo field($faq_csrf) ?>"><input type="hidden" name="cmd" value="edit"><input type="hidden" name="parent" value="<?php echo (int)($_POST['parent'] ?? 0) ?>"><?php if($is_entry): ?><div class="form-row"><div class="form-group col-md-4"><label for="faq-number">Knowledge base number</label><input class="form-control" id="faq-number" value="<?php echo field($row['kb_number'] ?? 'Assigned when saved') ?>" readonly><small class="form-text text-muted">Generated automatically and cannot be changed.</small></div><div class="form-group col-md-4"><label for="faq-publish-date">Publish date <span class="text-danger">*</span></label><input class="form-control" id="faq-publish-date" type="date" name="publish_date" value="<?php echo field($row['publish_date'] ?? date('Y-m-d')) ?>" required></div><div class="form-group col-md-4"><label for="faq-expiry-date">Expiry date</label><input class="form-control" id="faq-expiry-date" type="date" name="expiry_date" value="<?php echo field($row['expiry_date'] ?? '') ?>" min="<?php echo field($row['publish_date'] ?? date('Y-m-d')) ?>"><small class="form-text text-muted">Leave blank to keep published indefinitely.</small></div></div><?php endif; ?><div class="form-group"><label for="faq-description"><?php echo $is_entry ? 'Article title' : 'Category name' ?> <span class="text-danger">*</span></label><input class="form-control" id="faq-description" type="text" name="description" value="<?php echo field($row['description']) ?>" required><?php if($is_entry): ?><small class="form-text text-muted">Use the question or issue a customer is likely to recognize.</small><?php endif; ?></div><?php if($is_entry): ?><div class="form-group"><label for="faq-symptoms">Problem or symptoms</label><small class="form-text text-muted mb-2">Describe when this article applies and what the customer may observe.</small><textarea class="form-control" id="faq-symptoms" name="symptoms" rows="6"><?php echo field($row['symptoms']) ?></textarea></div><div class="form-group"><div class="d-flex justify-content-between"><label for="faq-solution">Resolution</label><a class="small" href="tickettags.php" target="_blank" rel="noopener">Message tags <i class="fas fa-external-link-alt fa-xs"></i></a></div><small class="form-text text-muted mb-2">Provide clear steps that solve the issue.</small><textarea class="form-control" id="faq-solution" name="solution" rows="8"><?php echo field($row['solution']) ?></textarea></div><div class="form-group"><label for="faq-attachment">Attachment</label><div class="custom-file"><input class="custom-file-input" id="faq-attachment" name="attachment" type="file"><label class="custom-file-label" for="faq-attachment">Choose file</label></div><small class="form-text text-muted">Maximum file size: 10 MB. Existing attachments are retained.</small></div><?php else: ?><div class="form-group"><label for="faq-symptoms">Short description</label><input class="form-control" id="faq-symptoms" type="text" name="symptoms" value="<?php echo field($row['symptoms']) ?>" placeholder="What content belongs in this category?"></div><?php endif; ?><div class="text-right"><a class="btn btn-light mr-2" href="<?php echo field($HD_CURPAGE) ?>?parent=<?php echo (int)$back_id ?>">Cancel</a><button class="btn btn-primary" type="submit"><i class="fas fa-save mr-1"></i>Save <?php echo $is_entry ? 'article' : 'category' ?></button></div></form></div></section><?php endif; ?>
 <?php elseif($faq_cmd == 'search'):
   $search = $_GET['search'] ?? '';
   $res = mysql_query("SELECT * FROM {$pre}faq WHERE ( parent = '-1' && (description LIKE '%$search%' || symptoms LIKE '%$search%' || solution LIKE '%$search%') ) ORDER BY date DESC");

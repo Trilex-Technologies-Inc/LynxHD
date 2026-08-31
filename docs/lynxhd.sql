@@ -124,13 +124,17 @@ INSERT INTO `dept` (`id`, `name`, `options`, `sortnum`, `description`) VALUES
 
 CREATE TABLE IF NOT EXISTS `faq` (
   `id` int(11) NOT NULL auto_increment,
+  `kb_number` varchar(16) NOT NULL default '',
   `description` text NOT NULL,
   `symptoms` text NOT NULL,
   `solution` text NOT NULL,
   `category` int(11) NOT NULL default '0',
   `parent` int(11) NOT NULL default '0',
   `date` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`id`)
+  `publish_date` date default NULL,
+  `expiry_date` date default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `kb_number` (`kb_number`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
 --
