@@ -38,6 +38,23 @@ if( $current_user_id <= 0 )
 $global_priv = get_row_count( "SELECT COUNT(*) FROM {$pre}privilege WHERE ( user_id = '$current_user_id' && dept_id = '0' )" );
 $dashboard_livechat_enabled = $global_priv && hd_module_enabled('livechat') && livechat_installed() && livechat_enabled();
 
+// Dashboard totals follow the same department permissions as the ticket list.
+$dashboard_ticket_counts = array('total' => 0, 'open' => 0, 'waiting' => 0, 'closed' => 0, 'held' => 0);
+$dashboard_count_result = mysql_query(
+  "SELECT COUNT(DISTINCT ticket.id) AS total,
+          COUNT(DISTINCT CASE WHEN ticket.status = '$HD_STATUS_OPEN' THEN ticket.id END) AS open,
+          COUNT(DISTINCT CASE WHEN ticket.status = '$HD_STATUS_OPEN' AND ticket.lastpost = '-1' THEN ticket.id END) AS waiting,
+          COUNT(DISTINCT CASE WHEN ticket.status = '$HD_STATUS_CLOSED' THEN ticket.id END) AS closed,
+          COUNT(DISTINCT CASE WHEN ticket.status = '$HD_STATUS_HELD' THEN ticket.id END) AS held
+   FROM {$pre}ticket AS ticket, {$pre}privilege AS priv
+   WHERE ticket.ticket_id NOT LIKE 'M%'
+     AND priv.user_id = '$current_user_id'
+     AND (ticket.dept_id = '0' OR ticket.dept_id = priv.dept_id OR priv.dept_id = '0')"
+);
+if( $dashboard_count_result && ($dashboard_count_row = mysql_fetch_array($dashboard_count_result)) )
+  foreach( $dashboard_ticket_counts as $dashboard_count_key => $dashboard_count_value )
+    $dashboard_ticket_counts[$dashboard_count_key] = (int)$dashboard_count_row[$dashboard_count_key];
+
 if( ( $_POST['cmd'] ?? "" ) == "action" )
 {
   if( $_POST['action'] == "reply" )
@@ -166,6 +183,10 @@ else if( $_GET['state'] == "answered" )
   $query .= " && ticket.status = '$HD_STATUS_OPEN' && ticket.lastpost != '-1'";
 else if( $_GET['state'] == "unanswered" )
   $query .= " && ticket.status = '$HD_STATUS_OPEN' && ticket.lastpost = '-1'";
+else if( $_GET['state'] == "closed" )
+  $query .= " && ticket.status = '$HD_STATUS_CLOSED'";
+else if( $_GET['state'] == "held" )
+  $query .= " && ticket.status = '$HD_STATUS_HELD'";
 else if( $_GET['state'] == "inactive" )
   $query .= " && ticket.status != '$HD_STATUS_OPEN'";
 else if( $_GET['closed'] != "on" )
@@ -220,6 +241,28 @@ include "./include/header.php";
   <a class="btn btn-primary btn-sm shadow-sm mt-3 mt-sm-0" href="adminticket.php"><i class="fas fa-plus fa-sm mr-1"></i> New ticket</a>
 </div>
 <?php echo $msg ?>
+
+<div class="row dashboard-ticket-summary">
+<?php
+$dashboard_cards = array(
+  array('Total tickets', 'total', 'primary', 'fa-ticket-alt', 'all'),
+  array('Open', 'open', 'info', 'fa-folder-open', 'open'),
+  array('Waiting reply', 'waiting', 'warning', 'fa-reply', 'unanswered'),
+  array('Closed', 'closed', 'success', 'fa-check-circle', 'closed'),
+  array('Held', 'held', 'secondary', 'fa-pause-circle', 'held')
+);
+foreach( $dashboard_cards as $dashboard_card ):
+?>
+  <div class="col-xl col-md-4 col-sm-6 mb-4">
+    <a class="card border-left-<?php echo $dashboard_card[2] ?> shadow-sm h-100 py-2 stats-card-link" href="browse.php?state=<?php echo $dashboard_card[4] ?>">
+      <div class="card-body"><div class="row no-gutters align-items-center">
+        <div class="col mr-2"><div class="text-xs font-weight-bold text-<?php echo $dashboard_card[2] ?> text-uppercase mb-1"><?php echo $dashboard_card[0] ?></div><div class="h4 mb-0 font-weight-bold text-gray-800"><?php echo number_format($dashboard_ticket_counts[$dashboard_card[1]]) ?></div></div>
+        <div class="col-auto"><i class="fas <?php echo $dashboard_card[3] ?> fa-2x text-gray-300"></i></div>
+      </div></div>
+    </a>
+  </div>
+<?php endforeach; ?>
+</div>
 
 <?php if ($dashboard_livechat_enabled): ?>
 <section class="card shadow-sm mb-4 border-0" id="dashboard-chat-waiting" data-api="../modules/livechat/api.php">
