@@ -1,4 +1,96 @@
---
+-- LynxHD database schema and sample data.
+-- Preserve the connection character-set values before restoring them below.
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+-- WARNING: importing this file replaces the existing LynxHD database tables.
+SET FOREIGN_KEY_CHECKS=0;
+DROP TABLE IF EXISTS `livechat_message`;
+DROP TABLE IF EXISTS `livechat_conversation`;
+DROP TABLE IF EXISTS `livechat_canned_message`;
+DROP TABLE IF EXISTS `livechat_block`;
+DROP TABLE IF EXISTS `task`;
+DROP TABLE IF EXISTS `module`;
+DROP TABLE IF EXISTS `message`;
+DROP TABLE IF EXISTS `post`;
+DROP TABLE IF EXISTS `privilege`;
+DROP TABLE IF EXISTS `reply`;
+DROP TABLE IF EXISTS `survey`;
+DROP TABLE IF EXISTS `ticket`;
+DROP TABLE IF EXISTS `field`;
+DROP TABLE IF EXISTS `faq`;
+DROP TABLE IF EXISTS `pop`;
+DROP TABLE IF EXISTS `test`;
+DROP TABLE IF EXISTS `dept`;
+DROP TABLE IF EXISTS `options`;
+DROP TABLE IF EXISTS `user`;
+SET FOREIGN_KEY_CHECKS=1;
+
+-- --------------------------------------------------------
+
+-- Optional live-chat module tables (the module also creates these on first use).
+CREATE TABLE IF NOT EXISTS `livechat_conversation` (
+  `id` int unsigned NOT NULL auto_increment,
+  `visitor_token` char(64) NOT NULL,
+  `visitor_name` varchar(100) NOT NULL,
+  `visitor_email` varchar(190) NOT NULL default '',
+  `dept_id` int NOT NULL default '0',
+  `ip_address` varchar(45) NOT NULL default '',
+  `status` enum('open','closed') NOT NULL default 'open',
+  `created_at` int unsigned NOT NULL,
+  `updated_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), UNIQUE KEY `visitor_token` (`visitor_token`), KEY `status_updated` (`status`,`updated_at`), KEY `department` (`dept_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `livechat_message` (
+  `id` int unsigned NOT NULL auto_increment,
+  `conversation_id` int unsigned NOT NULL,
+  `sender` enum('visitor','operator') NOT NULL,
+  `sender_id` int NOT NULL default '0',
+  `body` text NOT NULL,
+  `created_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), KEY `conversation_messages` (`conversation_id`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `livechat_canned_message` (
+  `id` int unsigned NOT NULL auto_increment,
+  `title` varchar(120) NOT NULL,
+  `body` text NOT NULL,
+  `language` varchar(40) NOT NULL default 'English',
+  `operator_id` int NOT NULL default '0',
+  `created_at` int unsigned NOT NULL,
+  `updated_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), KEY `language_operator` (`language`,`operator_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `livechat_block` (
+  `id` int unsigned NOT NULL auto_increment,
+  `conversation_id` int unsigned NOT NULL default '0',
+  `visitor_token` char(64) NOT NULL default '',
+  `visitor_email` varchar(190) NOT NULL default '',
+  `ip_address` varchar(45) NOT NULL default '',
+  `blocked_by` int NOT NULL default '0',
+  `created_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), KEY `visitor_token` (`visitor_token`), KEY `visitor_email` (`visitor_email`), KEY `ip_address` (`ip_address`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `module` (
+  `id` int unsigned NOT NULL auto_increment, `module_dir` varchar(80) NOT NULL, `module_name` varchar(150) NOT NULL,
+  `version` varchar(30) NOT NULL default '', `author` varchar(150) NOT NULL default '', `description` text,
+  `installed` tinyint(1) NOT NULL default '0', `enabled` tinyint(1) NOT NULL default '0', `updated_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`), UNIQUE KEY `module_dir` (`module_dir`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `task` (
+  `id` int unsigned NOT NULL auto_increment, `title` varchar(255) NOT NULL, `description` text,
+  `priority` enum('low','normal','high') NOT NULL default 'normal', `due_date` date default NULL,
+  `assigned_to` int NOT NULL default '0', `is_complete` tinyint(1) NOT NULL default '0',
+  `created_by` int NOT NULL default '0', `completed_by` int NOT NULL default '0',
+  `created_at` int unsigned NOT NULL, `updated_at` int unsigned NOT NULL, `completed_at` int unsigned NOT NULL default '0',
+  PRIMARY KEY (`id`), KEY `assigned_to` (`assigned_to`), KEY `due_date` (`due_date`), KEY `is_complete` (`is_complete`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -32,13 +124,17 @@ INSERT INTO `dept` (`id`, `name`, `options`, `sortnum`, `description`) VALUES
 
 CREATE TABLE IF NOT EXISTS `faq` (
   `id` int(11) NOT NULL auto_increment,
+  `kb_number` varchar(16) NOT NULL default '',
   `description` text NOT NULL,
   `symptoms` text NOT NULL,
   `solution` text NOT NULL,
   `category` int(11) NOT NULL default '0',
   `parent` int(11) NOT NULL default '0',
   `date` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`id`)
+  `publish_date` date default NULL,
+  `expiry_date` date default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `kb_number` (`kb_number`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
 --

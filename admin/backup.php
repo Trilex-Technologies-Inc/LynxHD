@@ -18,13 +18,13 @@ include "../include/include.php";
 
 $HD_CURPAGE = $HD_URL_BACKUP;
 
-if( $_SESSION[login_type] == $LOGIN_INVALID || !$_SESSION[user][admin] )
+if( $_SESSION['login_type'] == $LOGIN_INVALID || !($_SESSION['user']['admin'] ?? false) )
   Header( "Location: {$HD_URL_LOGIN}?redirect=" . urlencode( $HD_CURPAGE ) );
 
 if( (trim( $db_path_to_mysql ) != "") && ($db_path_to_mysql[strlen( $db_path_to_mysql ) - 1] != "/") )
   $db_path_to_mysql .= "/";
 
-if( $_GET[cmd] == "send" )
+if( $_GET['cmd'] == "send" )
 {
   $fp = popen( "{$db_path_to_mysql}mysqldump -u {$db_user} -p{$db_password} {$db_name} {$pre}dept {$pre}faq {$pre}options {$pre}pop {$pre}post {$pre}privilege {$pre}reply  {$pre}ticket {$pre}user {$pre}survey {$pre}field", "r" );
 
@@ -41,11 +41,11 @@ if( $_GET[cmd] == "send" )
     exit;
   }
 }
-else if( $_POST[cmd] == "import" )
+else if( $_POST['cmd'] == "import" )
 {
-  if( $_FILES[backup][size] )
+  if( !empty($_FILES['backup']['size']) && !empty($_FILES['backup']['tmp_name']) )
   { 
-    exec( "{$db_path_to_mysql}mysql -u {$db_user} -p{$db_password} -f {$db_name} < {$_FILES[backup][tmp_name]}" );
+    exec( "{$db_path_to_mysql}mysql -u {$db_user} -p{$db_password} -f {$db_name} < {$_FILES['backup']['tmp_name']}" );
     $msg = "<div class=\"successbox\">Backup restored.</div><br />";
   }
 }
@@ -53,16 +53,12 @@ else if( $_POST[cmd] == "import" )
 include "./include/header.php";
 /********************************************************** PHP */?>
 <div class="title"><?php echo $script_name ?> Help Desk Backup</div><br /><?php echo $msg ?>
-<table width="100%" border="0" cellpadding="5">
-<tr><td>
-  <div class="clean-gray">
+<div class="alert alert-info">
     You can create a backup of the entire help desk, including users, tickets, settings, etc.
     You may also restore a backup.  Note that when you restore a backup, it will append
     to the database.  If you want to start from scratch, first remove all tables associated
     with the help desk.
-  </div>
-</td></tr>
-</table>
+ </div>
 <br />
 <div id="container">
 	<h1>Create Helpdesk Backup</h1>

@@ -2,168 +2,184 @@
 /*
 Created by: Adam Patterson
 
-This is a free aplication you can change what 
-ever you like as long as you keep mention of my name. 
-
-	Copyright (c) 2007, Adam Patterson
-	http://www.adam-patterson.com | http://www.studiolounge.net
-	Installer is released under the GPL license
-	http://www.gnu.org/licenses/gpl.txt
-
-This script is designed to let users create a config.php file used to connect 
-to a MySQL DB and install the default MySQL into the DB.
-
+Installer is released under the GPL license.
+This script creates the database configuration used by LynxHD.
 */
 
-if (!is_writable('../include/')) die("Sorry, I can't write to the include directory. You'll have to either change the permissions on your installation directory or create your settings.php manually.");
+$settings_file = __DIR__ . '/../include/settings.php';
+$include_directory = dirname($settings_file);
+$step = isset($_GET['step']) ? (int) $_GET['step'] : 0;
+$step = max(0, min(3, $step));
 
-if (isset($_GET['step']))
-	$step = $_GET['step'];
-else
-	$step = 0;
-header( 'Content-Type: text/html; charset=utf-8' );
+header('Content-Type: text/html; charset=utf-8');
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="en">
 <head>
-<title>Installer &rsaquo; Setup Configuration File</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link href="../css/install.css" rel="stylesheet" type="text/css" />
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LynxHD Installer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../css/install.css" rel="stylesheet">
 </head>
 <body>
-<center><img src="../images/logo.jpg" /></center>
+  <main class="container py-4 py-md-5">
+    <div class="installer-shell mx-auto">
+      <header class="text-center mb-4">
+        <img class="installer-logo img-fluid" src="../images/logo.jpg" alt="LynxHD">
+        <p class="text-secondary mt-3 mb-0">Help desk installation</p>
+      </header>
 
+      <nav aria-label="Installation progress" class="mb-4">
+        <div class="progress-steps">
+          <?php foreach (array('Welcome', 'Database', 'Configuration', 'Setup') as $number => $label): ?>
+            <div class="progress-step <?php echo $number <= $step ? 'is-active' : ''; ?>">
+              <span><?php echo $number + 1; ?></span>
+              <small><?php echo $label; ?></small>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </nav>
+
+      <section class="card border-0 shadow-lg">
+        <div class="card-body p-4 p-md-5">
 <?php
-switch($step) {
-	case 0:
-// Check if settings.php has been created
-if (file_exists('../include/settings.php'))
-	die("<p>The file 'settings.php' already exists. If you need to reset any of the configuration items in this file, please delete it first.</p></body></html>");
+if (!is_writable($include_directory)) {
+    echo '<div class="alert alert-danger mb-0" role="alert"><h1 class="h4 alert-heading">Permission required</h1><p class="mb-0">The <code>include</code> directory is not writable. Change its permissions or create <code>include/settings.php</code> manually from <code>settings-sample.php</code>.</p></div>';
+} else {
+    switch ($step) {
+        case 0:
+            if (file_exists($settings_file)) {
+                echo '<div class="alert alert-warning mb-0" role="alert"><h1 class="h4 alert-heading">Configuration already exists</h1><p class="mb-0"><code>include/settings.php</code> already exists. Delete it only if you intend to reinstall LynxHD.</p></div>';
+                break;
+            }
 ?>
-<p>Welcome to your install. Before getting started, we need some information on the database. You will need to know the following items before proceeding:</p>
-<ol>
-  <strong><li>Database name</li>
-  <li>Database username</li>
-  <li>Database password</li>
-  <li>Database host</li>
-  </strong>
-</ol>
-<p>If for any reason this automatic file creation doesn't work, don't worry. All this does is fill in the database information to a configuration file. You may also simply open <code>settings-sample.php</code> in a text editor, fill in your information, and save it as <code>settings.php</code>.</p>
-<p>In all likelihood, these items were supplied to you by your Hosting Company. If you do not have this information, then you will need to contact them before you can continue. If you&#8217;re all ready, <a href="?step=1">let&#8217;s go</a>! </p>
+          <span class="badge text-bg-primary mb-3">Step 1 of 4</span>
+          <h1 class="h2 mb-3">Welcome to LynxHD</h1>
+          <p class="lead text-secondary">Let’s connect LynxHD to your MySQL database.</p>
+          <p>Before continuing, have these details ready:</p>
+          <ul class="list-group list-group-flush mb-4">
+            <li class="list-group-item px-0">Database name</li>
+            <li class="list-group-item px-0">Database username and password</li>
+            <li class="list-group-item px-0">Database host (usually <code>localhost</code>)</li>
+          </ul>
+          <div class="alert alert-info">If automatic setup is unavailable, copy <code>include/settings-sample.php</code> to <code>include/settings.php</code> and enter the same details manually.</div>
+          <div class="d-flex justify-content-end mt-4">
+            <a class="btn btn-primary btn-lg" href="?step=1">Get started <span aria-hidden="true">&rarr;</span></a>
+          </div>
 <?php
-	break;
+            break;
 
-	case 1:
-	?>
-</p>
-<form method="post" action="?step=2">
-  <p>Below you should enter your database connection details. If you're not sure about these, contact your host. </p>
-  <table>
-    <tr>
-      <th scope="row">Database Name</th>
-      <td><input name="dbname" type="text" size="25"/></td>
-      <td>The name of the database you want to run your script in. </td>
-    </tr>
-    <tr>
-      <th scope="row">User Name</th>
-      <td><input name="uname" type="text" size="25"/></td>
-      <td>Your MySQL username</td>
-    </tr>
-    <tr>
-      <th scope="row">Password</th>
-      <td><input name="pwd" type="text" size="25"/></td>
-      <td>Your MySQL password.</td>
-    </tr>
-    <tr>
-      <th scope="row">Database Host</th>
-      <td><input name="dbhost" type="text" size="25" /></td>
-      <td>Usually: localhost</td>
-    </tr>
-    <tr>
-      <th scope="row">Database Prefix</th>
-      <td><input name="dbprefix" type="text" size="25" value="" /></td>
-      <td>If you are sharing a database with another script, you can add a prefix like hd_ to the coldbrew db tables. If not you can leave this blank.</td>
-    </tr>
-    <tr>
-      <th scope="row">Path to MySQL</th>
-      <td><input name="dbsqlpath" type="text" size="25" value="" /></td>
-      <td>This is needed if you are going to preform helpdesk backups. (not required)</td>
-    </tr>
-  </table>
-  <h2 class="step">
-    <input name="submit" type="submit" id="fsubmit" value="Submit" />
-  </h2>
-</form>
-<?php
-	break;	
-	case 2:
-	$db_name  = trim($_POST['dbname']);
-    $db_user   = trim($_POST['uname']);
-    $db_password = trim($_POST['pwd']);
-    $db_host  = trim($_POST['dbhost']);
-	$db_prefix  = trim($_POST['dbprefix']);
-	$db_path_to_mysql  = trim($_POST['dbsqlpath']);
-
-    // We'll fail here if the values are no good.
-    require_once('open-db.php');
-	$handle = fopen('../include/settings.php', 'w');
-	
-$source = array (
-"<? \n",
-"$","db_name = 'databasename';	// The name of the database \n",
-"$","db_user = 'username'; 	// MySQL username \n",		
-"$","db_password = 'passwords';	// MySQL Password \n",	
-"$","db_host = 'localhost';	// Most likely you wont need to change this \n",
-"$","db_prefix = 'hd_';	// Prefix for tables (i.e. if prefix is 'hd_', tables will be 'hd_ticket', etc.) \n",
-"$","db_path_to_mysql = 'sqlpath';	// Needed if you are going to use help desk backups \n",
-"?>" );
-
-$search = array ( databasename, username, passwords, localhost, hd_, sqlpath );
-$replace = array ($db_name, $db_user, $db_password, $db_host, $db_prefix, $db_path_to_mysql);
-
-$source = str_replace ( $search, $replace, $source );
-foreach ( $source as $str )
-	fwrite($handle, $str);
+        case 1:
 ?>
-<p>Excellent!</p>
-<a href="?step=3">let&#8217;s check the connection to MySQL</a>!
-</p>
+          <span class="badge text-bg-primary mb-3">Step 2 of 4</span>
+          <h1 class="h2 mb-3">Database connection</h1>
+          <p class="text-secondary mb-4">Enter the credentials supplied by your hosting provider.</p>
+          <?php if (($_GET['error'] ?? '') === 'db_connection'): ?>
+            <div class="alert alert-danger" role="alert">LynxHD could not connect to MySQL. Check that MySQL is running, then verify the database host, username, and password below.</div>
+          <?php endif; ?>
+          <form method="post" action="?step=2" class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label" for="dbname">Database name</label>
+              <input class="form-control form-control-lg" id="dbname" name="dbname" type="text" required autocomplete="off">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="uname">Database username</label>
+              <input class="form-control form-control-lg" id="uname" name="uname" type="text" required autocomplete="username">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="pwd">Database password</label>
+              <input class="form-control form-control-lg" id="pwd" name="pwd" type="password" autocomplete="current-password">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="dbhost">Database host</label>
+              <input class="form-control form-control-lg" id="dbhost" name="dbhost" type="text" value="localhost" required>
+              <div class="form-text">Usually <code>localhost</code>.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="dbprefix">Table prefix <span class="text-secondary fw-normal">(optional)</span></label>
+              <input class="form-control" id="dbprefix" name="dbprefix" type="text" placeholder="hd_" pattern="[A-Za-z0-9_]*">
+              <div class="form-text">Useful when multiple applications share one database.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="dbsqlpath">Path to MySQL <span class="text-secondary fw-normal">(optional)</span></label>
+              <input class="form-control" id="dbsqlpath" name="dbsqlpath" type="text" placeholder="/usr/local/mysql/">
+              <div class="form-text">Only required for legacy database backups.</div>
+            </div>
+            <div class="col-12 d-flex justify-content-between align-items-center pt-2">
+              <a class="btn btn-outline-secondary" href="?step=0">Back</a>
+              <button class="btn btn-primary btn-lg" type="submit">Save and continue</button>
+            </div>
+          </form>
 <?php
-	break;
-	case 3:
-	
-if (file_exists("../include/settings.php")) {
+            break;
 
-    // Prefix the table names. These already have `backticks` around them!
-    $db_schema = array();
+        case 2:
+            $db_name = trim($_POST['dbname'] ?? '');
+            $db_user = trim($_POST['uname'] ?? '');
+            $db_password = (string) ($_POST['pwd'] ?? '');
+            $db_host = trim($_POST['dbhost'] ?? '');
+            $db_prefix = trim($_POST['dbprefix'] ?? '');
+            $db_path_to_mysql = trim($_POST['dbsqlpath'] ?? '');
 
-/*
-Insert your MySQL in the $db_schema[] array, simply cut and paste the 
-$db_schema[] chunk leaving the opening " and closing ";
+            if ($db_name === '' || $db_user === '' || $db_host === '') {
+                echo '<div class="alert alert-danger" role="alert">Database name, username, and host are required.</div><a class="btn btn-outline-secondary" href="?step=1">Return to database settings</a>';
+                break;
+            }
+            if (!preg_match('/^[A-Za-z0-9_]*$/', $db_prefix)) {
+                echo '<div class="alert alert-danger" role="alert">The table prefix may contain only letters, numbers, and underscores.</div><a class="btn btn-outline-secondary" href="?step=1">Return to database settings</a>';
+                break;
+            }
 
-You can also put $variables in the MySQL and have the data carried over.
-*/
- 
-$db_schema[] = "CREATE TABLE `test` (
-  `id` int(4) NOT NULL auto_increment,
-  `rowName` varchar(100) NOT NULL default '',
-  PRIMARY KEY  (`id`)
- );";
-  
-require_once('../include/settings.php');
-require_once('open-db.php');
+            require __DIR__ . '/open-db.php';
 
-      echo "<h3>Checking Connection...</h3>";
-      foreach($db_schema as $sql) {
-       mysql_query($sql);
-      }
-      echo "<h3>Connected!</h3><br /><br /><a href=\"../setup.php\">Lets install the tables and create the admin account.</a>";
-  }
-	
-	break;
+            $settings = "<?php\n"
+                . '$db_name = ' . var_export($db_name, true) . ";\n"
+                . '$db_user = ' . var_export($db_user, true) . ";\n"
+                . '$db_password = ' . var_export($db_password, true) . ";\n"
+                . '$db_host = ' . var_export($db_host, true) . ";\n"
+                . '$db_prefix = ' . var_export($db_prefix, true) . ";\n"
+                . '$db_path_to_mysql = ' . var_export($db_path_to_mysql, true) . ";\n";
+
+            if (file_put_contents($settings_file, $settings, LOCK_EX) === false) {
+                echo '<div class="alert alert-danger mb-0" role="alert">Unable to create <code>include/settings.php</code>. Check directory permissions and try again.</div>';
+                break;
+            }
+?>
+          <div class="text-center py-3">
+            <div class="success-icon mb-3" aria-hidden="true">&#10003;</div>
+            <span class="badge text-bg-success mb-3">Configuration saved</span>
+            <h1 class="h2">Database connection succeeded</h1>
+            <p class="text-secondary mb-4">Your settings file was created successfully.</p>
+            <a class="btn btn-primary btn-lg" href="?step=3">Continue to table setup <span aria-hidden="true">&rarr;</span></a>
+          </div>
+<?php
+            break;
+
+        case 3:
+            if (!file_exists($settings_file) || filesize($settings_file) === 0) {
+                echo '<div class="alert alert-danger" role="alert">The settings file is missing or empty. Return to the database step and create it again.</div><a class="btn btn-outline-secondary" href="?step=1">Database settings</a>';
+                break;
+            }
+            require $settings_file;
+            require __DIR__ . '/open-db.php';
+?>
+          <div class="text-center py-3">
+            <div class="success-icon mb-3" aria-hidden="true">&#10003;</div>
+            <span class="badge text-bg-success mb-3">Step 4 of 4</span>
+            <h1 class="h2">Ready to create your tables</h1>
+            <p class="text-secondary mb-4">The database connection is working. Finish setup by creating the LynxHD tables and administrator account.</p>
+            <a class="btn btn-success btn-lg" href="../setup.php">Install tables and create admin</a>
+          </div>
+<?php
+            break;
+    }
 }
 ?>
-<p id="footer"></p>
+        </div>
+      </section>
+      <footer class="text-center text-secondary small mt-4">LynxHD Help Desk Installer</footer>
+    </div>
+  </main>
 </body>
 </html>

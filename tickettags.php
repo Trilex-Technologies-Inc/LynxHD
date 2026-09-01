@@ -3,12 +3,7 @@
 <title>Adding Message Tags</title>
 </head>
 <body>
-<table width="100%" bgcolor="#DDDDDD" border=0 cellspacing=0 cellpadding=5>
-  <tr>
-    <td>
-      <font face="Verdana, Arial, Helvetica" size=3 color="#003366"><b>Adding Message Tags To Posts:</b></font>    </td>
-  </tr>
-</table>
+<div class="container-fluid py-3 bg-light border-bottom"><h1 class="h4 mb-0">Adding Message Tags To Posts</h1></div>
 <br>
 <font face="Verdana, Arial, Helvetica" size=2 color="#000000">Although HTML tags are not allowed, you can use the following tags
 to make your text bold, create links, and more.  Also, only certain specified fields

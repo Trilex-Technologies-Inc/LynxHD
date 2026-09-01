@@ -141,7 +141,7 @@ class Captcha {
    * @return bool
    */
   public function isKeyRight($key) {
-    $isKeyRight = $_SESSION[$this->sessionName] == md5($key.$this->secretKey);
+    $isKeyRight = isset($_SESSION[$this->sessionName]) && $_SESSION[$this->sessionName] == md5($key.$this->secretKey);
     unset($_SESSION[$this->sessionName]);
     if ($isKeyRight) {
       return true;
@@ -166,31 +166,32 @@ class Captcha {
     $image = imagecreate($width, $height);
     $bgColor = imagecolorallocate ($image, 255, 255, 255);
     $textColor = imagecolorallocate ($image, 0, 0, 0);
+    $noiseColor = imagecolorallocate($image, 190, 205, 225);
 
     // write the random number
     $font = imageloadfont($this->fontPath."/".$this->fontFile);
     for ($i = 0; $i < $this->stringLength; $i ++) {
       $textImage = imagecreate($this->charWidth,$this->imageHeight);
       imagefill($textImage,$this->charWidth,$this->imageHeight,imagecolorallocate ($textImage, 255, 255, 255));
-      for ($j = 0; $j < 10; $j++) {
+      for ($j = 0; $j < 3; $j++) {
         $rx1 = rand(0, $this->charWidth);
         $rx2 = rand(0, $this->charWidth);
         $ry1 = rand(0, $this->imageHeight);
         $ry2 = rand(0, $this->imageHeight);
         $rcVal = rand(0, 255);
-       $rc1 = imagecolorallocate($textImage, rand(0, 155), rand(0, 155), rand(100, 255));
+       $rc1 = imagecolorallocate($textImage, rand(150, 210), rand(170, 220), rand(190, 235));
         imageline($textImage, $rx1, $ry1, $rx2, $ry2, $rc1);
       }
-      imagestring($textImage, $font, 3 , rand(0,5), $rand[$i], imagecolorallocate($textImage,rand(0, 155), rand(0, 155), rand(0, 155)));
-      ImageCopy($image, imagerotate($textImage,  rand(-25,25),imagecolorallocate ($textImage, 255, 255, 255)) , 3 + ($i * $this->charWidth) , 0, 0, 0, $this->charWidth,$this->imageHeight);
+      imagestring($textImage, $font, 6, rand(8, 14), $rand[$i], imagecolorallocate($textImage, rand(0, 35), rand(25, 65), rand(70, 115)));
+      ImageCopy($image, imagerotate($textImage, rand(-8, 8), imagecolorallocate($textImage, 255, 255, 255)), 8 + ($i * $this->charWidth), 0, 0, 0, $this->charWidth, $this->imageHeight);
 
 //      imagestring($image, $font, 3 + ($i * $this->charWidth), rand(0,10), $rand[$i], imagecolorallocate($image,rand(0, 155), rand(0, 155), rand(0, 155)));
         
     }
 
-    for ($i = 0; $i < 5; $i++) {
+    for ($i = 0; $i < 3; $i++) {
         $style = array(
-            $textColor,$textColor,$textColor,$textColor,$textColor,$bgColor,$bgColor,$bgColor,$bgColor
+            $noiseColor,$noiseColor,$bgColor,$bgColor,$bgColor,$bgColor
         );
         imagesetstyle($image, $style);
         imageline($image, rand(0, $width/2), rand(0, $height), rand($width/2, $width), rand(0, $height), IMG_COLOR_STYLED);

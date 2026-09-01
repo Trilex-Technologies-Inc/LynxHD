@@ -64,26 +64,33 @@ function parse_email_to_ticket( $email, $receiver )
                    'decode_headers' => TRUE,
                    'decode_bodies'  => TRUE );
 
-  $structure = Mail_mimeDecode::decode( $params, $crlf );
+  $decoder = new Mail_mimeDecode( $email, $crlf );
+  $structure = $decoder->decode( $params );
   if( !$structure )
   {
     $res = mysql_query( "SELECT email FROM {$pre}user WHERE ( admin = '1' )" );
     $row = mysql_fetch_array( $res );
     if( $row )
     {
-      mail( $row[0], "Help Desk - Failed email", "The following email could not be received by the help desk due to an error.  It has been forwarded to you to make sure it won't be lost:\n\n{$email}", "From: {$data[email]}" );
+      hd_mail( $row[0], "Help Desk - Failed email", "The following email could not be received by the help desk due to an error.  It has been forwarded to you to make sure it won't be lost:\n\n{$email}", "From: {$data['email']}" );
      
       return false;
     }
+
+    return false;
   }
     
   $email_parts = array( );
   get_message_parts( $structure );
 
-  $i = count( $structure->headers[received] ) - 1;
+  $received_headers = $structure->headers['received'] ?? array();
+  if( !is_array( $received_headers ) )
+    $received_headers = array( $received_headers );
+
+  $i = count( $received_headers ) - 1;
   if( $i >= 0 )
   {
-    if( preg_match( "/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/", $structure->headers[received][$i], $match ) )
+    if( preg_match( "/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/", $received_headers[$i], $match ) )
       $ip = $match[0];
     else
       $ip = "";
@@ -91,19 +98,21 @@ function parse_email_to_ticket( $email, $receiver )
   else
     $ip = "";
 
-  $subject = $structure->headers[subject];
+  $subject = $structure->headers['subject'] ?? '';
+  $from = $structure->headers['from'] ?? '';
+  $to_header = $structure->headers['to'] ?? '';
 
-  if( preg_match( "/^([^<]+)<([^>]+)>/i", $structure->headers[from], $match ) )
+  if( preg_match( "/^([^<]+)<([^>]+)>/i", $from, $match ) )
   {
     $name = str_replace( "\"", "", $match[1] ); // Get rid of any quotes
     $email = $match[2];
   }
-  else if( preg_match( "/^<?([^>]+)>?/i", $structure->headers[from], $match ) )
+  else if( preg_match( "/^<?([^>]+)>?/i", $from, $match ) )
     $name = $email = $match[1];
 
-  if( preg_match( "/^([^<]+)<([^>]+)>/i", $structure->headers[to], $match ) )
+  if( preg_match( "/^([^<]+)<([^>]+)>/i", $to_header, $match ) )
     $to = $match[2];
-  else if( preg_match( "/^<?([^>]+)>?/i", $structure->headers[to], $match ) )
+  else if( preg_match( "/^<?([^>]+)>?/i", $to_header, $match ) )
     $to = $match[1];
 
   $ticket = new_ticket_id( );
@@ -111,9 +120,9 @@ function parse_email_to_ticket( $email, $receiver )
   $message = "";
   for( $i = 0; $i < count( $email_parts ); $i++ )
   {
-    if( ($email_parts[$i][type_primary] == "text" && $email_parts[$i][type_secondary] == "plain") ||
-        ($email_parts[$i][type_primary] == "plain" && $email_parts[$i][type_secondary] == "text") )
-      $message = addslashes( $email_parts[$i][body] );
+    if( ($email_parts[$i]['type_primary'] == "text" && $email_parts[$i]['type_secondary'] == "plain") ||
+        ($email_parts[$i]['type_primary'] == "plain" && $email_parts[$i]['type_secondary'] == "text") )
+      $message = addslashes( $email_parts[$i]['body'] );
 
     // Replaces all CID's in HTML files, etc., with the file name that will exist in the directory.  That way
     // HTML files will show images and everything.  Pretty cool stuff...
@@ -127,17 +136,17 @@ function parse_email_to_ticket( $email, $receiver )
       {
         if( $j != $i )
         {
-          if( isset( $email_parts[$i][parameters][name] ) )
-            $email_parts[$j][body] = str_replace( $search, "?id={$ticket}&email={$email}&file=" . urlencode( $email_parts[$i][parameters][name] ), $email_parts[$j][body] );
-          else if( isset( $email_parts[$i][dparameters][filename] ) )
-            $email_parts[$j][body] = str_replace( $search, "?id={$ticket}&email={$email}&file=" . urlencode( $email_parts[$i][parameters][filename] ), $email_parts[$j][body] );
+          if( isset( $email_parts[$i]['parameters']['name'] ) )
+            $email_parts[$j]['body'] = str_replace( $search, "?id={$ticket}&email={$email}&file=" . urlencode( $email_parts[$i]['parameters']['name'] ), $email_parts[$j]['body'] );
+          else if( isset( $email_parts[$i]['dparameters']['filename'] ) )
+            $email_parts[$j]['body'] = str_replace( $search, "?id={$ticket}&email={$email}&file=" . urlencode( $email_parts[$i]['parameters']['filename'] ), $email_parts[$j]['body'] );
         }
       }
     }
   }
 
   // Make sure the help desk isn't sending a ticket to itself, in which case it'd get stuck in an endless loop
-  if( $data[email] == $email )
+  if( $data['email'] == $email )
     return false;
 
   $res = mysql_query( "SELECT email FROM {$pre}pop" );
@@ -160,15 +169,15 @@ function parse_email_to_ticket( $email, $receiver )
 
   $email_priority .= $structure->headers["x-priority"];
   if( trim( $email_priority ) == "" )
-    $priority = $GLOBALS[PRIORITY_LOW];
+    $priority = $GLOBALS['PRIORITY_LOW'];
   else
   {
     if( $email_priority == 1 )
-      $priority = $GLOBALS[PRIORITY_HIGH];
+      $priority = $GLOBALS['PRIORITY_HIGH'];
     else if( $email_priority == 3 )
-      $priority = $GLOBALS[PRIORITY_MEDIUM];
+      $priority = $GLOBALS['PRIORITY_MEDIUM'];
     else
-      $priority = $GLOBALS[PRIORITY_LOW];
+      $priority = $GLOBALS['PRIORITY_LOW'];
   }
 
   // Receiver is specified if coming from POP processing.  This allows it to work
@@ -189,7 +198,7 @@ function parse_email_to_ticket( $email, $receiver )
   }
 
   // Check to see if this is a reply to a ticket, not a new ticket
-  $subject_words = split( " ", $subject );
+  $subject_words = explode( " ", $subject );
   $exists = 0;
   for( $i = 0; $i < count( $subject_words ); $i++ )
   {
@@ -210,15 +219,15 @@ function parse_email_to_ticket( $email, $receiver )
   if( !$exists )
   {
     // Checks for a duplicate ticket if flood control is enabled
-    if( $data[floodcontrol] )
+    if( $data['floodcontrol'] )
     {
       $res_check = mysql_query( "SELECT id, ticket_id FROM {$pre}ticket WHERE ( name = '$name' && email = '$email' && subject = '$subject' )" );
       while( $row_check = mysql_fetch_array( $res_check ) )
       {
-        $res_check_post = mysql_query( "SELECT message FROM {$pre}post WHERE ( ticket_id = '{$row_check[id]}' && user_id = '-1' ) ORDER BY date LIMIT 1" );
-        $row_check_post = mysql_fetch_array( $res_check_post );
+        $res_check_post = mysql_query( "SELECT message FROM {$pre}post WHERE ( ticket_id = '{$row_check['id']}' && user_id = '-1' ) ORDER BY date LIMIT 1" );
+        $row_check_post = mysql_fetch_array( $res_check_post ) ?: array( 'message' => '' );
 
-        if( trim( $row_check_post[message] ) == trim( stripslashes( $message ) ) )
+        if( trim( $row_check_post['message'] ) == trim( stripslashes( $message ) ) )
           return false;
       }
     }
@@ -235,14 +244,14 @@ function parse_email_to_ticket( $email, $receiver )
     $res = mysql_query( "SELECT reply, phrase FROM {$pre}reply WHERE ( dept_id = '0' || dept_id = '$dept_id' )" );
     while( $row = mysql_fetch_array( $res ) )
     {
-      if( $row[phrase] == "" )
+      if( $row['phrase'] == "" )
       {
-        $autoreply = "{$row[reply]}\n\n";
+        $autoreply = "{$row['reply']}\n\n";
         break;
       }
-      else if( strstr( strtoupper( $subject ), strtoupper( $row[phrase] ) ) )
+      else if( strstr( strtoupper( $subject ), strtoupper( $row['phrase'] ) ) )
       {
-        $autoreply = "{$row[reply]}\n\n";
+        $autoreply = "{$row['reply']}\n\n";
         break;
       }
     }
@@ -251,37 +260,37 @@ function parse_email_to_ticket( $email, $receiver )
     $email = stripslashes( $email );
     $message = stripslashes( $message );
      
-    eval( "\$email_subject = \"{$data[email_ticket_created_subject]}\";" );
-    eval( "\$email_message = \"{$data[email_ticket_created]}\";" );
-    mail( $email, $email_subject, $email_message, "From: {$data[email]}" );
+    eval( "\$email_subject = \"{$data['email_ticket_created_subject']}\";" );
+    eval( "\$email_message = \"{$data['email_ticket_created']}\";" );
+    hd_mail( $email, $email_subject, $email_message, "From: {$data['email']}" );
 
     // Notification messages
-    $res_user = mysql_query( "SELECT DISTINCT user.email, user.sms FROM {$pre}user AS user, {$pre}privilege AS priv WHERE ( user.id = priv.user_id && (priv.dept_id = '0' || priv.dept_id = '$dept_id') && user.notify & {$GLOBALS[HD_NOTIFY_CREATION]} > '0' )" );
+    $res_user = mysql_query( "SELECT DISTINCT user.email, user.sms FROM {$pre}user AS user, {$pre}privilege AS priv WHERE ( user.id = priv.user_id && (priv.dept_id = '0' || priv.dept_id = '$dept_id') && user.notify & {$GLOBALS['HD_NOTIFY_CREATION']} > '0' )" );
     
     while( $row_user = mysql_fetch_array( $res_user ) )
     {
-      eval( "\$email_subject = \"{$data[email_notify_create_subject]}\";" );
-      eval( "\$email_message = \"{$data[email_notify_create]}\";" );
-      mail( $row_user[email], $email_subject, $email_message, "From: {$data[email]}" );
+      eval( "\$email_subject = \"{$data['email_notify_create_subject']}\";" );
+      eval( "\$email_message = \"{$data['email_notify_create']}\";" );
+      hd_mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
-      if( trim( $row_user[sms] ) != "" )
+      if( trim( $row_user['sms'] ) != "" )
       {
-        eval( "\$email_subject = \"{$data[email_notifysms_create_subject]}\";" );
-        eval( "\$email_message = \"{$data[email_notifysms_create]}\";" );
-        mail( $row_user[sms], $email_subject, $email_message, "From: {$data[email]}" );
+        eval( "\$email_subject = \"{$data['email_notifysms_create_subject']}\";" );
+        eval( "\$email_message = \"{$data['email_notifysms_create']}\";" );
+        hd_mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
       }
     }
   }
   else
   {
     $res = mysql_query( "SELECT id FROM {$pre}ticket WHERE ( ticket_id = '$ticket' )" );
-    $row = mysql_fetch_array( $res );
+    $row = mysql_fetch_array( $res ) ?: array( 0 => 0 );
     $id = $row[0];
 
     // Checks for a duplicate posting if flood protection is enabled
     $res_check = mysql_query( "SELECT subject, message FROM {$pre}post WHERE ( ticket_id = '$id' ) ORDER BY date DESC LIMIT 1" );
-    $row_check = mysql_fetch_array( $res_check );
-    if( $data[floodcontrol] && (trim( $row_check[message] ) == trim( stripslashes( $message ) )) )
+    $row_check = mysql_fetch_array( $res_check ) ?: array( 'message' => '' );
+    if( $data['floodcontrol'] && (trim( $row_check['message'] ) == trim( stripslashes( $message ) )) )
       return false;
 
     // Check to see if this is a staff memeber posting, or a customer posting.
@@ -290,24 +299,24 @@ function parse_email_to_ticket( $email, $receiver )
     if( $row_check ) // It's staff's posting
     {
       $res = mysql_query( "SELECT email, notify FROM {$pre}ticket WHERE ( ticket_id = '$ticket' )" );
-      $row = mysql_fetch_array( $res );
+      $row = mysql_fetch_array( $res ) ?: array( 'email' => '', 'notify' => 0 );
       
-      mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '$id', '{$row_check[id]}', '" . time( ) . "', '$subject', '$message' )" );
+      mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '$id', '{$row_check['id']}', '" . time( ) . "', '$subject', '$message' )" );
 
       $name = stripslashes( $name );
       $email = stripslashes( $email );
       $message = stripslashes( $message );
 
-      if( $row[notify] )
+      if( $row['notify'] )
       {
-        eval( "\$email_subject = \"{$data[email_ticket_notify_subject]}\";" );
-        eval( "\$email_message = \"{$data[email_ticket_notify]}\";" );
+        eval( "\$email_subject = \"{$data['email_ticket_notify_subject']}\";" );
+        eval( "\$email_message = \"{$data['email_ticket_notify']}\";" );
 
-        $addresses = split( " ", $row[cc] );
-        array_push( $addresses, $row[email] );
+        $addresses = explode( " ", $row['cc'] );
+        array_push( $addresses, $row['email'] );
 
         for( $i = 0; $i < count( $addresses ); $i++ )
-          mail( $addresses[$i], $email_subject, $email_message, "From: {$data[email]}" );
+          hd_mail( $addresses[$i], $email_subject, $email_message, "From: {$data['email']}" );
       }
     }
     else // It's customer's posting
@@ -315,7 +324,7 @@ function parse_email_to_ticket( $email, $receiver )
       mysql_query( "INSERT INTO {$pre}post ( ticket_id, user_id, date, subject, message ) VALUES ( '$id', '-1', '" . time( ) . "', '$subject', '$message' )" );
 
       // Notification messages
-      $res_user = mysql_query( "SELECT DISTINCT user.email, user.sms FROM {$pre}user AS user, {$pre}privilege AS priv, {$pre}post AS post WHERE ( user.id = priv.user_id && (priv.dept_id = '0' || priv.dept_id = '$dept_id') && user.notify & {$GLOBALS[HD_NOTIFY_REPLY]} > '0' && post.user_id = user.id && post.ticket_id = '$id' )" );
+      $res_user = mysql_query( "SELECT DISTINCT user.email, user.sms FROM {$pre}user AS user, {$pre}privilege AS priv, {$pre}post AS post WHERE ( user.id = priv.user_id && (priv.dept_id = '0' || priv.dept_id = '$dept_id') && user.notify & {$GLOBALS['HD_NOTIFY_REPLY']} > '0' && post.user_id = user.id && post.ticket_id = '$id' )" );
 
       $name = stripslashes( $name );
       $email = stripslashes( $email );
@@ -323,15 +332,15 @@ function parse_email_to_ticket( $email, $receiver )
 
       while( $row_user = mysql_fetch_array( $res_user ) )
       {
-        eval( "\$email_subject = \"{$data[email_notify_reply_subject]}\";" );
-        eval( "\$email_message = \"{$data[email_notify_reply]}\";" );
-        mail( $row_user[email], $email_subject, $email_message, "From: {$data[email]}" );
+        eval( "\$email_subject = \"{$data['email_notify_reply_subject']}\";" );
+        eval( "\$email_message = \"{$data['email_notify_reply']}\";" );
+        hd_mail( $row_user['email'], $email_subject, $email_message, "From: {$data['email']}" );
 
-        if( trim( $row_user[sms] ) != "" )
+        if( trim( $row_user['sms'] ) != "" )
         {
-          eval( "\$email_subject = \"{$data[email_notifysms_create_subject]}\";" );
-          eval( "\$email_message = \"{$data[email_notifysms_create]}\";" );
-          mail( $row_user[sms], $email_subject, $email_message, "From: {$data[email]}" );
+          eval( "\$email_subject = \"{$data['email_notifysms_create_subject']}\";" );
+          eval( "\$email_message = \"{$data['email_notifysms_create']}\";" );
+          hd_mail( $row_user['sms'], $email_subject, $email_message, "From: {$data['email']}" );
         }
       }
 
@@ -342,11 +351,11 @@ function parse_email_to_ticket( $email, $receiver )
   $res = mysql_query( "SELECT text FROM {$pre}options WHERE ( name = 'uploads' )" );
   $row = mysql_fetch_array( $res );
   if( !$row )
-    $data[uploads] = 0;
+    $data['uploads'] = 0;
   else
-    $data[uploads] = $row[0];
+    $data['uploads'] = $row[0];
 
-  if( $data[uploads] )
+  if( $data['uploads'] )
   {
     if( !is_dir( "{$HD_TICKET_FILES}/{$id}" ) )
     {
@@ -358,20 +367,20 @@ function parse_email_to_ticket( $email, $receiver )
     // Creates files for all the attachments
     for( $i = 0; $i < count( $email_parts ); $i++ )
     {
-      if( !(($email_parts[$i][type_primary] == "text" && $email_parts[$i][type_secondary] == "plain") ||
-           ($email_parts[$i][type_primary] == "plain" && $email_parts[$i][type_secondary] == "text")) )
+      if( !(($email_parts[$i]['type_primary'] == "text" && $email_parts[$i]['type_secondary'] == "plain") ||
+           ($email_parts[$i]['type_primary'] == "plain" && $email_parts[$i]['type_secondary'] == "text")) )
       {
-        if( isset( $email_parts[$i][parameters][name] ) )
-          $filename = $email_parts[$i][parameters][name];
-        else if( isset( $email_parts[$i][dparameters][filename] ) )
-          $filename = $email_parts[$i][dparameters][filename];
+        if( isset( $email_parts[$i]['parameters']['name'] ) )
+          $filename = $email_parts[$i]['parameters']['name'];
+        else if( isset( $email_parts[$i]['dparameters']['filename'] ) )
+          $filename = $email_parts[$i]['dparameters']['filename'];
         else
-          $filename = sprintf( "%s-%s.%03d", $email_parts[$i][type_primary], $email_parts[$i][type_secondary], $i );
+          $filename = sprintf( "%s-%s.%03d", $email_parts[$i]['type_primary'], $email_parts[$i]['type_secondary'], $i );
 
         $fp = fopen( "{$HD_TICKET_FILES}/{$id}/{$filename}", "w" );
         if( $fp )
         {
-          fwrite( $fp, $email_parts[$i][body] );
+          fwrite( $fp, $email_parts[$i]['body'] );
           fclose( $fp );
         }
       }      
